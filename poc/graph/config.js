@@ -40,4 +40,4 @@ linkStrengths["TN"] = 0.3;
 // Server Info
 //////////////
 var serverAddress = "127.0.0.1";
-var serverPort = 24680;
+var serverPort = 24680; 
