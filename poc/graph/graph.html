@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="graph.css">
+</head>
+<body>
+<div id="controls">
+Span: 
+<select id="span">
+    <option value="all">All</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+    <option value="9">9</option>
+    <option value="10">10</option>
+</select>
+Focus: 
+<button id="filter" onClick="filterGraph();">Filter Graph</button>
+<button id="detailButton" onClick="showDetails();">Details</button>
+</div>
+<div id="graph">
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="config.js"></script>
+    <script src="graph.js"></script>
+    <script>
+        getGraphData("bogus", "0"); 
+        
+        //
+        // Do an AJAX call to get the node and link data.
+        //
+        function getGraphData(focus, span) {
+            var xmlHttp = new XMLHttpRequest();
+            var url = "http://127.0.0.1:24680/data?focus=" + focus + "&span=" + span;
+        
+            xmlHttp.onreadystatechange = function() {
+                if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+                        var myArr = JSON.parse(xmlHttp.responseText);
+                        loadGraphData(myArr);
+                }
+            }
+        
+            xmlHttp.open("GET", url, true);
+            xmlHttp.send();
+        }
+
+        function filterGraph() {
+            var focus = selectedNode;
+            var span = document.getElementById("span").value;
+            getGraphData(focus.id, span);
+        }
+
+    </script>
+</div>
+<div id="details">
+    <div id="detailscontent">
+    </div>
+    <div id="detailsbuttonbar">
+        <button onClick="hideDetails();">Close</button>
+    </div>
+</div>
+</body>
+</html>

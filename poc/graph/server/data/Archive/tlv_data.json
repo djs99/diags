@@ -1,0 +1,21 @@
+
+{
+    "nodes":[
+        {"name":"1982","type":"vm"},
+        {"name":"1945","type":"host"},
+        {"name":"1981","type":"vm","status":"critical"},
+        {"name":"1983","type":"vm"},
+        {"name":"1946","type":"host"},
+        {"name":"1984","type":"vm"},
+        {"name":"1947","type":"host"},
+        {"name":"1985","type":"vm"},
+        {"name":"1948","type":"host"}
+    ], 
+    "links":[
+        {"source":"1982","target":"1945","type":"ON"},
+        {"source":"1981","target":"1945","type":"ON"},
+        {"source":"1983","target":"1946","type":"ON"},
+        {"source":"1984","target":"1947","type":"ON"},
+        {"source":"1985","target":"1948","type":"ON"}
+    ]
+}

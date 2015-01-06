@@ -1,0 +1,219 @@
+<style>
+
+body {
+    background-color: #AAA;
+}
+
+.overlay {
+    fill: none;
+    pointer-events: all;
+}
+
+
+.graph-svg-component {
+    background-color: #FFFFFF;
+    border: 2px solid;
+    border-color: LightBlue;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+.details {
+    margin-top: 10px;
+    margin-left: 810px;
+}
+
+details.detail-header {
+    font-size: 2em;
+}
+
+.link {
+  stroke: #aaa;
+  stroke-width: 1.5px;
+}
+
+.link.collapsed {
+  stroke: #aaa;
+  stroke-width: 1.5px;
+  stroke-dasharray: 6;
+}
+
+#arrowhead {
+    stroke: #aaa;
+    stroke-width: 1.0px;
+    fill: #aaa;
+}
+
+
+text {
+  font: 8px sans-serif;
+  pointer-events: none;
+  font-weight: bold;
+}
+
+.linktext {
+  font: 8px sans-serif;
+  pointer-events: none;
+  font-weight: bold;
+  x: .38em;
+}
+
+
+/* Nodes ************************************/
+
+.node.process {
+  stroke: #3c3;
+  stroke-width: 1.5px;
+  fill: #3f3;
+}
+
+.node.cfgfile {
+  stroke: #3c3;
+  stroke-width: 1.5px;
+  fill: #3f3;
+}
+
+.node.cindernode {
+  stroke: #3c3;
+  stroke-width: 1.5px;
+  fill: #3f3;
+}
+
+.node.cindervolume {
+  stroke: #3c3;
+  stroke-width: 1.5px;
+  fill: #3f3;
+}
+
+.node.cpg {
+  stroke: #cc2;
+  stroke-width: 1.5px;
+  fill: #ff2;
+}
+
+.node.vvol {
+  stroke: #881;
+  stroke-width: 1.5px;
+  fill: #bb1;
+}
+
+/***/
+
+.node.host {
+  fill: #ffacd6;
+  stroke: #c33;
+  stroke-width: 1px;
+}
+
+.node.vm {
+  fill: #ffd18d;
+  stroke: #c53;
+  stroke-width: 1px;
+}
+
+.node.array {
+  fill: #ffff9d;
+  stroke: #990;
+  stroke-width: 1px;
+}
+
+.node.initport {
+  fill: #D1F4D1;
+  stroke: #080;
+  stroke-width: 1px;
+}
+
+.node.switch {
+  fill: #d1d1ff;
+  stroke: #22d;
+  stroke-width: 1px;
+}
+
+.node.tenant {
+  fill: #d8e;
+  stroke: #93c;
+  stroke-width: 1px;
+}
+
+.node.zone {
+  fill: #99d6d6;
+  stroke: #399;
+  stroke-width: 1px;
+}
+
+.node.targetport {
+  fill: #7D9DFF;
+  stroke: #169;
+  stroke-width: 1px;
+}
+
+
+/* Status icons ***********************************/
+
+.warning {
+  stroke: #333;
+  stroke-width: .5px;
+  fill: yellow;
+  pointer-events: none;
+}
+
+.warnLabel {
+  font: 14px monospace;
+  pointer-events: none;
+}
+
+
+.critical {
+  stroke: #000;
+  stroke-width: .5px;
+  fill: red;
+  pointer-events: none;
+}
+
+
+/* Tooltip ************************************/
+
+div.tooltip {
+    position: absolute;
+    text-align: left;
+    width: 140px;
+    height: 60px;
+    padding: 5px;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
+    z-index: 100;
+}
+
+
+/* Side panel ********************************/
+
+#details {
+
+    position: absolute;
+    top: 361px;	// originally top: 40px;
+    left: 560px; //originally left: 520px;
+    width: 200px;
+    height: 490px; 
+    background-color: #ffffff;
+    border: 2px solid;
+    border-color: LightBlue;	 
+    padding: 5px;
+    border-radius: 4px;
+}
+
+#detailscontent {
+    width: 100%;
+    height: 95%;
+    overflow-y: auto;
+}
+
+#detailsbuttonbar {
+    height: 25px;
+    width: 100%;
+    padding: 2px;
+}
+
+</style>
