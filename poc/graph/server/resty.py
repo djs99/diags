@@ -20,6 +20,6 @@ class PathDispatcher:
         return handler(environ, start_response)
 
     def register(self, method, path, function):
-        self.pathmap[method.lower(), path] = function
+        self.pathmap[method.lower(), path] = function 
         return function
 
