@@ -22,7 +22,7 @@
         {"name":"Zone-2", "type":"zone", "id":"00020"}
     ],
     "links":[
-        {"source":"00001", "target":"00003", "type":"collapsed"},
+        {"source":"00001", "target":"00003", "type":"compressed"},
         {"source":"00001", "target":"00004", "type":"HBA"},
         {"source":"00002", "target":"00005", "type":"OWNS"},
         {"source":"00002", "target":"00006", "type":"OWNS"},

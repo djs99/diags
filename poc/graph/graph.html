@@ -22,6 +22,7 @@ Span:
 </select>
 Focus: 
 <button id="filter" onClick="filterGraph();">Filter Graph</button>
+<button id="uncompress" onClick="uncompressLink();">Uncompress Link</button>
 <button id="detailButton" onClick="showDetails();">Details</button>
 </div>
 <div id="graph">
@@ -49,10 +50,35 @@ Focus:
             xmlHttp.send();
         }
 
+
+        function getUncompressedGraphData(sourceId, targetId) {
+            var xmlHttp = new XMLHttpRequest();
+            var url = "http://127.0.0.1:24680/uncompress?source=" + sourceId + "&target=" + targetId;
+        
+            xmlHttp.onreadystatechange = function() {
+                if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+                        var myArr = JSON.parse(xmlHttp.responseText);
+                        loadGraphData(myArr);
+                }
+            }
+        
+            xmlHttp.open("GET", url, true);
+            xmlHttp.send();
+        }
+
         function filterGraph() {
             var focus = selectedNode;
             var span = document.getElementById("span").value;
             getGraphData(focus.id, span);
+        }
+
+        function uncompressLink() {
+            if (selectedLink == null)
+                return;
+
+            var sourceId = selectedLink.source.id;
+            var targetId = selectedLink.target.id;
+            getUncompressedGraphData(sourceId, targetId);
         }
 
     </script>

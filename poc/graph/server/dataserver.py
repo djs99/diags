@@ -17,6 +17,22 @@ def fetch_data(environ, start_response):
 
 
 #
+# Return data with the specified link uncompressed.
+#
+def uncompress_link(environ, start_response):
+    start_response('200 OK', [ ('Content-type', 'application/json'), ('Access-Control-Allow-Origin', '*') ])
+    params = environ['params']
+    focus = "bogus"
+    span = "all"
+    source = params.get('source')
+    target = params.get('target')
+    print("Retrieving uncompressed graph data :::: focus=" + focus + " : span=" + span + " : source=" + source + " : target=" + target)
+    graphData = filter_data(focus, span)
+    print(json.dumps(graphData) )
+    yield json.dumps(graphData).encode('utf-8')
+
+
+#
 # Return data for tree layout experiments.
 #
 def fetch_flare_data(environ, start_response):
@@ -39,6 +55,7 @@ if __name__ == '__main__':
     # Create the dispatcher and register functions
     dispatcher = PathDispatcher()
     dispatcher.register('GET', '/data', fetch_data)
+    dispatcher.register('GET', '/uncompress', uncompress_link)
     dispatcher.register('GET', '/flaredata', fetch_flare_data)
 
     # Launch a basic server

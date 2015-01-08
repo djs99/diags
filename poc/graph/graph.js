@@ -69,7 +69,7 @@ svg.append("defs").append("svg:marker")
     .attr("markerHeight", 10)
     .attr("orient", "auto")
     .append("path")
-        .attr("d", "M 0,-1 L 4,0 L 0,1"); 
+        .attr("d", "M 0,-2 L 4,0 L 0,2"); 
 
 
 //
@@ -365,12 +365,17 @@ function loadGraphData(data) {
     var nodeLookup = {};
     newNodes.forEach( function(node) {
         nodeLookup[node.id] = node;
+
+        // Set default name, if required.
         if (node.name == undefined) {
             node.name = node.type;
         };
+
+        // Set default status, if required.
         if (node.status == undefined) {
             node.status = "normal";
         };
+
         nodes.push(node);
         console.log("NODE: type=" + node.type + " name=" + node.name + "  id=" + node.id + "  status=" + node.status);
     } );
@@ -440,14 +445,12 @@ var selectedLink = null;
 function selectNode(d) {
     selectedNode = d;
     selectedLink = null;
-    var popup = document.getElementById("details");
     showDetails();
 }
 
 function selectLink(d) {
     selectedNode = null;
     selectedLink = d;
-    var popup = document.getElementById("details");
     showDetails();
 }
 

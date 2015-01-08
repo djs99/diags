@@ -5,8 +5,8 @@ import json
 from pprint import pprint
 
 #data_file_name = "data/tlv3_data.json"
-#data_file_name = "data/small_data.json"
-data_file_name = "data/large_data.json"
+data_file_name = "data/small_data.json"
+#data_file_name = "data/large_data.json"
 
 #
 # Load force layout data.
