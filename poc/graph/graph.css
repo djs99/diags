@@ -32,7 +32,7 @@ details.detail-header {
   stroke-width: 1.5px;
 }
 
-.link.collapsed {
+.link.compressed {
   stroke: #aaa;
   stroke-width: 1.5px;
   stroke-dasharray: 6;
