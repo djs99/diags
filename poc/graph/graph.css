@@ -162,11 +162,17 @@ text {
   pointer-events: none;
 }
 
-
 .critical {
   stroke: #000;
   stroke-width: .5px;
   fill: red;
+  pointer-events: none;
+}
+
+.highlight {
+  stroke: #000;
+  stroke-width: .5;
+  fill: #AAF;
   pointer-events: none;
 }
 

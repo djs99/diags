@@ -101,6 +101,20 @@ function getNodesByStatus(nodes, status) {
 }
 
 
+//
+// Return a list of highlighted nodes.
+//
+function getHighlightedNodes(nodes) {
+    var outputArray = [];
+    nodes.forEach( function(node) {
+        if (node.highlight == "true") {
+            outputArray.push(node);
+        };
+    } );
+    return outputArray;
+}
+
+
 // Shortcut selections for graph entities.
 var circle = svg.selectAll(".circle");    
 var square = svg.selectAll(".rect");   
@@ -113,6 +127,7 @@ var warn = svg.selectAll(".warn");
 var warnLabel = svg.selectAll(".warnLabel");   
 var crit = svg.selectAll(".crit");   
 var link = svg.selectAll(".link");   
+var highlight = svg.selectAll(".highlight");   
 
 var linkTypes = [];
 
@@ -120,6 +135,25 @@ var linkTypes = [];
 // Start or re-start the force layout.
 //
 function start() {                                                                               
+    // Highlight indicators
+    highlight.remove();
+    highlight = svg.selectAll(".highlight");
+    highlight = highlight.data( getHighlightedNodes(force.nodes() ) )
+
+        .enter().append("rect")
+        .attr("height", 52)
+        .attr("width", 52)
+        .attr("x", -26)
+        .attr("y", -26)
+
+        //.enter().append("path")
+        //.attr("d", "M -26,-15 L -26,-26 L -15,-26 \
+                    //M 15,-26 L 26,-26 L 26,-15 \
+                    //M 26,15 L 26,26 L 15,26 \
+                    //M -15,26 L -26,26 L -26,15")
+
+        .attr("class", "highlight");
+
     // Links
     link.remove();
     link = svg.selectAll(".link");
@@ -186,10 +220,10 @@ function start() {
     rectangle = rectangle.data( getNodesOfShape(force.nodes(), "rectangle"), function(d) { return d.id; } );
     rectangle.enter().append("g").append("rect")
         .attr("class", function(d) { return ( "node " + d.type ); } )
-        .attr("height", 60)
+        .attr("height", 44)
         .attr("width", 30)
         .attr("x", -15)
-        .attr("y", -30)
+        .attr("y", -22)
         .on("mouseover", function(d) { return nodeToolTipIn(d); } ) 
         .on("mouseout", function(d) { return toolTipOut(d); } )
         .on("click", function(d) { return selectNode(d); } )
@@ -281,6 +315,7 @@ function start() {
         .attr("class", "critical")
         .attr("points", "   -23,7 -21,7 -15,13  -9,7 -7,7 -7,9 -13,15 -7,21 -7,23 -9,23 -15,17 -21,23 -23,23 -23,21 -17,15 -23,9");
 
+
     force.start();
 }
 
@@ -298,6 +333,7 @@ function tick() {
     warn.attr("transform", transform);  
     warnLabel.attr("transform", transform);  
     crit.attr("transform", transform);  
+    highlight.attr("transform", transform);  
 
     link.select("line").attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
