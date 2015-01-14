@@ -128,6 +128,7 @@ var warnLabel = svg.selectAll(".warnLabel");
 var crit = svg.selectAll(".crit");   
 var link = svg.selectAll(".link");   
 var highlight = svg.selectAll(".highlight");   
+var bracket = svg.selectAll(".bracket");   
 
 var linkTypes = [];
 
@@ -135,7 +136,7 @@ var linkTypes = [];
 // Start or re-start the force layout.
 //
 function start() {                                                                               
-    // Highlight indicators
+    // Highlight backgrounds
     highlight.remove();
     highlight = svg.selectAll(".highlight");
     highlight = highlight.data( getHighlightedNodes(force.nodes() ) )
@@ -153,6 +154,18 @@ function start() {
                     //M -15,26 L -26,26 L -26,15")
 
         .attr("class", "highlight");
+
+    // Highlight brackets
+    bracket.remove();
+    bracket = svg.selectAll(".bracket");
+    bracket = bracket.data( getHighlightedNodes(force.nodes() ) )
+
+        .enter().append("path")
+        .attr("d", "M -26,-15 L -26,-26 L -15,-26 \
+                    M 15,-26 L 26,-26 L 26,-15 \
+                    M 26,15 L 26,26 L 15,26 \
+                    M -15,26 L -26,26 L -26,15")
+        .attr("class", "bracket");
 
     // Links
     link.remove();
@@ -330,10 +343,13 @@ function tick() {
     triangle.attr("transform", transform);  
     pentagon.attr("transform", transform);  
     hexagon.attr("transform", transform);  
+
     warn.attr("transform", transform);  
     warnLabel.attr("transform", transform);  
     crit.attr("transform", transform);  
+
     highlight.attr("transform", transform);  
+    bracket.attr("transform", transform);  
 
     link.select("line").attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })

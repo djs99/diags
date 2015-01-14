@@ -169,10 +169,20 @@ text {
   pointer-events: none;
 }
 
+
+/* Highlighted nodes ****************************/
+
 .highlight {
+  stroke: #EEE;
+  stroke-width: .5;
+  fill: #EEF;
+  pointer-events: none;
+}
+
+.bracket {
   stroke: #000;
   stroke-width: .5;
-  fill: #AAF;
+  fill: none;
   pointer-events: none;
 }
 
