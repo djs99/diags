@@ -34,6 +34,7 @@ function setLinkStrength(link) {
 }
 
 
+// Enable the zoom behavior.
 var zoomer = d3.behavior.zoom()
                .scaleExtent([minZoom, maxZoom])
                .on("zoom", doZoom);
@@ -140,26 +141,17 @@ function start() {
     highlight.remove();
     highlight = svg.selectAll(".highlight");
     highlight = highlight.data( getHighlightedNodes(force.nodes() ) )
-
         .enter().append("rect")
         .attr("height", 52)
         .attr("width", 52)
         .attr("x", -26)
         .attr("y", -26)
-
-        //.enter().append("path")
-        //.attr("d", "M -26,-15 L -26,-26 L -15,-26 \
-                    //M 15,-26 L 26,-26 L 26,-15 \
-                    //M 26,15 L 26,26 L 15,26 \
-                    //M -15,26 L -26,26 L -26,15")
-
         .attr("class", "highlight");
 
     // Highlight brackets
     bracket.remove();
     bracket = svg.selectAll(".bracket");
     bracket = bracket.data( getHighlightedNodes(force.nodes() ) )
-
         .enter().append("path")
         .attr("d", "M -26,-15 L -26,-26 L -15,-26 \
                     M 15,-26 L 26,-26 L 26,-15 \
@@ -611,7 +603,23 @@ function getLinkDetails() {
 
 
 
+//
+// Graph API calls, to be called from the host page.
+//
 
+var highlightEnabled = true;
+function toggleHighLight() {
+    if (highlightEnabled == true) {
+        highlightEnabled = false;
+	highlight.attr("visibility", "hidden");
+        bracket.attr("visibility", "hidden");
+    }
+    else {
+        highlightEnabled = true;
+	highlight.attr("visibility", "visible");
+        bracket.attr("visibility", "visible");
+    }
+}
 
 
 
