@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="us">
+<head>
+	<meta charset="utf-8">
+	<title>Analyze/troubleshoot alert</title>
+	<link href="jquery-ui.css" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="graph.css">
+	<style>
+	
+	body{
+		font: 70% "Trebuchet MS", sans-serif;
+		margin: 50px;
+	}
+	.demoHeaders {
+		margin-top: 2em;
+	}
+	#dialog-link {
+		padding: .4em 1em .4em 20px;
+		text-decoration: none;
+		position: relative;
+	}
+	#dialog-link span.ui-icon {
+		margin: 0 5px 0 0;
+		position: absolute;
+		left: .2em;
+		top: 50%;
+		margin-top: -8px;
+	}
+	#icons {
+		margin: 0;
+		padding: 0;
+	}
+	#icons li {
+		margin: 2px;
+		position: relative;
+		padding: 4px 0;
+		cursor: pointer;
+		float: left;
+		list-style: none;
+	}
+	#icons span.ui-icon {
+		float: left;
+		margin: 0 4px;
+	}
+	.fakewindowcontain .ui-widget-overlay {
+		position: absolute;
+	}
+	select {
+		/*width: 200px;*/
+	}
+	
+	label {
+   font: 130% "Trebuchet MS", sans-serif;'
+  }
+  
+  #alertentry {
+  border-width: 1px      ; 
+  border-color: LightBlue;
+  border-style: solid    ;
+  border-radius: 4px     ;
+  padding: 10px          ;
+  width: 300px           ;
+  /*float: left            ;*/
+  
+}
+  
+  #d3graph {
+/*  
+  position: absolute;
+  top: 362px;
+  left: 10px
+*/
+  float: left;
+  height: 514px;
+  width: 514px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: LightBlue;
+  border-radius: 4px; 
+  }
+
+/*DEBUG  
+#pianograph {
+  height: 500px;
+  width: 500px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: LightBlue;
+  border-radius: 4px; 
+  }
+ENDBUG*/
+
+.controlbutton{ 
+  float: left;
+  margin: 4px;
+  vertical-align: top;
+ }    
+  
+#selectelement{
+  line-height: 30px;
+  vertical-align: top;
+}
+#selectspanmenu{
+  float: left;
+  margin: 4px;
+  vertical-align: bottom;
+  
+}
+
+</style>
+	<script src="external/jquery/jquery.js"></script>
+  <script src="jquery-ui.js"></script>
+  <script src="cypher.js"></script>
+  <script src="links.js"></script>
+  <script src="graphloader.js"></script>
+  <script src="underscore.js"></script>
+</head>
+
+
+<body>
+<h2>Analyze and Troubleshoot Alerts</h2>
+
+
+<!-- ENTER ALERT DETAILS-->
+<div id=alertentry>
+  <form name="alertForm" action="" method="GET">
+    <label id=alertform style="float: center;">Enter Alert Details  </label>
+    <br><br>
+    
+    <label id=selectelement for="selectmenu" style="margin-top:-5px;padding-top:-5px;">Select Alert Element:  </label>
+    <select id="selectelementmenu">
+      <option>vm</option>
+      <option selected="selected">host</option>
+      <option >volume</option>
+      <option>node</option>
+      <option>nodeElement</option>
+      <option>switch</option>
+    </select>
+    <br> <br>
+    <label for="alertId">Alert Element ID: </label>
+    <INPUT TYPE="text" NAME="alertId"><P>
+    
+     
+   <label id=selectmaxspan for="selectspan" style="margin-top:-5px;padding-top:-5px;line-height: 30px;vertical-align: top">Select number of hops: </label>
+   <select id="selectspan">
+      <option selected="selected">Any</option>
+      <option>1</option>
+      <option>2</option>
+      <option>3</option>
+   </select>  
+   <br> <br>
+    
+   <label id=selectdirection for="selectdirectionlist" style="margin-top:-5px;padding-top:-5px;line-height: 30px;vertical-align: top">Direction: </label>
+   <select id="selectdirectionlist">
+      <option selected="selected">Down</option>
+      <option>Up</option>
+      <option>Both</option>
+    </select>  
+    <br> <br>
+    
+    <INPUT type = button id= "getgraph" Value="Get Graph" onClick="getGraph(this.form)" style="float: right">
+   <br> 
+  </form>    
+</div>
+
+<br>
+
+
+<!-- GRAPH DISPLAY AREA-->
+<div id="graph">
+        <script src="http://d3js.org/d3.v3.min.js"></script>
+        <script src="config.js"></script>
+        <script src="graph.js"></script>
+</div><!--graph-->
+
+<div id="details">
+    <div id="detailscontent">
+    </div>
+    <div id="detailsbuttonbar">
+        <button id = detailsbutton onClick="hideDetails();" style = "margin-bottom: 50px;">Close</button>
+     </div>
+</div>
+
+<!-- TEST BUTTONS -->
+<div id = "testdiv">
+  <div id = "testcontent" >
+  Test content
+  <br> <br>
+  </div>
+<button id = testexpandallbutton onClick="testExpandAll()" > Expand All</button>
+<button id = testexpandsomebutton onClick="testExpandSome()" > Expand Some</button>
+<button id = testcompressallbutton onClick="testCompressAll()" > Compress All</button>
+<button id = testcompresssomebutton onClick="testCompressSome()" > compress Some</button>
+
+<br> <br>
+<button id = getinitporterrors onClick="getinitPortErrors()" > Init port errors</button>
+<button id = getall onClick="getAll()" > All nodes</button>
+<button id = getfailedswitchtenants onClick="getFailedSwitchTenants()" > Failed switch tenants</button>
+</div>
+
+<!-- DEBUG: Cypher query and response -->
+<div id=queryDiv>
+<br> <br> <br>
+Query: 
+</div>
+<br>
+
+<div id=resultDiv>
+Result:
+</div>
+
+
+<script>
+
+$( "#button1" ).button();
+$( "#button2" ).button();
+$( "#testexpandallbutton" ).button();
+$( "#testexpandsomebutton" ).button();
+$( "#testcompressallbutton" ).button();
+$( "#testcompresssomebutton" ).button();
+$( "#detailsbutton").button();
+$( "#getgraph" ).button();
+$( "#getinitporterrors").button();
+$( "#getall").button();
+$( "#getfailedswitchtenants ").button();
+$( "#shift" ).button();
+$( "#scope" ).button();
+$( "#shiftpiano" ).button();
+$( "#scopepiano" ).button();
+$( "#selectelementmenu" ).selectmenu();
+$( "#selectspan").selectmenu(  {width: 80} );
+$( "#selectdirectionlist").selectmenu(  {width: 80} );
+
+
+/*****************************
+  BUILD AND SEND CYPHER QUERY
+
+*/  
+
+/* -------------------------
+    GET GRAPH
+    
+    Input: 
+      Form containing selectelementmenu, alertId
+    
+    Actions: 
+      Construct a cypher query from form elements
+      send the query in an AJAX request to the database
+     
+     Result: 
+       If the query is successful, the request callback will put the resulting nodes and links into the
+       graphDataStore global. 
+*/  
+function getGraph( form ) {
+    var maxSpan;
+    if( "Any".localeCompare(form.selectspan.value) != 0){ maxSpan = form.selectspan.value;}
+    var idNull = form.alertId.value == null;
+    if( form.alertId.value == "" ) {
+      alert("Enter an alert ID"); 
+      return;
+      }
+    
+    query = queryFrom( form.selectelementmenu.value, 
+                       form.alertId.value, 
+                       maxSpan, 
+                       form.selectdirectionlist.value
+                      );
+    console.log( "query str: " + query );
+    request(query, cypherResponseCallback );
+}//fn
+
+
+
+/******************************
+  FUNCTIONS TO BUILD A QUERY FROM ELEMENT AND SPAN DETAILS
+*/
+
+/* -----------------
+  QUERY FROM
+    Construct query from element type & id
+*/
+function queryFrom( elementType, elementId, maxSpan, direction ){
+ return queryFromPath( buildPath( elementType, elementId, maxSpan, direction)); 
+}//fn
+
+
+/* ----------------------------
+    BUILD PATH SECTION OF QUERY
+ 
+    Build this Cypher code:
+      
+      When upDownDirection = down
+      
+      (start:type {id: idparam}-[r*..maxSpan]->(end)
+      
+      
+      When upDowDirection = up
+      
+      (start:type {id: idparam}<-[r*..maxSpan]-(end)
+      
+      Return: 
+        path[]
+
+*/
+function buildPath( type, id, maxSpan, upDownDirection) {
+  
+  var start = new node();
+      start.typeName( "start" )
+           .type( type )
+           .property( "id", id )
+           .inResult();
+  
+  
+  var rel = new relation();
+      rel.name( "r" )
+          .direction( upDownDirection )
+          .maxSpan(maxSpan)
+          .inResult();
+           
+  var end = new node();
+      end.typeName( "end" )
+         .inResult();
+         
+  var path = [];
+  path.push( start, rel, end);
+  return path;
+}//fn
+
+
+/*------------------------
+   QUERY FROM PATH
+   
+   Create a complete Cypher query given the path section of the query
+   
+   Return: query string
+*/
+function queryFromPath( path ) {
+  var resultStr = pathResultStringFrom( buildPathResult( path ));
+  var pathStr = pathStringFrom( path );
+ 
+ return queryStringFrom( pathStr, resultStr )
+}//fn
+
+
+
+/* -------------------
+  REQUEST 
+ 
+  Send a query to the server
+  
+*/ 
+ 
+ function request( query, callback){
+   xmlhttp=new XMLHttpRequest();
+   alert( "query str: " + query );  
+   console.log( "query str: " + query );
+   
+   // set callback 
+   xmlhttp.onreadystatechange = function() {
+    if( xmlhttp.readyState == 4) { 
+      document.getElementById("resultDiv").innerHTML= xmlhttp.responseText; 
+      callback(JSON.parse( xmlhttp.responseText));      
+     }
+    }//callback
+ 
+  var hostname = "localhost"
+  var url = "http://"+ hostname +":7474/db/data/transaction"
+  
+  xmlhttp.open("POST", url, true);
+  xmlhttp.setRequestHeader("Content-type","application/json");
+  xmlhttp.setRequestHeader("Accept", "application/json; charset=UTF-8");
+  document.getElementById("queryDiv").innerHTML = query;
+  xmlhttp.send(query);
+}//fn
+
+
+/************************************
+    EXTRACT QUERY RESULTS FROM THE RESPONSE
+*/
+
+/* ---------------------------
+      CYPHER RESPONSE CALLBACK
+*/ 
+function cypherResponseCallback( responseObj ){
+
+    graphDataStore.nodeArray = nodeArrayFrom(responseObj);
+    graphDataStore.linkStore = linkStoreFrom( responseObj );
+    if( !graphDataStore.check() ) {   alert( "graph data store problem"); }
+    testExpandAll();    
+}//fn
+
+ 
+
+/* -----------------------
+    NODE ARRAY FROM
+    
+    input:  respObj -- http request.responsetext as object 
+    return: array of unique notes in respObj
+*/
+function nodeArrayFrom( respObj ){
+    var data = respObj.results[0].data;
+    var nodeSet = new objectSet();
+    
+    //for each graph
+    for( var i = 0, len = data.length; i < len; i++){
+      getNodesFromGraph( data[i].graph, nodeSet );
+      }
+    return nodeSet.objects;
+}//fn
+
+
+/* --------------------------
+   CLASS OBJECT SET: 
+    Stores objects with unique keys
+
+*/
+function objectSet()  { 
+  this.keys = [], 
+  this.objects = [] 
+  
+  //add the object if the key is not already present
+  this.add = function(key, object) {
+    if( this.keys.indexOf( key ) == -1 ){
+      this.keys.push(key);
+      this.objects.push(object);
+      }
+   }
+}//class
+
+ 
+/* ---------------------------
+     GET NODES FROM GRAPH
+
+     set of nodes as {id:xxx, name:xxx, type:xxx} objects
+*/
+function getNodesFromGraph( graphObj, nodeSet ) {
+  var nodes = graphObj.nodes
+  for( var i = 0, len = nodes.length; i < len; i++){
+    var newnode = {id: nodes[i].id, name: nodes[i].properties.name, status: nodes[i].properties.status, type: nodes[i].labels[0]};
+    nodeSet.add( newnode.id, newnode );
+    }//for
+}//fn
+
+
+/* CANNED QUERIES
+
+
+*/
+
+/* -------------------------
+    GET INIT PORT ERRORS
+    Canned query
+    Return graph of any zones with more than one init port
+*/
+//NEW
+function getinitPortErrors() {
+  var pathStr = ' " MATCH (h1:host)-[r1]->(i1:initport)-[r2]->(z1:zone), (h2:host)-[r3]->(i2:initport)-[r4]->(z2:zone) WHERE z1.name = z2.name and i1.id <> i2.id '
+  var resultStr = 'RETURN h1, h2,i1, i2, z1, z2, r1, r2, r3, r4"'
+  query = queryStringFrom( pathStr, resultStr );
+  console.log("Init port query: " + query);
+  request(query, cypherResponseCallback );
+}
+
+/* -------------------------
+    GET ALL NODES
+    Canned query
+    Return graph of all nodes
+*/
+//NEW
+function getAll() {
+
+  var pathStr = ' " MATCH (n1) OPTIONAL MATCH (n1)-[r]-(n2) '
+  var resultStr = 'RETURN n1, r, n2"'
+  query = queryStringFrom( pathStr, resultStr );
+  console.log("get all query: " + query);
+  request(query, cypherResponseCallback );
+}
+
+
+/* -------------------------
+    FIND TENANTS AFFECTED BY SWITCH FAILURE
+    Canned query
+    Return graph of paths from tenants to critical switch
+*/
+//NEW
+function getFailedSwitchTenants() {
+
+  var pathStr = ' " MATCH (t:tenant)-[r*1..5]-(s:switch {status: \'critical\'} ) '
+  var resultStr = 'RETURN t,r,s"'
+  query = queryStringFrom( pathStr, resultStr );
+  console.log("get all query: " + query);
+  request(query, cypherResponseCallback );
+}
+
+ 
+</script>
+</body>
+
+ 
+
