@@ -1,0 +1,5 @@
+id,name,status
+100,Array Red,warning
+101,Array Orange,critical
+102,Array Blue,normal
+103,Array Red,normal

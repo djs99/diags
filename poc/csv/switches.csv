@@ -1,0 +1,5 @@
+id,name,status
+500,Switch A,critical
+501,Switch B,warning
+502,Switch C,normal
+503,Switch D,normal

@@ -1,0 +1,127 @@
+//Nodes
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/nodes.csv" as line
+create (n:node {name: line.name, id: toInt(line.id), type:line.type, status:line.status})
+
+//Node Elements
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/cinderelement.csv" as line
+create (e:nodeElement {type: line.subtype, id: toInt(line.id),status:line.status})
+
+//Nodes to Elements
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/cindertoelement.csv" as line
+match (n:node{id: toInt(line.nodeid)}),(e:nodeElement {id: toInt(line.elementid)})
+create (n)-[:CONTAINS]->(e)
+
+
+//Hosts
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/hosts.csv" as line
+create (h:host {name: line.name, id: toInt(line.id), status:line.status})
+
+//Init ports
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/initiators.csv" as line
+create (p:initport {name: line.name, id: toInt(line.id), status:line.status})
+
+//Map init ports to hosts
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/hostports.csv" as line
+match (h:host{id: toInt(line.hostid)}),(p:initport {id: toInt(line.portid)})
+create (h)-[:HBA]->(p)
+
+//CreateSwitches
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/switches.csv" as line
+create(s:switch{name: line.name, id: toInt(line.id), status:line.status})
+
+//Map init ports to switches
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/inittoswitch.csv" as line
+match (p:initport {id: toInt(line.initport)}),(s:switch{id: toInt(line.switchid)})
+create (p)-[:CONN]->(s)
+
+
+
+//arrays
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/arrays.csv" as line
+create (a:array {name: line.name, id: toInt(line.id), status:line.status})
+
+//target ports
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/targets.csv" as line
+create (t:targetport {id: toInt(line.id), status:line.status})
+
+// map target ports to arrays
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/arrayports.csv" as line
+match (a:array {id: toInt(line.arrayid)}),(p:targetport {id: toInt(line.portid)})
+create (a)-[:OWNS]->(p)
+
+//Map target ports to switches
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/targettoswitch.csv" as line
+match (p:targetport {id: toInt(line.targetid)}),(s:switch{id: toInt(line.switchid)})
+create (p)-[:CONN]->(s)
+
+
+//zones: create zones
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/zones.csv" as line
+create (z:zone {name: line.name, id: toInt(line.id)})
+
+//map switches to zones
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/switchtozone.csv" as line
+match (s:switch {id:toInt(line.switchid)}),(z:zone {id: toInt(line.zoneid)})
+create (s)-[:IMPLEMENTS]->(z)
+
+//map ports to zones
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/zonetoports.csv" as line
+match (z:zone {id: toInt(line.zone)}), (i:initport {id: toInt(line.initport)}), (t:targetport {id: toInt(line.targetport)})
+create (z)<-[:MEMBER]-(i),(z)<-[:MEMBER]-(t)
+
+
+//vms
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/vm.csv" as line
+create (v:vm {id:toInt(line.id), name: line.name})
+
+// assign vms to hosts
+using periodic commit
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/vmhost.csv" as line
+match (v:vm {id:toInt(line.vmid)}), (h:host {id:toInt(line.hostid)})  
+create (v)-[o:ON]->(h)
+
+
+//tenants
+using periodic commit
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/tenant.csv" as line
+create (t:tenant {name: line.name, id: toInt(line.id)})
+
+//map vms to tenants
+using periodic commit
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/tenantvm.csv" as line
+match (t:tenant {id:toInt(line.tenantid)}), (v:vm {id:toInt(line.vmid)}) 
+create (t)-[r:TN]->(v)
+
+
+//volumes
+using periodic commit
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/volume.csv" as line
+create (v:volume {id: toInt(line.id)})
+
+//volumes to arrays
+using periodic commit
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/voltoarray.csv" as line
+match (v:volume {id:toInt(line.volid)}), (a:array {id:toInt(line.arrayid)}) 
+create (v)-[r:INF]->(a)
+
+//volumes to hosts
+using periodic commit
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/voltohost.csv" as line
+match (v:volume {id:toInt(line.volid)}), (h:host {id:toInt(line.hostid)}) 
+create (v)-[r:ATTACH]->(h)
+
+----------------------------
+//Find tenants affected by array  failure
+match (t:tenant)--(:vm)--(h:host)--(i:initport)--(z:zone)--(p:targetport)--(a:array {name: "Array Red"}) return t,a
+
+//Return all the zones from a vm
+match(v:vm{id:'f003'})--(:host)--(:initport)-[z:ZONE]-(t:targetport)--(a:array) return v,z, t, a
+
+//find zones with multiple initiators
+MATCH (i1:initport)-->(z1:zone), (i2:initport)-->(z2:zone)
+WHERE z1.name = z2.name and i1.id <> i2.id
+return i1, i2, z1, z2
+	
+
+// find all tenants affected by switch failure
+match (t:tenant)--(v:vm)--(h:host)--(i:initport)--(s:switch {name: "SwitchB"})return t,v,h,i,s  
