@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="55145c99-0b78-4642-8ef2-79742b122142" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/diags.iml" />
-    </list>
+    <list default="true" id="55145c99-0b78-4642-8ef2-79742b122142" name="Default" comment="" />
     <ignored path="Diags.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -597,15 +595,15 @@
       <updated>1423259775494</updated>
       <workItem from="1423259777513" duration="127000" />
       <workItem from="1423260233084" duration="158000" />
-      <workItem from="1423260403649" duration="3087000" />
+      <workItem from="1423260403649" duration="3615000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3372000" />
+    <option name="totallyTimeSpent" value="3900000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1376" height="744" extended-state="7" />
+    <frame x="-8" y="-8" width="1376" height="744" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
