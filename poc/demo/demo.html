@@ -11,6 +11,12 @@
 		font: 70% "Trebuchet MS", sans-serif;
 		margin: 50px;
 	}
+	tr {
+		background-color: #fff;
+	}
+	.alt {
+		background-color: #ccc;
+	}
 	.demoHeaders {
 		margin-top: 2em;
 	}
@@ -59,7 +65,7 @@
   border-style: solid    ;
   border-radius: 4px     ;
   padding: 10px          ;
-  width: 300px           ;
+  width: 540px           ;
   /*float: left            ;*/
   
 }
@@ -114,6 +120,8 @@ ENDBUG*/
   <script src="links.js"></script>
   <script src="graphloader.js"></script>
   <script src="underscore.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <script src="demotablecreator.js"></script>
 </head>
 
 
@@ -123,46 +131,9 @@ ENDBUG*/
 
 <!-- ENTER ALERT DETAILS-->
 <div id=alertentry>
-  <form name="alertForm" action="" method="GET">
-    <label id=alertform style="float: center;">Enter Alert Details  </label>
-    <br><br>
-    
-    <label id=selectelement for="selectmenu" style="margin-top:-5px;padding-top:-5px;">Select Alert Element:  </label>
-    <select id="selectelementmenu">
-      <option>vm</option>
-      <option selected="selected">host</option>
-      <option >volume</option>
-      <option>node</option>
-      <option>nodeElement</option>
-      <option>switch</option>
-    </select>
-    <br> <br>
-    <label for="alertId">Alert Element ID: </label>
-    <INPUT TYPE="text" NAME="alertId"><P>
-    
-     
-   <label id=selectmaxspan for="selectspan" style="margin-top:-5px;padding-top:-5px;line-height: 30px;vertical-align: top">Select number of hops: </label>
-   <select id="selectspan">
-      <option selected="selected">Any</option>
-      <option>1</option>
-      <option>2</option>
-      <option>3</option>
-   </select>  
-   <br> <br>
-    
-   <label id=selectdirection for="selectdirectionlist" style="margin-top:-5px;padding-top:-5px;line-height: 30px;vertical-align: top">Direction: </label>
-   <select id="selectdirectionlist">
-      <option selected="selected">Down</option>
-      <option>Up</option>
-      <option>Both</option>
-    </select>  
-    <br> <br>
-    
-    <INPUT type = button id= "getgraph" Value="Get Graph" onClick="getGraph(this.form)" style="float: right">
-   <br> 
-  </form>    
+  
 </div>
-
+	<!-- THIS AREA WILL BE POPULATED DYNAMICALLY BY CREATETABLE()-->
 <br>
 
 
@@ -251,19 +222,19 @@ $( "#selectdirectionlist").selectmenu(  {width: 80} );
        If the query is successful, the request callback will put the resulting nodes and links into the
        graphDataStore global. 
 */  
-function getGraph( form ) {
+
+function getGraph( alertelement, alertID, hops, direction ) {
     var maxSpan;
-    if( "Any".localeCompare(form.selectspan.value) != 0){ maxSpan = form.selectspan.value;}
-    var idNull = form.alertId.value == null;
-    if( form.alertId.value == "" ) {
+    if( "Any".localeCompare(hops) != 0){ maxSpan = hops;}
+    var idNull = alertID == null;
+    if( alertID == "" ) {
       alert("Enter an alert ID"); 
       return;
       }
-    
-    query = queryFrom( form.selectelementmenu.value, 
-                       form.alertId.value, 
+    query = queryFrom( alertelement, 
+                       alertID, 
                        maxSpan, 
-                       form.selectdirectionlist.value
+                       direction
                       );
     console.log( "query str: " + query );
     request(query, cypherResponseCallback );
