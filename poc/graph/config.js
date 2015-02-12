@@ -41,3 +41,5 @@ linkStrengths["TN"] = 0.3;
 //////////////
 var serverAddress = "127.0.0.1";
 var serverPort = 24680; 
+
+// TEST
