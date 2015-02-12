@@ -114,34 +114,101 @@ ENDBUG*/
 }
 
 </style>
-	<script src="external/jquery/jquery.js"></script>
-  <script src="../libs/jquery-ui.js"></script>
-  <script src="cypher.js"></script>
-  <script src="links.js"></script>
-  <script src="graphloader.js"></script>
-  <script src="../libs/underscore.js"></script>
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-  <script src="demotablecreator.js"></script>
+    <script src="external/jquery/jquery.js"></script>
+    <script src="../libs/jquery-ui.js"></script>
+    <script src="cypher.js"></script>
+    <script src="links.js"></script>
+    <script src="graphloader.js"></script>
+    <script src="../libs/underscore.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="demotablecreator.js"></script>
 </head>
 
-
 <body>
+
 <h2>Analyze and Troubleshoot Alerts</h2>
 
-
-<!-- ENTER ALERT DETAILS-->
-<div id=alertentry>
-  
-</div>
-	<!-- THIS AREA WILL BE POPULATED DYNAMICALLY BY CREATETABLE()-->
-<br>
-
-
 <!-- GRAPH DISPLAY AREA-->
+<button id="unHighLight" onClick="myGraph.toggleHighLight();">Toggle HighLight</button>
+<button id="unFocus" onClick="myGraph.toggleFocus();">Toggle Focus</button>
+<button id="zoom2fit" onClick="myGraph.zoom2fit();">Zoom to Fit</button>
 <div id="graph">
-        <script src="http://d3js.org/d3.v3.min.js"></script>
-        <script src="../graph/config.js"></script>
-        <script src="../graph/graph.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="../graph/config.js"></script>
+    <script src="../graph/contextGraph.js"></script>
+    <script>
+        var myGraph = new contextGraph();
+        myGraph.initialize();
+        myGraph.setNodeSelectionCallback(nodeSelected);
+        myGraph.setLinkSelectionCallback(linkSelected);
+        myGraph.setExpandLinkCallback(expandLink);
+
+        /* TODO : Load an initial view of the graph. */
+
+        function nodeSelected (node) {
+            showDetails( getNodeDetails(node) );
+        }
+
+        function linkSelected (link) {
+            showDetails( getLinkDetails(link) );
+        }
+
+        function expandLink (link) {
+            /* TODO : Hook this up. */
+        }
+
+        function showDetails (details) {
+            var popup = document.getElementById("details");
+            var contentpane = document.getElementById("detailscontent");
+            contentpane.innerHTML = details;
+            popup.style.visibility = "visible";
+        }
+
+        function getNodeDetails (node) {
+            var details = ""; 
+
+            details += "<b>Node Details . . .</b><hr>";
+            details += "<li><b>Name:</b> " + node.name + "</li>";
+            details += "<li><b>Type:</b> " + node.type + "</li>";
+            details += "<li><b>State:</b> " + node.status + "</li>";
+            details += "<li><a href='http://www.hp.com/' target='mgrWindow'>Element Manager</a></li>";
+
+            var links = myGraph.getNodeLinks(node);
+            if (links["incoming"].length != 0)
+            {
+                details += "<li><b>Incoming Links:</b><ul>";
+                for (idx = 0; idx < links["incoming"].length; idx++) {
+                    var thisLink = links["incoming"][idx];
+                    details += "<li>" + thisLink.source.name + "</li>";
+                }
+                details += "</ul></li>";
+            }
+
+            if (links["outgoing"].length != 0)
+            {
+                details += "<li><b>Outgoing Links:</b><ul>";
+                for (idx = 0; idx < links["outgoing"].length; idx++) {
+                    var thisLink = links["outgoing"][idx];
+                    details += "<li>" + thisLink.target.name + "</li>";
+                }
+                details += "</ul></li>";
+            }
+
+            return details;
+        }
+
+        function getLinkDetails (link) {
+            var details = ""; 
+    
+            details += "<b>Link Details . . .</b><hr>";
+            details += "<li><b>Source:</b> " + link.source.name + "</li>";
+            details += "<li><b>Relationship:</b> " + link.type + "</li>";
+            details += "<li><b>Target:</b> " + link.target.name + "</li>";
+            details += "<li><a href='http://www.hp.com/' target='mgrWindow'>Element Manager</a></li>";
+    
+            return details;
+        }
+    </script>
 </div><!--graph-->
 
 <div id="details">
@@ -152,7 +219,14 @@ ENDBUG*/
      </div>
 </div>
 
+<!-- ENTER ALERT DETAILS-->
+<div id=alertentry>
+  
+</div>
+	<!-- THIS AREA WILL BE POPULATED DYNAMICALLY BY CREATETABLE()-->
+<br>
 <!-- TEST BUTTONS -->
+
 <div id = "testdiv">
   <div id = "testcontent" >
   Test content

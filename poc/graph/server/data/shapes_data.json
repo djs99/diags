@@ -1,0 +1,82 @@
+{
+    "nodes":[
+        {"type":"initport", "id":"00001", "highlight":"true", "status":"normal"},
+        {"type":"initport", "id":"00002", "highlight":"true", "status":"warning"},
+        {"type":"initport", "id":"00003", "highlight":"true", "status":"critical"},
+        {"type":"initport", "id":"00004", "highlight":"false", "status":"normal"},
+        {"type":"initport", "id":"00005", "highlight":"false", "status":"warning"},
+        {"type":"initport", "id":"00006", "highlight":"false", "status":"critical"},
+
+        {"type":"targetport", "id":"10001", "highlight":"true", "status":"normal"},
+        {"type":"targetport", "id":"10002", "highlight":"true", "status":"warning"},
+        {"type":"targetport", "id":"10003", "highlight":"true", "status":"critical"},
+        {"type":"targetport", "id":"10004", "highlight":"false", "status":"normal"},
+        {"type":"targetport", "id":"10005", "highlight":"false", "status":"warning"},
+        {"type":"targetport", "id":"10006", "highlight":"false", "status":"critical"},
+
+        {"type":"volume", "id":"20001", "highlight":"true", "status":"normal"},
+        {"type":"volume", "id":"20002", "highlight":"true", "status":"warning"},
+        {"type":"volume", "id":"20003", "highlight":"true", "status":"critical"},
+        {"type":"volume", "id":"20004", "highlight":"false", "status":"normal"},
+        {"type":"volume", "id":"20005", "highlight":"false", "status":"warning"},
+        {"type":"volume", "id":"20006", "highlight":"false", "status":"critical"},
+
+        {"type":"host", "id":"30001", "highlight":"true", "status":"normal"},
+        {"type":"host", "id":"30002", "highlight":"true", "status":"warning"},
+        {"type":"host", "id":"30003", "highlight":"true", "status":"critical"},
+        {"type":"host", "id":"30004", "highlight":"false", "status":"normal"},
+        {"type":"host", "id":"30005", "highlight":"false", "status":"warning"},
+        {"type":"host", "id":"30006", "highlight":"false", "status":"critical"},
+
+        {"type":"array", "id":"40001", "highlight":"true", "status":"normal"},
+        {"type":"array", "id":"40002", "highlight":"true", "status":"warning"},
+        {"type":"array", "id":"40003", "highlight":"true", "status":"critical"},
+        {"type":"array", "id":"40004", "highlight":"false", "status":"normal"},
+        {"type":"array", "id":"40005", "highlight":"false", "status":"warning"},
+        {"type":"array", "id":"40006", "highlight":"false", "status":"critical"},
+
+        {"type":"vm", "id":"50001", "highlight":"true", "status":"normal"},
+        {"type":"vm", "id":"50002", "highlight":"true", "status":"warning"},
+        {"type":"vm", "id":"50003", "highlight":"true", "status":"critical"},
+        {"type":"vm", "id":"50004", "highlight":"false", "status":"normal"},
+        {"type":"vm", "id":"50005", "highlight":"false", "status":"warning"},
+        {"type":"vm", "id":"50006", "highlight":"false", "status":"critical"},
+
+        {"type":"zone", "id":"60001", "highlight":"true", "status":"normal"},
+        {"type":"zone", "id":"60002", "highlight":"true", "status":"warning"},
+        {"type":"zone", "id":"60003", "highlight":"true", "status":"critical"},
+        {"type":"zone", "id":"60004", "highlight":"false", "status":"normal"},
+        {"type":"zone", "id":"60005", "highlight":"false", "status":"warning"},
+        {"type":"zone", "id":"60006", "highlight":"false", "status":"critical"},
+
+        {"type":"cinderelement", "id":"70001", "highlight":"true", "status":"normal"},
+        {"type":"cinderelement", "id":"70002", "highlight":"true", "status":"warning"},
+        {"type":"cinderelement", "id":"70003", "highlight":"true", "status":"critical"},
+        {"type":"cinderelement", "id":"70004", "highlight":"false", "status":"normal"},
+        {"type":"cinderelement", "id":"70005", "highlight":"false", "status":"warning"},
+        {"type":"cinderelement", "id":"70006", "highlight":"false", "status":"critical"},
+
+        {"type":"node", "id":"80001", "highlight":"true", "status":"normal"},
+        {"type":"node", "id":"80002", "highlight":"true", "status":"warning"},
+        {"type":"node", "id":"80003", "highlight":"true", "status":"critical"},
+        {"type":"node", "id":"80004", "highlight":"false", "status":"normal"},
+        {"type":"node", "id":"80005", "highlight":"false", "status":"warning"},
+        {"type":"node", "id":"80006", "highlight":"false", "status":"critical"},
+
+        {"type":"switch", "id":"90001", "highlight":"true", "status":"normal"},
+        {"type":"switch", "id":"90002", "highlight":"true", "status":"warning"},
+        {"type":"switch", "id":"90003", "highlight":"true", "status":"critical"},
+        {"type":"switch", "id":"90004", "highlight":"false", "status":"normal"},
+        {"type":"switch", "id":"90005", "highlight":"false", "status":"warning"},
+        {"type":"switch", "id":"90006", "highlight":"false", "status":"critical"},
+
+        {"type":"tenant", "id":"01001", "highlight":"true", "status":"normal"},
+        {"type":"tenant", "id":"01002", "highlight":"true", "status":"warning"},
+        {"type":"tenant", "id":"01003", "highlight":"true", "status":"critical"},
+        {"type":"tenant", "id":"01004", "highlight":"false", "status":"normal"},
+        {"type":"tenant", "id":"01005", "highlight":"false", "status":"warning"},
+        {"type":"tenant", "id":"01006", "highlight":"false", "status":"critical"}
+    ],
+    "links":[
+    ]
+}

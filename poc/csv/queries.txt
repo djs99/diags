@@ -4,7 +4,7 @@ create (n:node {name: line.name, id: toInt(line.id), type:line.type, status:line
 
 //Node Elements
 load csv with headers from "file:///c:/home/cloud/demo/d1/csv/cinderelement.csv" as line
-create (e:nodeElement {type: line.subtype, id: toInt(line.id),status:line.status})
+create (e:nodeElement {name: line.subtype, id: toInt(line.id),status:line.status})
 
 //Nodes to Elements
 load csv with headers from "file:///c:/home/cloud/demo/d1/csv/cindertoelement.csv" as line

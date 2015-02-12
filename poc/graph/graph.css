@@ -27,31 +27,31 @@ details.detail-header {
 }
 
 .link {
-  stroke: #aaa;
-  stroke-width: 1.5px;
+  stroke: #ddd;
+  stroke-width: .30px;
+  pointer-events: all;
 }
 
 .link.compressed {
-  stroke: #aaa;
-  stroke-width: 1.5px;
-  stroke-dasharray: 6;
+  stroke: #ddd;
+  stroke-width: .30px;
+  stroke-dasharray: .4 .2;
 }
 
 #arrowhead {
-    stroke: #aaa;
-    stroke-width: 1.0px;
-    fill: #aaa;
+    stroke: #ddd;
+    stroke-width: .10px;
+    fill: #ddd;
 }
 
-
 text {
-  font: 8px sans-serif;
+  font: .8px sans-serif;
   pointer-events: none;
   font-weight: bold;
 }
 
 .linktext {
-  font: 8px sans-serif;
+  font: .8px sans-serif;
   pointer-events: none;
   font-weight: bold;
   x: .38em;
@@ -60,90 +60,70 @@ text {
 
 /* Nodes ************************************/
 
-.node.process {
-  stroke: #3c3;
-  stroke-width: 1.5px;
-  fill: #3f3;
+.node.node {
+  fill: #fcc;
+  stroke: #c99;
+  stroke-width: .1px;
 }
 
-.node.cfgfile {
-  stroke: #3c3;
-  stroke-width: 1.5px;
-  fill: #3f3;
+.node.nodeElement {
+  fill: #cfc;
+  stroke: #9c9;
+  stroke-width: .1px;
 }
 
-.node.cindernode {
-  stroke: #3c3;
-  stroke-width: 1.5px;
-  fill: #3f3;
+.node.volume {
+  fill: #ccf;
+  stroke: #99c;
+  stroke-width: .1px;
 }
-
-.node.cindervolume {
-  stroke: #3c3;
-  stroke-width: 1.5px;
-  fill: #3f3;
-}
-
-.node.cpg {
-  stroke: #cc2;
-  stroke-width: 1.5px;
-  fill: #ff2;
-}
-
-.node.vvol {
-  stroke: #881;
-  stroke-width: 1.5px;
-  fill: #bb1;
-}
-
-/***/
 
 .node.host {
-  fill: #ffacd6;
-  stroke: #c33;
-  stroke-width: 1px;
+  fill: #cff;
+  stroke: #9cc;
+  stroke-width: .1px;
 }
 
 .node.vm {
-  fill: #ffd18d;
-  stroke: #c53;
-  stroke-width: 1px;
+  fill: #fcf;
+  stroke: #c9c;
+  stroke-width: .1px;
 }
 
 .node.array {
-  fill: #ffff9d;
-  stroke: #990;
-  stroke-width: 1px;
+  fill: #ffc;
+  stroke: #cc9;
+  stroke-width: .1px;
 }
 
 .node.initport {
-  fill: #D1F4D1;
-  stroke: #080;
-  stroke-width: 1px;
+  fill: #acf;
+  stroke: #79c;
+  stroke-width: .1px;
 }
 
 .node.switch {
-  fill: #d1d1ff;
-  stroke: #22d;
-  stroke-width: 1px;
+  fill: #fc9;
+  stroke: #c96;
+  stroke-width: .1px;
 }
 
 .node.tenant {
-  fill: #d8e;
-  stroke: #93c;
-  stroke-width: 1px;
+  fill: #cf9;
+  stroke: #9c6;
+  stroke-width: .1px;
 }
 
 .node.zone {
-  fill: #99d6d6;
-  stroke: #399;
-  stroke-width: 1px;
+  fill: #c9f;
+  stroke: #96f;
+  stroke-width: .1px;
 }
 
 .node.targetport {
-  fill: #7D9DFF;
-  stroke: #169;
-  stroke-width: 1px;
+  fill: #9fc;
+  stroke: #6c9;
+  stroke-width: .1px;
 }
 
 
@@ -151,19 +131,19 @@ text {
 
 .warning {
   stroke: #333;
-  stroke-width: .5px;
+  stroke-width: .05px;
   fill: yellow;
   pointer-events: none;
 }
 
 .warnLabel {
-  font: 14px monospace;
+  font: 1.4px monospace;
   pointer-events: none;
 }
 
 .critical {
   stroke: #000;
-  stroke-width: .5px;
+  stroke-width: .05px;
   fill: red;
   pointer-events: none;
 }
@@ -173,18 +153,24 @@ text {
 
 .highlight {
   stroke: #EEE;
-  stroke-width: .5;
+  stroke-width: .05;
   fill: #EEF;
   pointer-events: none;
 }
 
 .bracket {
   stroke: #000;
-  stroke-width: .5;
+  stroke-width: .05;
   fill: none;
   pointer-events: none;
 }
 
+.focus {
+  stroke: #000;
+  stroke-width: .05;
+  fill: #F00;
+  pointer-events: none;
+}
 
 /* Tooltip ************************************/
 
@@ -206,10 +192,9 @@ div.tooltip {
 /* Side panel ********************************/
 
 #details {
-
     position: absolute;
-    top: 361px;	// originally top: 40px;
-    left: 560px; //originally left: 520px;
+    top: 40px;	// originally top: 40px;
+    left: 720px; //originally left: 520px;
     width: 200px;
     height: 490px; 
     background-color: #ffffff;

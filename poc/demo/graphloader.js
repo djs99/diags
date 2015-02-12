@@ -39,7 +39,7 @@ function expandAllPaths() {
   loadGraphWithLinks( graphDataStore.linkStore.expandAll()); }//fn
   
 function loadGraphWithLinks( links ){  
-  loadGraphData(  {"nodes": graphDataStore.getNodeArray(), "links": links}); }//fn
+  myGraph.loadGraphData(  {"nodes": graphDataStore.getNodeArray(), "links": links}); }//fn
 
 
 /************

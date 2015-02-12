@@ -9,7 +9,7 @@ nodeShapes["tall"] = ["array"];
 nodeShapes["wide"] = ["targetport"];
 nodeShapes["pentagon"] = ["vm"];
 nodeShapes["hexagon"] = ["zone"];
-nodeShapes["rhombus"] = ["node"];
+nodeShapes["rhombus"] = ["cinderelement"];
 nodeShapes["trapezoid"] = ["nodeElement"];
 nodeShapes["parallel"] = ["switch"];
 nodeShapes["oval"] = ["tenant"];
@@ -18,8 +18,8 @@ nodeShapes["oval"] = ["tenant"];
 ////////////////////////////////////
 // Parameters for the force layout
 ////////////////////////////////////
-var svgWidth = 500;  // Horizontal dimension of the canvas.
-var svgHeight = 500;  // Vertical dimension of the canvas.
+var svgWidth = 700;  // Horizontal dimension of the canvas.
+var svgHeight = 700;  // Vertical dimension of the canvas.
 
 var forceCharge = -8;  // Pushes nodes away from each other.
 var forceGravity = 0.1;  // Pulls nodes towards the center of the graph.
