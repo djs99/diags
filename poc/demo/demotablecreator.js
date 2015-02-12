@@ -19,8 +19,8 @@ function createTable() {
 			numOfItems += 1;
 			table +=								
 			"<tr>									\
-				<td id='alertelement" + numOfItems + "'>" + item + "</td> 	\
-				<td id='id" + numOfItems + "'>" + data[item] + "</td> 		\
+				<td id='alertelement" + numOfItems + "'>" + data[item] + "</td> 	\
+				<td id='id" + numOfItems + "'>" + item + "</td> 		\
 				<td>XYZ went wrong</td>										\
 				<td>									\
 					<select id='selectspan" + numOfItems + "'>			\
