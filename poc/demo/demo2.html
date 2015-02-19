@@ -153,8 +153,8 @@ ENDBUG*/
             showDetails( getLinkDetails(link) );
         }
 
-        function expandLink (link) {
-            /* TODO : Hook this up. */
+        function expandLink (linkList) {
+            expandPaths(linkList);
         }
 
         function showDetails (details) {
@@ -214,9 +214,6 @@ ENDBUG*/
 <div id="details">
     <div id="detailscontent">
     </div>
-    <div id="detailsbuttonbar">
-        <button id = detailsbutton onClick="hideDetails();" style = "margin-bottom: 50px;">Close</button>
-     </div>
 </div>
 
 <!-- ENTER ALERT DETAILS-->

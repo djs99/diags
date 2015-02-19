@@ -33,9 +33,9 @@ details.detail-header {
 }
 
 .link.compressed {
-  stroke: #ddd;
+  stroke: #aaf;
   stroke-width: .30px;
-  stroke-dasharray: .4 .2;
+  // stroke-dasharray: .4 .2;
 }
 
 #arrowhead {
@@ -193,10 +193,10 @@ div.tooltip {
 
 #details {
     position: absolute;
-    top: 40px;	// originally top: 40px;
-    left: 720px; //originally left: 520px;
+    top: 114px;	// originally top: 40px;
+    left: 560px; //originally left: 520px;
     width: 200px;
-    height: 490px; 
+    height: 491px; 
     background-color: #ffffff;
     border: 2px solid;
     border-color: LightBlue;	 

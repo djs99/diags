@@ -16,6 +16,7 @@ function contextGraph() {
     var linkSelectCallback = null;
     var expandLinkCallback = null;
 
+    var expandedLinks = [];
 
     //
     // Behaviors . . .
@@ -141,6 +142,11 @@ function contextGraph() {
         expandLinkCallback = callback;
     }
 
+    this.expandLink = function (sourceId, targetId) {
+        expandedLinks.push( {"start":sourceId, "end":targetId} );
+        return expandLinkCallback(expandedLinks); 
+    } 
+
     this.getFocusNode = function () {
         var nodeList = getFocusNode( force.nodes() );
         if (nodeList.length == 0) {
@@ -158,10 +164,10 @@ function contextGraph() {
         for (idx = 0; idx < links.length; idx++)
         {
             var link = links[idx];
-            if (link.source.name == node.name) {
+            if (link.source.id == node.id) {
                 outgoing.push(link);
             }
-            else if (link.target.name == node.name) {
+            else if (link.target.id == node.id) {
                 incoming.push(link);
             }
         }
@@ -182,6 +188,7 @@ function contextGraph() {
 
         nodes.length = 0;
         links.length = 0;
+        expandedLinks.length = 0;
 
         // Build an association array for quicker lookups...
         var nodeLookup = {};
@@ -207,13 +214,13 @@ function contextGraph() {
  
             links.push(link);
             console.log( "LINK: type=" + link.type +
-                         " source=" + link.source.id +
-                         " target=" + link.target.id +
+                         " source=" + link.source.name + " (" + link.source.id + ")" +
+                         " target=" + link.target.name + " (" + link.target.id + ")" +
                          " status=" + link.status );
         } );
 
         // Make a wild guess at an appropriate zoom scale for the diagram.
-        var newScale = Math.pow(.95, (nodes.length - 65) ) + 3;
+        var newScale = Math.pow(.95, (nodes.length - 50) ) + 3;
         var dx = (svgWidth / 2)  * (newScale - 1) * -1;
         var dy = (svgHeight / 2) * (newScale - 1) * -1;
 
@@ -232,17 +239,10 @@ function contextGraph() {
     //  Change data in the graph.  Add or remove nodes and links, as needed.
     //  
     this.updateGraphData = function (data) {
-        console.log("Expanding link -- source=" + data.source + " target=" + data.target);
-
         var links = force.links();
         var nodes = force.nodes();
 
-        // Remove deleted link.
-        for (var idx = links.length - 1; idx >= 0; idx--) {
-            if ( (links[idx].source.id == data.source) && (links[idx].target.id== data.target) ) {
-                links.splice(idx, 1);
-            }
-        }
+        links.length = 0;
 
         // Add new nodes. 
         scrubNewNodes(data.nodes, "true");
@@ -261,14 +261,12 @@ function contextGraph() {
         } );
 
         // Add new links
-        
+        data.links.forEach( function(newLink) {
+            newLink.source = nodeLookup[newLink.source];
+            newLink.target = nodeLookup[newLink.target];
+            newLink.status = newLink.target.status;
 
-        data.links.forEach( function(link) {
-            link.source = nodeLookup[link.source];
-            link.target = nodeLookup[link.target];
-            link.status = link.target.status;
-
-            links.push(link); 
+            links.push(newLink);
         } );
 
         // Restart the force layout.
@@ -483,7 +481,8 @@ function contextGraph() {
             .on("dblclick", function(d) { 
                     if (d.type == "compressed") {
                             d3.event.stopPropagation(); 
-                            return expandLinkCallback(d.source.id, d.target.id); } 
+                            expandedLinks.push( {"start":d.source.id, "end":d.target.id} );
+                            return expandLinkCallback(expandedLinks); } 
                     } );
         link.append("text")
             .attr("class", "linktext")
