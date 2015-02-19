@@ -186,6 +186,9 @@ function contextGraph() {
         var newNodes = data["nodes"];
         var newLinks = data["links"];
 
+        selectNode(null);
+        selectLink(null);
+
         nodes.length = 0;
         links.length = 0;
         expandedLinks.length = 0;

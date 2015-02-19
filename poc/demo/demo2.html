@@ -164,6 +164,10 @@ ENDBUG*/
         function getNodeDetails (node) {
             var details = ""; 
 
+            if (node == null) {
+                return details;
+            }
+
             details += "<b>Node Details . . .</b><hr>";
             details += "<li><b>Name:</b> " + node.name + "</li>";
             details += "<li><b>Type:</b> " + node.type + "</li>";
@@ -197,6 +201,10 @@ ENDBUG*/
         function getLinkDetails (link) {
             var details = ""; 
     
+            if (link == null) {
+                return details;
+            }
+
             details += "<b>Link Details . . .</b><hr>";
             details += "<li><b>Source:</b> " + link.source.name + "</li>";
             details += "<li><b>Relationship:</b> " + link.type + "</li>";
