@@ -129,7 +129,6 @@ ENDBUG*/
 <h2>Analyze and Troubleshoot Alerts</h2>
 
 <!-- GRAPH DISPLAY AREA-->
-<button id="unHighLight" onClick="myGraph.toggleHighLight();">Toggle HighLight</button>
 <button id="unFocus" onClick="myGraph.toggleFocus();">Toggle Focus</button>
 <button id="zoom2fit" onClick="myGraph.zoom2fit();">Zoom to Fit</button>
 <div id="graph">
@@ -142,8 +141,6 @@ ENDBUG*/
         myGraph.setNodeSelectionCallback(nodeSelected);
         myGraph.setLinkSelectionCallback(linkSelected);
         myGraph.setExpandLinkCallback(expandLink);
-
-        /* TODO : Load an initial view of the graph. */
 
         function nodeSelected (node) {
             showDetails( getNodeDetails(node) );
@@ -215,7 +212,7 @@ ENDBUG*/
     <div id="detailscontent">
     </div>
 </div>
-
+<br> <br>
 <!-- ENTER ALERT DETAILS-->
 <div id=alertentry>
   
@@ -226,8 +223,7 @@ ENDBUG*/
 
 <div id = "testdiv">
   <div id = "testcontent" >
-  Test content
-  <br> <br>
+  <br>
   </div>
 <button id = testexpandallbutton onClick="testExpandAll()" > Expand All</button>
 <button id = testexpandsomebutton onClick="testExpandSome()" > Expand Some</button>
@@ -241,8 +237,8 @@ ENDBUG*/
 </div>
 
 <!-- DEBUG: Cypher query and response -->
-<div id=queryDiv>
 <br> <br> <br>
+<div id=queryDiv>
 Query: 
 </div>
 <br>
