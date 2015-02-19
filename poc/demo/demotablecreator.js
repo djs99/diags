@@ -1,13 +1,15 @@
 //Creates the demo table
 
 function createTable() {
-	var data = {"703":"vm", "102":"array", "204":"host", "501":"switch", "5000":"node", "1001":"volume", "1013":"volume"}
+	var data = {"703":{"type":"vm", "name":"Delta", "status":"critical"}, "101":{"type":"array", "name":"Array Orange", "status":"critical"}, "204":{"type":"host", "name":"Host E", "status":"warning"}, "501":{"type":"switch", "name":"Switch B", "status":"warning"}, "5000":{"type":"node", "name":"CinderNode", "status":"warning"}, "1001":{"type":"volume", "name":"volume", "status":"critical"}, "1013":{"type":"volume", "name":"volume", "status":"warning"}}
 	var table = "									\
 	<br></br>										\
 	<table id=alertentrytable>						\
 		<tr>										\
-			<th>Alert Element</th>					\
+			<th>Name</th>							\
+			<th>Element Type</th>					\
 			<th>Alert Element ID</th>				\
+			<th>Status</th>							\
 			<th>Alert Text</th>						\
 			<th>Select Number of Hops</th>			\
 			<th>Direction</th>						\
@@ -16,15 +18,20 @@ function createTable() {
 		";
 		var numOfItems = 0;	//index to dynamically create ids for later use as parameters
 		for (var item in data) {
+			name = "name";
+			type = "type";
+			status = "status";
 			numOfItems += 1;
 			table +=								
 			"<tr>									\
-				<td id='alertelement" + numOfItems + "'>" + data[item] + "</td> 	\
+				<td>" + data[item][name] + "</td>	\
+				<td id='alertelement" + numOfItems + "'>" + data[item][type] + "</td> 	\
 				<td id='id" + numOfItems + "'>" + item + "</td> 		\
-				<td>XYZ went wrong</td>										\
+				<td>" + data[item][status] + "</td>		\
+				<td>XYZ went wrong</td>					\
 				<td>									\
 					<select id='selectspan" + numOfItems + "'>			\
-						<option selected='selected'>Any</option> \
+						<option selected='selected'>Any</option> 		\
 						<option>1</option>				\
 						<option>2</option>				\
 						<option>3</option>				\
