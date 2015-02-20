@@ -5,6 +5,7 @@
 	<title>Analyze/troubleshoot alert</title>
 	<link href="../libs/jquery-ui.css" rel="stylesheet">
 	<link rel="stylesheet" type="text/css" href="../graph/graph.css">
+
 	<style>
 	
 	body{
@@ -56,7 +57,7 @@
 	}
 	
 	label {
-   font: 130% "Trebuchet MS", sans-serif;'
+   font: 130% "Trebuchet MS", sans-serif;
   }
   
   #alertentry {
@@ -113,6 +114,25 @@ ENDBUG*/
   
 }
 
+#filterControls {
+    border: 2px solid;
+    border-color: LightBlue;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    display: inline-block;
+    padding: 4px;
+}
+
+#graphControls {
+    border: 2px solid;
+    border-color: LightBlue;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    margin-left: 8px;
+    display: inline-block;
+    padding: 4px;
+}
+
 </style>
     <script src="external/jquery/jquery.js"></script>
     <script src="../libs/jquery-ui.js"></script>
@@ -129,22 +149,28 @@ ENDBUG*/
 <h2>Analyze and Troubleshoot Alerts</h2>
 
 <!-- GRAPH DISPLAY AREA-->
-Span: 
-<select id="span">
-    <option value="all">All</option>
-    <option value="1">1</option>
-    <option value="2">2</option>
-    <option value="3">3</option>
-</select>
-Direction:
-<select id="direction">
-    <option value="Both">Both</option>
-    <option value="Up">Up</option>
-    <option value="Down">Down</option>
-</select>
-<button id="filter" onClick="filterGraph();">Filter Graph</button>
-<button id="unFocus" onClick="myGraph.toggleFocus();">Toggle Focus</button>
-<button id="zoom2fit" onClick="myGraph.zoom2fit();">Zoom to Fit</button>
+<div id="filterControls">
+    Focus:
+    <input type="text" id="focusNode" value="None selected" disabled></input>
+    Span: 
+    <select id="span">
+        <option value="all">All</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+    </select>
+    Direction:
+    <select id="direction">
+        <option value="Both">Both</option>
+        <option value="Up">Up</option>
+        <option value="Down">Down</option>
+    </select>
+    <button id="filter" onClick="filterGraph();">Filter Graph</button>
+</div>
+<div id="graphControls">
+    <button id="unFocus" onClick="myGraph.toggleFocus();">Toggle Focus</button>
+    <button id="zoom2fit" onClick="myGraph.zoom2fit();">Zoom to Fit</button>
+</div>
 <div id="graph">
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="../graph/config.js"></script>
@@ -154,6 +180,7 @@ Direction:
         myGraph.initialize();
         myGraph.setNodeSelectionCallback(nodeSelected);
         myGraph.setLinkSelectionCallback(linkSelected);
+        myGraph.setFocusSetCallback(focusSet);
         myGraph.setExpandLinkCallback(expandLink);
 
         function nodeSelected (node) {
@@ -162,6 +189,16 @@ Direction:
 
         function linkSelected (link) {
             showDetails( getLinkDetails(link) );
+        }
+
+        function focusSet (node) {
+            var textbox = document.getElementById("focusNode");
+            if (node == null) {
+                textbox.value = "None selected";
+            }
+            else {
+                textbox.value = node.name;
+            }
         }
 
         function expandLink (linkList) {

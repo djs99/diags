@@ -17,6 +17,7 @@ function contextGraph() {
     var nodeSelectCallback = null;
     var linkSelectCallback = null;
     var expandLinkCallback = null;
+    var focusSetCallback = null;
 
     var expandedLinks = [];
 
@@ -136,6 +137,10 @@ function contextGraph() {
         nodeSelectCallback = callback;
     }
 
+    this.setFocusSetCallback = function (callback) {
+        focusSetCallback = callback;
+    }
+
     this.setLinkSelectionCallback = function (callback) {
         linkSelectCallback = callback;
     }
@@ -200,6 +205,7 @@ function contextGraph() {
 
         selectNode(null);
         selectLink(null);
+        setFocusNode(null);
 
         nodes.length = 0;
         links.length = 0;
@@ -830,24 +836,33 @@ function contextGraph() {
 
     function setFocusNode (d) {
         focusEnabled = true;
-        focusId = d.id;
 
         focus.remove();
-        var focused = getFocusNode( force.nodes() );
-        if (focused.length != 0) {
-            focused[0].focus = "false";
-        }
-        d.focus = "true";
-        focus = svg.selectAll(".focus");
-        focus = focus.data([d]).enter()
-            .append("path")
-            .attr("d", "M  2.5,0.0 L  4.0,-0.5 L  4.0,0.5 Z \
-                        M -2.5,0.0 L -4.0,-0.5 L -4.0,0.5 Z \
-                        M  0.0, 2.5 L 0.5,4.0  L -0.5,4.0 Z \
-                        M  0.0,-2.5 L 0.5,-4.0 L -0.5,-4.0 Z")
-            .attr("class", "focus")
-            .attr("transform", transform);  
+        focusId = null;
 
+        if (d != null) {
+            focusId = d.id;
+
+            var focused = getFocusNode( force.nodes() );
+            if (focused.length != 0) {
+                focused[0].focus = "false";
+            }
+            d.focus = "true";
+            focus = svg.selectAll(".focus");
+            focus = focus.data([d]).enter()
+                .append("path")
+                .attr("d", "M  2.5,0.0 L  4.0,-0.5 L  4.0,0.5 Z \
+                            M -2.5,0.0 L -4.0,-0.5 L -4.0,0.5 Z \
+                            M  0.0, 2.5 L 0.5,4.0  L -0.5,4.0 Z \
+                            M  0.0,-2.5 L 0.5,-4.0 L -0.5,-4.0 Z")
+                .attr("class", "focus")
+                .attr("transform", transform);  
+        }
+
+        if (focusSetCallback != null)
+        {
+            focusSetCallback(d);
+        }
     }
 
 }
