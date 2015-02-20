@@ -205,7 +205,22 @@ function contextGraph() {
 
         selectNode(null);
         selectLink(null);
-        setFocusNode(null);
+
+        if (focusId != null) {
+            var foundFocus = false;
+
+            for (var idx = 0; idx < newNodes.length; idx++) {
+                if (newNodes[idx].id == focusId) {
+                    foundFocus = true;
+                    break;
+                }
+            }
+
+            if (foundFocus == false) {
+                setFocusNode(null);
+            }
+        }
+
 
         nodes.length = 0;
         links.length = 0;
