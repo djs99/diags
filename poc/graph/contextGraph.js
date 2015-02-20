@@ -12,6 +12,8 @@ function contextGraph() {
     var selectedNode = null;
     var selectedLink = null;
 
+    var focusId = null;
+
     var nodeSelectCallback = null;
     var linkSelectCallback = null;
     var expandLinkCallback = null;
@@ -147,6 +149,16 @@ function contextGraph() {
         return expandLinkCallback(expandedLinks); 
     } 
 
+    this.setFocus = function (nodeId) {
+        nodes.forEach( function(node) {
+            if (node.id == nodeId) {
+                setFocusNode(node);
+                console.log("FOCUS NODE SET!");
+                return;
+            }
+        } );
+    }
+
     this.getFocusNode = function () {
         var nodeList = getFocusNode( force.nodes() );
         if (nodeList.length == 0) {
@@ -198,6 +210,10 @@ function contextGraph() {
         scrubNewNodes(newNodes);
         newNodes.forEach( function(node) {
             nodeLookup[node.id] = node;
+
+            if ( (node.id == focusId) && (focusEnabled == true) ) {
+                node.focus = "true";
+            }
 
             nodes.push(node);
             console.log( "NODE: type=" + node.type + 
@@ -813,6 +829,9 @@ function contextGraph() {
     }
 
     function setFocusNode (d) {
+        focusEnabled = true;
+        focusId = d.id;
+
         focus.remove();
         var focused = getFocusNode( force.nodes() );
         if (focused.length != 0) {

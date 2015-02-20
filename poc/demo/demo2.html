@@ -129,6 +129,20 @@ ENDBUG*/
 <h2>Analyze and Troubleshoot Alerts</h2>
 
 <!-- GRAPH DISPLAY AREA-->
+Span: 
+<select id="span">
+    <option value="all">All</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+</select>
+Direction:
+<select id="direction">
+    <option value="Both">Both</option>
+    <option value="Up">Up</option>
+    <option value="Down">Down</option>
+</select>
+<button id="filter" onClick="filterGraph();">Filter Graph</button>
 <button id="unFocus" onClick="myGraph.toggleFocus();">Toggle Focus</button>
 <button id="zoom2fit" onClick="myGraph.zoom2fit();">Zoom to Fit</button>
 <div id="graph">
@@ -152,6 +166,20 @@ ENDBUG*/
 
         function expandLink (linkList) {
             expandPaths(linkList);
+        }
+
+        function filterGraph() {
+            var focus = myGraph.getFocusNode();
+            var span = document.getElementById("span").value;
+            var direction = document.getElementById("direction").value;
+            if (focus == null) {
+                alert("Please double-click a node in the graph to set it as the focus.");
+            }
+            else {
+                var query = queryFrom(focus.type, focus.dbid, span, direction);
+                console.log( "filterGraph() ::: query=" + query );
+                request(query, cypherResponseCallback );
+            }
         }
 
         function showDetails (details) {
@@ -482,7 +510,7 @@ function objectSet()  {
 function getNodesFromGraph( graphObj, nodeSet ) {
   var nodes = graphObj.nodes
   for( var i = 0, len = nodes.length; i < len; i++){
-    var newnode = {id: nodes[i].id, name: nodes[i].properties.name, status: nodes[i].properties.status, type: nodes[i].labels[0]};
+    var newnode = {id: nodes[i].id, dbid: nodes[i].properties.id, name: nodes[i].properties.name, status: nodes[i].properties.status, type: nodes[i].labels[0]};
     nodeSet.add( newnode.id, newnode );
     }//for
 }//fn
