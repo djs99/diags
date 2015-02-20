@@ -21,7 +21,7 @@ API
  link { "source": "id", "target": "id", "type": "..."}
  
  links[
-  { s: "id", e:"id", uncomp: [{link},{link}...] } // link recordd
+  { s: "id", e:"id", uncomp: [{link},{link}...] } // link record
    // s = uncomp[0].source, e = uncomp[len-1].target
  ] 
   
@@ -46,7 +46,8 @@ function linkStore() {
     for( var i in this.linkRecords_ ) {
       collectedLinks.push.apply( collectedLinks, this.linkRecords_[i].links );
     }
-    return clone( collectedLinks);
+    
+    return clone( dedupe(collectedLinks));
   }//fn expandAll
   
   // CompressAll ================
@@ -55,7 +56,7 @@ function linkStore() {
     for( var i in this.linkRecords_ ) {
       collectedLinks.push.apply( collectedLinks, compress(this.linkRecords_[i].links) ); 
     }
-    return clone( collectedLinks);
+    return clone( dedupe(collectedLinks));
 
   }//fn compress all
   
@@ -63,14 +64,14 @@ function linkStore() {
   this.compressSome = function( compressList) {
     var compressfn = compress;
     var expandfn = function( links ) { return links; }
-    return this.linkCollector( compressList,compressfn, expandfn );
+    return clone( dedupe( this.linkCollector( compressList,compressfn, expandfn)));
   }//fn
 
   // ExpandSome =======================
   this.expandSome   = function( expandList) {
     var compressfn = compress;
     var expandfn = function( links ) { return links; }
-    return this.linkCollector( expandList, expandfn, compressfn );
+    return clone( dedupe( this.linkCollector( expandList, expandfn, compressfn )));
   }//fn
   
   // LinkCollector ==========================================
@@ -101,12 +102,29 @@ function linkStore() {
         collectedLinks.push.apply( collectedLinks, fn(this.linkRecords_[i].links) );
     }//for
     
-    return clone( collectedLinks);
+    return collectedLinks;
   }//fn
   
 }//linkStoreClass
 
 // LINK HANDLING FUNCTIONS ============================
+
+
+// --------------------------------------
+// Build link record store from response object
+//
+function linkStoreFrom( respObj ) {
+  var data = respObj.results[0].data;
+  var store = new linkStore();
+  
+  //store links from each graph
+  for( var i = 0, len = data.length; i < len; i++){
+    var graphLinks = linksFromGraph( data[i].graph);
+    if( graphLinks.length > 0 ){ store.add( graphLinks); }
+    }//for
+  return store;
+}//fn
+
 
 //------------------------
 //  linkArrayFrom
@@ -164,20 +182,6 @@ function compressedLinkArrayFrom( respObj ){
      return compressedLinks;
 }//fn
 
-// --------------------------------------
-// Build link record store from response object
-//
-function linkStoreFrom( respObj ) {
-  var data = respObj.results[0].data;
-  var store = new linkStore();
-  
-  //store links from each graph
-  for( var i = 0, len = data.length; i < len; i++){
-    var graphLinks = linksFromGraph( data[i].graph);
-    if( graphLinks.length > 0 ){ store.add( graphLinks); }
-    }//for
-  return store;
-}//fn
 
 //------------------------
 // Compress links
@@ -229,4 +233,41 @@ function compress( graphLinks ){
 }//compress  
 
 
+//--------------------------------------
+//    dedupe()
+//
+//      remove duplicate links
+//
+//         Remove single hop link if it already exists in the collection
+//
+//        This can happen because the cypher query returns path graphs which are distguished by start and end node, but several paths may
+//        contain the same link.
+//
 
+
+function dedupe( links ) {
+  var newLinks = [];
+  for( var i = 0, len = links.length; i < len; i++){
+    var curLink = links[i];
+    // Only add curLink to newLinks if it is not
+    // a duplicate of  link later in links
+    if( excludes( links.slice(i+1), curLink ))
+     { newLinks.push(curLink);}
+    }//for
+  
+  return newLinks;
+}//dedupe
+
+
+//------------------------------
+//     excludes()
+//
+//        True if array does not contain copy of link
+//
+function excludes( array, link ) {
+  for( var i = 0; i < array.length; i++) {
+    var cur = array[i];
+    if(link.source == cur.source && link.target == cur.target) {return false;}
+  }
+  return true;
+}
