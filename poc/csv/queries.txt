@@ -4,7 +4,7 @@ create (n:node {name: line.name, id: toInt(line.id), type:line.type, status:line
 
 //Node Elements
 load csv with headers from "file:///c:/home/cloud/demo/d1/csv/cinderelement.csv" as line
-create (e:nodeElement {type: line.subtype, id: toInt(line.id),status:line.status})
+create (e:nodeElement {name: line.subtype, id: toInt(line.id),status:line.status})
 
 //Nodes to Elements
 load csv with headers from "file:///c:/home/cloud/demo/d1/csv/cindertoelement.csv" as line
@@ -72,7 +72,7 @@ create (z)<-[:MEMBER]-(i),(z)<-[:MEMBER]-(t)
 
 //vms
 load csv with headers from "file:///c:/home/cloud/demo/d1/csv/vm.csv" as line
-create (v:vm {id:toInt(line.id), name: line.name})
+create (v:vm {id:toInt(line.id), name: line.name, status:line.status})
 
 // assign vms to hosts
 using periodic commit
@@ -96,7 +96,7 @@ create (t)-[r:TN]->(v)
 //volumes
 using periodic commit
 load csv with headers from "file:///c:/home/cloud/demo/d1/csv/volume.csv" as line
-create (v:volume {id: toInt(line.id)})
+create (v:volume {id: toInt(line.id), status:line.status})
 
 //volumes to arrays
 using periodic commit

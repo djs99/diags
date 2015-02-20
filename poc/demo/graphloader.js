@@ -39,23 +39,30 @@ function expandAllPaths() {
   loadGraphWithLinks( graphDataStore.linkStore.expandAll()); }//fn
   
 function loadGraphWithLinks( links ){  
-  loadGraphData(  {"nodes": graphDataStore.getNodeArray(), "links": links}); }//fn
+  myGraph.loadGraphData(  {"nodes": graphDataStore.getNodeArray(), "links": links}); }//fn
+
+function expandPaths( expandThis ) {
+  var data = graphDataStore.linkStore.expandSome(expandThis);
+  updateGraphWithLinks(data);
+}//fn
+
+function updateGraphWithLinks( links ){  
+  myGraph.updateGraphData( { "nodes": graphDataStore.getNodeArray(), 
+                             "links": links 
+                           } ); }//fn
 
 
 /************
   TEST
-  
 */
 function log( message, data) {
   console.log( message + JSON.stringify(data) );
 }
 
-
 function testCompressAll(){
   log( "compress all ", graphDataStore.linkStore.compressAll());
   compressAllPaths();
 }//fn
-
 
 function testCompressSome() {
     var compressThese = [ {start: "1947" , end: "1958"}, {start: "1947", end: "1980"}];
@@ -67,7 +74,6 @@ function testExpandAll() {
     log( "expand all", graphDataStore.linkStore.expandAll());
     expandAllPaths();              
 }//fn
-
 
 function testExpandSome() {
     var expandThese = [ {start: "1947" , end: "1958"}, {start: "1947", end: "1980"}];

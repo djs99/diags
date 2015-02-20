@@ -1,0 +1,153 @@
+{
+    "nodes":[
+        {"name":"Array-1", "type":"array", "id":"00002"},
+        {"name":"Tenant-1", "type":"tenant", "id":"00009"},
+        {"name":"Tenant-2", "type":"tenant", "id":"00010"},
+        {"name":"Zone-1", "type":"zone", "id":"00019"},
+        {"name":"Zone-2", "type":"zone", "id":"00020"}
+    ],
+    "links":[
+        {"source":"00009", "target":"00019", "type":"compressed"},
+        {"source":"00009", "target":"00020", "type":"compressed"},
+        {"source":"00010", "target":"00019", "type":"compressed"},
+        {"source":"00010", "target":"00020", "type":"compressed"},
+        {"source":"00002", "target":"00019", "type":"compressed"},
+        {"source":"00002", "target":"00020", "type":"compressed"}
+    ],
+    "paths":[
+        {
+            "source":"00009", 
+            "target":"00019",
+            "nodes":[
+                {"name":"VM-1", "type":"vm", "id":"00011"},
+                {"name":"VM-2", "type":"vm", "id":"00012"},
+                {"name":"Host-1", "type":"host", "id":"00001"},
+                {"name":"InitPort-1", "type":"initport", "id":"00003"},
+                {"name":"VM-1", "type":"vm", "id":"00011"},
+                {"name":"VM-2", "type":"vm", "id":"00012"},
+                {"name":"Switch-1", "type":"switch", "id":"00017"}
+            ],
+            "links":[
+                {"source":"00009", "target":"00011", "type":"TN"},
+                {"source":"00009", "target":"00012", "type":"TN"},
+                {"source":"00011", "target":"00001", "type":"ON"},
+                {"source":"00012", "target":"00001", "type":"ON"},
+                {"source":"00001", "target":"00003", "type":"HBA"},
+                {"source":"00003", "target":"00019", "type":"MEMBER"},
+                {"source":"00003", "target":"00017", "type":"CONN"},
+                {"source":"00017", "target":"00019", "type":"IMPLEMENTS"}
+            ]
+        },
+        {
+            "source":"00009", 
+            "target":"00020",
+            "nodes":[
+                {"name":"VM-1", "type":"vm", "id":"00011"},
+                {"name":"VM-2", "type":"vm", "id":"00012"},
+                {"name":"Host-1", "type":"host", "id":"00001"},
+                {"type":"initport", "id":"00004"},
+                {"name":"Switch-2", "type":"switch", "id":"00018"}
+            ],
+            "links":[
+                {"source":"00009", "target":"00011", "type":"TN"},
+                {"source":"00009", "target":"00012", "type":"TN"},
+                {"source":"00011", "target":"00001", "type":"ON"},
+                {"source":"00012", "target":"00001", "type":"ON"},
+                {"source":"00001", "target":"00004", "type":"HBA"},
+                {"source":"00004", "target":"00020", "type":"MEMBER"},
+                {"source":"00004", "target":"00018", "type":"CONN"},
+                {"source":"00018", "target":"00020", "type":"IMPLEMENTS"}
+            ]
+        },
+        {
+            "source":"00010", 
+            "target":"00019",
+            "nodes":[
+                {"name":"VM-3", "type":"vm", "id":"00013"},
+                {"name":"VM-4", "type":"vm", "id":"00014"},
+                {"name":"VM-5", "type":"vm", "id":"00015"},
+                {"name":"VM-6", "type":"vm", "id":"00016"},
+                {"name":"Host-1", "type":"host", "id":"00001"},
+                {"name":"InitPort-1", "type":"initport", "id":"00003"},
+                {"name":"Switch-1", "type":"switch", "id":"00017"}
+            ],
+            "links":[
+                {"source":"00010", "target":"00013", "type":"TN"},
+                {"source":"00010", "target":"00014", "type":"TN"},
+                {"source":"00010", "target":"00015", "type":"TN"},
+                {"source":"00010", "target":"00016", "type":"TN"},
+                {"source":"00013", "target":"00001", "type":"ON"},
+                {"source":"00014", "target":"00001", "type":"ON"},
+                {"source":"00015", "target":"00001", "type":"ON"},
+                {"source":"00016", "target":"00001", "type":"ON"},
+                {"source":"00001", "target":"00003", "type":"HBA"},
+                {"source":"00003", "target":"00017", "type":"CONN"},
+                {"source":"00003", "target":"00019", "type":"MEMBER"},
+                {"source":"00017", "target":"00019", "type":"IMPLEMENTS"}
+            ]
+        },
+        {
+            "source":"00010", 
+            "target":"00020",
+            "nodes":[
+                {"name":"VM-3", "type":"vm", "id":"00013"},
+                {"name":"VM-4", "type":"vm", "id":"00014"},
+                {"name":"VM-5", "type":"vm", "id":"00015"},
+                {"name":"VM-6", "type":"vm", "id":"00016"},
+                {"name":"Host-1", "type":"host", "id":"00001"},
+                {"type":"initport", "id":"00004"},
+                {"name":"Switch-2", "type":"switch", "id":"00018"}
+            ],
+            "links":[
+                {"source":"00010", "target":"00013", "type":"TN"},
+                {"source":"00010", "target":"00014", "type":"TN"},
+                {"source":"00010", "target":"00015", "type":"TN"},
+                {"source":"00010", "target":"00016", "type":"TN"},
+                {"source":"00013", "target":"00001", "type":"ON"},
+                {"source":"00014", "target":"00001", "type":"ON"},
+                {"source":"00015", "target":"00001", "type":"ON"},
+                {"source":"00016", "target":"00001", "type":"ON"},
+                {"source":"00001", "target":"00004", "type":"HBA"},
+                {"source":"00004", "target":"00020", "type":"MEMBER"},
+                {"source":"00004", "target":"00018", "type":"CONN"},
+                {"source":"00018", "target":"00020", "type":"IMPLEMENTS"}
+            ]
+        },
+        {
+            "source":"00002", 
+            "target":"00019",
+            "nodes":[
+                {"name":"TargPort-1", "type":"targetport", "id":"00005"},
+                {"name":"TargPort-3", "type":"targetport", "id":"00007"},
+                {"name":"Switch-1", "type":"switch", "id":"00017"}
+            ],
+            "links":[
+                {"source":"00002", "target":"00005", "type":"OWNS"},
+                {"source":"00002", "target":"00007", "type":"OWNS"},
+                {"source":"00005", "target":"00017", "type":"CONN"},
+                {"source":"00005", "target":"00019", "type":"MEMBER"},
+                {"source":"00007", "target":"00017", "type":"CONN"},
+                {"source":"00007", "target":"00019", "type":"MEMBER"},
+                {"source":"00017", "target":"00019", "type":"IMPLEMENTS"}
+            ]
+        },
+        {
+            "source":"00002", 
+            "target":"00020",
+            "nodes":[
+                {"type":"targetport", "id":"00006"},
+                {"name":"TargPort-4", "type":"targetport", "id":"00008"},
+                {"name":"Switch-2", "type":"switch", "id":"00018"}
+            ],
+            "links":[
+                {"source":"00002", "target":"00006", "type":"OWNS"},
+                {"source":"00002", "target":"00008", "type":"OWNS"},
+                {"source":"00006", "target":"00018", "type":"CONN"},
+                {"source":"00006", "target":"00020", "type":"MEMBER"},
+                {"source":"00008", "target":"00018", "type":"CONN"},
+                {"source":"00008", "target":"00020", "type":"MEMBER"},
+                {"source":"00018", "target":"00020", "type":"IMPLEMENTS"}
+            ]
+        }
+    ]
+}

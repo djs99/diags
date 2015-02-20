@@ -20,17 +20,22 @@ Span:
     <option value="9">9</option>
     <option value="10">10</option>
 </select>
-Focus: 
 <button id="filter" onClick="filterGraph();">Filter Graph</button>
-<button id="uncompress" onClick="uncompressLink();">Uncompress Link</button>
-<button id="detailButton" onClick="showDetails();">Details</button>
-<button id="unHighLight" onClick="toggleHighLight();">Toggle HighLight</button>
+<button id="unHighLight" onClick="myGraph.toggleHighLight();">Toggle HighLight</button>
+<button id="unFocus" onClick="myGraph.toggleFocus();">Toggle Focus</button>
+<button id="zoom2fit" onClick="myGraph.zoom2fit();">Zoom to Fit</button>
 </div>
 <div id="graph">
     <script src="http://d3js.org/d3.v3.min.js"></script>
-    <script src="config.js"></script>
-    <script src="graph.js"></script>
+    <script src="devConfig.js"></script>
+    <script src="contextGraph.js"></script>
     <script>
+        var myGraph = new contextGraph();
+        myGraph.initialize();
+        myGraph.setNodeSelectionCallback(nodeSelected);
+        myGraph.setLinkSelectionCallback(linkSelected);
+        myGraph.setExpandLinkCallback(expandLink);
+
         getGraphData("bogus", "0"); 
         
         //
@@ -42,8 +47,8 @@ Focus:
         
             xmlHttp.onreadystatechange = function() {
                 if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-                        var myArr = JSON.parse(xmlHttp.responseText);
-                        loadGraphData(myArr);
+                        var data = JSON.parse(xmlHttp.responseText);
+                        myGraph.loadGraphData(data);
                 }
             }
         
@@ -52,14 +57,36 @@ Focus:
         }
 
 
-        function getUncompressedGraphData(sourceId, targetId) {
+        function filterGraph() {
+            var focus = myGraph.getFocusNode();
+            var span = document.getElementById("span").value;
+            if (focus == null) {
+                getGraphData("NOT-A-REAL-NODE-ID", span);
+            }
+            else {
+                getGraphData(focus.id, span);
+            }
+        }
+
+
+        function nodeSelected (d) {
+            showDetails( getNodeDetails(d) );
+        }
+
+
+        function linkSelected (d) {
+            showDetails( getLinkDetails(d) );
+        }
+
+
+        function expandLink (source, target) {
             var xmlHttp = new XMLHttpRequest();
-            var url = "http://127.0.0.1:24680/uncompress?source=" + sourceId + "&target=" + targetId;
+            var url = "http://127.0.0.1:24680/expand?source=" + source + "&target=" + target;
         
             xmlHttp.onreadystatechange = function() {
                 if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-                        var myArr = JSON.parse(xmlHttp.responseText);
-                        loadGraphData(myArr);
+                        var data = JSON.parse(xmlHttp.responseText);
+                        myGraph.updateGraphData(data);
                 }
             }
         
@@ -67,22 +94,65 @@ Focus:
             xmlHttp.send();
         }
 
-        function filterGraph() {
-            var focus = selectedNode;
-            var span = document.getElementById("span").value;
-            getGraphData(focus.id, span);
+
+        function showDetails (details) {
+            var popup = document.getElementById("details");
+            var contentpane = document.getElementById("detailscontent");
+            contentpane.innerHTML = details;
+            popup.style.visibility = "visible";
         }
 
-        function uncompressLink() {
-            if (selectedLink == null)
-                return;
-
-            var sourceId = selectedLink.source.id;
-            var targetId = selectedLink.target.id;
-            getUncompressedGraphData(sourceId, targetId);
+        function hideDetails() {
+            var popup = document.getElementById("details");
+            popup.style.visibility = "hidden";
         }
 
-    </script>
+        function getNodeDetails (node) {
+            var details = ""; 
+
+            details += "<b>Node Details . . .</b><hr>";
+            details += "<li><b>Name:</b> " + node.name + "</li>";
+            details += "<li><b>Type:</b> " + node.type + "</li>";
+            details += "<li><b>State:</b> " + node.status + "</li>";
+            details += "<li><a href='http://www.hp.com/' target='mgrWindow'>Element Manager</a></li>";
+
+            var links = myGraph.getNodeLinks(node);
+            if (links["incoming"].length != 0)
+            {
+                details += "<li><b>Incoming Links:</b><ul>";
+                for (idx = 0; idx < links["incoming"].length; idx++) {
+                    var thisLink = links["incoming"][idx];
+                    details += "<li>" + thisLink.source.name + "</li>";
+                }
+                details += "</ul></li>";
+            }
+
+            if (links["outgoing"].length != 0)
+            {
+                details += "<li><b>Outgoing Links:</b><ul>";
+                for (idx = 0; idx < links["outgoing"].length; idx++) {
+                    var thisLink = links["outgoing"][idx];
+                    details += "<li>" + thisLink.target.name + "</li>";
+                }
+                details += "</ul></li>";
+            }
+
+            return details;
+        }
+
+        function getLinkDetails (link) {
+            var details = ""; 
+    
+            details += "<b>Link Details . . .</b><hr>";
+            details += "<li><b>Source:</b> " + link.source.name + "</li>";
+            details += "<li><b>Relationship:</b> " + link.type + "</li>";
+            details += "<li><b>Target:</b> " + link.target.name + "</li>";
+            details += "<li><a href='http://www.hp.com/' target='mgrWindow'>Element Manager</a></li>";
+    
+            return details;
+        }
+
+</script>
 </div>
 <div id="details">
     <div id="detailscontent">

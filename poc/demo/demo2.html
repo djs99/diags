@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<title>Analyze/troubleshoot alert</title>
-	<link href="jquery-ui.css" rel="stylesheet">
-	<link rel="stylesheet" type="text/css" href="graph.css">
+	<link href="../libs/jquery-ui.css" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="../graph/graph.css">
 	<style>
 	
 	body{
@@ -60,12 +60,12 @@
   }
   
   #alertentry {
-  border-width: 1px      ; 
+  border-width: 2px      ; 
   border-color: LightBlue;
   border-style: solid    ;
   border-radius: 4px     ;
   padding: 10px          ;
-  width: 540px           ;
+  width: 700px           ;
   /*float: left            ;*/
   
 }
@@ -114,49 +114,152 @@ ENDBUG*/
 }
 
 </style>
-	<script src="external/jquery/jquery.js"></script>
-  <script src="jquery-ui.js"></script>
-  <script src="cypher.js"></script>
-  <script src="links.js"></script>
-  <script src="graphloader.js"></script>
-  <script src="underscore.js"></script>
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-  <script src="demotablecreator.js"></script>
+    <script src="external/jquery/jquery.js"></script>
+    <script src="../libs/jquery-ui.js"></script>
+    <script src="cypher.js"></script>
+    <script src="links.js"></script>
+    <script src="graphloader.js"></script>
+    <script src="../libs/underscore.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="demotablecreator.js"></script>
 </head>
 
-
 <body>
+
 <h2>Analyze and Troubleshoot Alerts</h2>
 
+<!-- GRAPH DISPLAY AREA-->
+Span: 
+<select id="span">
+    <option value="all">All</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+</select>
+Direction:
+<select id="direction">
+    <option value="Both">Both</option>
+    <option value="Up">Up</option>
+    <option value="Down">Down</option>
+</select>
+<button id="filter" onClick="filterGraph();">Filter Graph</button>
+<button id="unFocus" onClick="myGraph.toggleFocus();">Toggle Focus</button>
+<button id="zoom2fit" onClick="myGraph.zoom2fit();">Zoom to Fit</button>
+<div id="graph">
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="../graph/config.js"></script>
+    <script src="../graph/contextGraph.js"></script>
+    <script>
+        var myGraph = new contextGraph();
+        myGraph.initialize();
+        myGraph.setNodeSelectionCallback(nodeSelected);
+        myGraph.setLinkSelectionCallback(linkSelected);
+        myGraph.setExpandLinkCallback(expandLink);
 
+        function nodeSelected (node) {
+            showDetails( getNodeDetails(node) );
+        }
+
+        function linkSelected (link) {
+            showDetails( getLinkDetails(link) );
+        }
+
+        function expandLink (linkList) {
+            expandPaths(linkList);
+        }
+
+        function filterGraph() {
+            var focus = myGraph.getFocusNode();
+            var span = document.getElementById("span").value;
+            var direction = document.getElementById("direction").value;
+            if (focus == null) {
+                alert("Please double-click a node in the graph to set it as the focus.");
+            }
+            else {
+                var query = queryFrom(focus.type, focus.dbid, span, direction);
+                console.log( "filterGraph() ::: query=" + query );
+                request(query, cypherResponseCallback );
+            }
+        }
+
+        function showDetails (details) {
+            var popup = document.getElementById("details");
+            var contentpane = document.getElementById("detailscontent");
+            contentpane.innerHTML = details;
+            popup.style.visibility = "visible";
+        }
+
+        function getNodeDetails (node) {
+            var details = ""; 
+
+            if (node == null) {
+                return details;
+            }
+
+            details += "<b>Node Details . . .</b><hr>";
+            details += "<li><b>Name:</b> " + node.name + "</li>";
+            details += "<li><b>Type:</b> " + node.type + "</li>";
+            details += "<li><b>State:</b> " + node.status + "</li>";
+            details += "<li><a href='http://www.hp.com/' target='mgrWindow'>Element Manager</a></li>";
+
+            var links = myGraph.getNodeLinks(node);
+            if (links["incoming"].length != 0)
+            {
+                details += "<li><b>Incoming Links:</b><ul>";
+                for (idx = 0; idx < links["incoming"].length; idx++) {
+                    var thisLink = links["incoming"][idx];
+                    details += "<li>" + thisLink.source.name + "</li>";
+                }
+                details += "</ul></li>";
+            }
+
+            if (links["outgoing"].length != 0)
+            {
+                details += "<li><b>Outgoing Links:</b><ul>";
+                for (idx = 0; idx < links["outgoing"].length; idx++) {
+                    var thisLink = links["outgoing"][idx];
+                    details += "<li>" + thisLink.target.name + "</li>";
+                }
+                details += "</ul></li>";
+            }
+
+            return details;
+        }
+
+        function getLinkDetails (link) {
+            var details = ""; 
+    
+            if (link == null) {
+                return details;
+            }
+
+            details += "<b>Link Details . . .</b><hr>";
+            details += "<li><b>Source:</b> " + link.source.name + "</li>";
+            details += "<li><b>Relationship:</b> " + link.type + "</li>";
+            details += "<li><b>Target:</b> " + link.target.name + "</li>";
+            details += "<li><a href='http://www.hp.com/' target='mgrWindow'>Element Manager</a></li>";
+    
+            return details;
+        }
+    </script>
+</div><!--graph-->
+
+<div id="details">
+    <div id="detailscontent">
+    </div>
+</div>
+<br> <br>
 <!-- ENTER ALERT DETAILS-->
 <div id=alertentry>
   
 </div>
 	<!-- THIS AREA WILL BE POPULATED DYNAMICALLY BY CREATETABLE()-->
 <br>
-
-
-<!-- GRAPH DISPLAY AREA-->
-<div id="graph">
-        <script src="http://d3js.org/d3.v3.min.js"></script>
-        <script src="config.js"></script>
-        <script src="graph.js"></script>
-</div><!--graph-->
-
-<div id="details">
-    <div id="detailscontent">
-    </div>
-    <div id="detailsbuttonbar">
-        <button id = detailsbutton onClick="hideDetails();" style = "margin-bottom: 50px;">Close</button>
-     </div>
-</div>
-
 <!-- TEST BUTTONS -->
+
 <div id = "testdiv">
   <div id = "testcontent" >
-  Test content
-  <br> <br>
+  <br>
   </div>
 <button id = testexpandallbutton onClick="testExpandAll()" > Expand All</button>
 <button id = testexpandsomebutton onClick="testExpandSome()" > Expand Some</button>
@@ -170,8 +273,8 @@ ENDBUG*/
 </div>
 
 <!-- DEBUG: Cypher query and response -->
-<div id=queryDiv>
 <br> <br> <br>
+<div id=queryDiv>
 Query: 
 </div>
 <br>
@@ -407,7 +510,7 @@ function objectSet()  {
 function getNodesFromGraph( graphObj, nodeSet ) {
   var nodes = graphObj.nodes
   for( var i = 0, len = nodes.length; i < len; i++){
-    var newnode = {id: nodes[i].id, name: nodes[i].properties.name, status: nodes[i].properties.status, type: nodes[i].labels[0]};
+    var newnode = {id: nodes[i].id, dbid: nodes[i].properties.id, name: nodes[i].properties.name, status: nodes[i].properties.status, type: nodes[i].labels[0]};
     nodeSet.add( newnode.id, newnode );
     }//for
 }//fn

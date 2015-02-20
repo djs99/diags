@@ -4,9 +4,11 @@ import copy
 import json
 from pprint import pprint
 
-#data_file_name = "data/tlv3_data.json"
-data_file_name = "data/small_data.json"
-#data_file_name = "data/large_data.json"
+# data_file_name = "data/tlv3_data.json"
+# data_file_name = "data/small_data.json"
+data_file_name = "data/compressed_data.json"
+# data_file_name = "data/large_data.json"
+# data_file_name = "data/shapes_data.json"
 
 #
 # Load force layout data.
@@ -15,6 +17,7 @@ def load_data():
     json_data = open(data_file_name)
     loadedData = json.load(json_data)
     json_data.close()
+    dump_data(loadedData)
     return loadedData
 
 def dump_data(dataset):
@@ -24,26 +27,26 @@ def dump_data(dataset):
     print("LINKS +++++++++++++++++++++++++")
     for record in dataset["links"]:
         print(record["source"] + " has a " + record["type"] + " relationship with " + record["target"])
-
-#
-# Load tree layout data.
-#
-def load_flare_data():
-    flare_json_data = open("data/flare.json")
-    loadedFlareData = json.load(flare_json_data)
-    flare_json_data.close()
-    return loadedFlareData
+    print("PATHS +++++++++++++++++++++++++")
+    for record in dataset["paths"]:
+        print("SOURCE=" + record["source"] + " TARGET=" + record["target"])
 
 
 fullDataset = load_data()
-flareDataset = load_flare_data()
 
 
 #
-# Return the full tree dataset.
+# Return the nodes and links associated with the compressed path identified
+# by the start and end nodes.
 #
-def get_flare_data():
-    return flareDataset
+def get_expanded_path(start, end):
+    print("get_expanded_path() : start=" + start + " end=" + end)
+    for record in fullDataset["paths"]:
+        if ( (record["source"] == start) and (record["target"] == end) ):
+            return record
+
+    return fullDataset
+
 
 #
 # Produce a subset of the data.
@@ -84,6 +87,12 @@ def get_span(focus, spanIndex, dataset):
                 else:
                     resultData["nodes"].append(node)
 
+    for testNode in resultData["nodes"]:
+        if testNode["id"] == focus:
+            testNode["focus"] = "true"
+        else:
+            testNode["focus"] = "false"
+
     return resultData
 
 
@@ -112,16 +121,16 @@ def get_nodes_for_links(nodes, links):
     result["filteredNodes"] = []
     result["remainderNodes"] = []
 
-    nodeNames = []
+    nodeIds = []
 
     for link in links:
-        if link["source"] not in nodeNames:
-            nodeNames.append(link["source"])
-        if link["target"] not in nodeNames:
-            nodeNames.append(link["target"])
+        if link["source"] not in nodeIds:
+            nodeIds.append(link["source"])
+        if link["target"] not in nodeIds:
+            nodeIds.append(link["target"])
 
     for node in nodes:
-        if node["id"] in nodeNames:
+        if node["id"] in nodeIds:
             result["filteredNodes"].append(node)
         else:
             result["remainderNodes"].append(node)
