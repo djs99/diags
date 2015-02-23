@@ -51,7 +51,7 @@ function createTable() {
 }
 
 function createBestPractices() {
-	var data = {"One Init Port Per Zone":"3"}
+	var data = {"One Init Port Per Zone":"2"}
 	var numOfItems = Object.keys(data);
 	var table = "																						\
 		<table id='bestpracticestable'>																	\
@@ -66,7 +66,7 @@ function createBestPractices() {
 			"<tr>																						\
 				<td>" + item + "</td>																	\
 				<td>" + data[item] + "</td>																\
-				<td><button>Get Graph</button></td>														\
+				<td><button onClick='getinitPortErrors()'>Get Graph</button></td>														\
 			</tr>																						\
 			";
 	}
