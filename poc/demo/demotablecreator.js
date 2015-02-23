@@ -50,6 +50,29 @@ function createTable() {
 	return table;
 }
 
+function createBestPractices() {
+	var data = {"One Init Port Per Zone":"3"}
+	var numOfItems = Object.keys(data);
+	var table = "																						\
+		<table id='bestpracticestable'>																	\
+			<tr>																						\
+				<th>Best Practice</th>																	\
+				<th>Number of Violations</th>															\
+				<th>Show Violations</th>																\
+			</tr>																						\
+		";
+	for (var item in data) {
+		table +=
+			"<tr>																						\
+				<td>" + item + "</td>																	\
+				<td>" + data[item] + "</td>																\
+				<td><button>Get Graph</button></td>														\
+			</tr>																						\
+			";
+	}
+	return table;
+}
+
 function passSiblingValues(element, index){  //1 based index
 	var type 	= document.getElementById("alertelement" + index).innerHTML
 	var id 		= document.getElementById("id" + index).innerHTML;
@@ -60,5 +83,6 @@ function passSiblingValues(element, index){  //1 based index
 
 $(document).ready(function(){
 	$("#alertentry").append(createTable());
+	$("#bestpractices").append(createBestPractices());
 	$('tr:nth-child(odd)').addClass('alt');
 });
