@@ -5,146 +5,15 @@
 	<title>Analyze/troubleshoot alert</title>
 	<link href="../libs/jquery-ui.css" rel="stylesheet">
 	<link rel="stylesheet" type="text/css" href="../graph/graph.css">
+	<link rel="stylesheet" type="text/css" href="demo2.css">
 
 	<style>
-	
-	body{
-		font: 70% "Trebuchet MS", sans-serif;
-		margin: 50px;
-	}
-	tr {
-		background-color: #fff;
-	}
-	.alt {
-		background-color: #ccc;
-	}
-	.demoHeaders {
-		margin-top: 2em;
-	}
-	#dialog-link {
-		padding: .4em 1em .4em 20px;
-		text-decoration: none;
-		position: relative;
-	}
-	#dialog-link span.ui-icon {
-		margin: 0 5px 0 0;
-		position: absolute;
-		left: .2em;
-		top: 50%;
-		margin-top: -8px;
-	}
-	#icons {
-		margin: 0;
-		padding: 0;
-	}
-	#icons li {
-		margin: 2px;
-		position: relative;
-		padding: 4px 0;
-		cursor: pointer;
-		float: left;
-		list-style: none;
-	}
-	#icons span.ui-icon {
-		float: left;
-		margin: 0 4px;
-	}
-	.fakewindowcontain .ui-widget-overlay {
-		position: absolute;
-	}
-	select {
-		/*width: 200px;*/
-	}
-	
-	label {
-   font: 130% "Trebuchet MS", sans-serif;
-  }
-  
-  #alertentry {
-  border-width: 2px      ; 
-  border-color: LightBlue;
-  border-style: solid    ;
-  border-radius: 4px     ;
-  padding: 10px          ;
-  width: 700px           ;
-  
-  }
-  
-  #bestpractices {
-  border-width: 2px      ; 
-  border-color: LightBlue;
-  border-style: solid    ;
-  border-radius: 4px     ;
-  padding: 10px          ;
-  width: 700px           ;
-  text-align: center     ;
-  /*float: left            ;*/
-  
-}
-  
-  #d3graph {
-/*  
-  position: absolute;
-  top: 362px;
-  left: 10px
-*/
-  float: left;
-  height: 514px;
-  width: 514px;
-  border-width: 1px;
-  border-style: solid;
-  border-color: LightBlue;
-  border-radius: 4px; 
-  }
+	    body{
+		    font: 70% "Trebuchet MS", sans-serif;
+		    margin: 50px;
+	    }
+    </style>
 
-/*DEBUG  
-#pianograph {
-  height: 500px;
-  width: 500px;
-  border-width: 1px;
-  border-style: solid;
-  border-color: LightBlue;
-  border-radius: 4px; 
-  }
-ENDBUG*/
-
-.controlbutton{ 
-  float: left;
-  margin: 4px;
-  vertical-align: top;
- }    
-  
-#selectelement{
-  line-height: 30px;
-  vertical-align: top;
-}
-#selectspanmenu{
-  float: left;
-  margin: 4px;
-  vertical-align: bottom;
-  
-}
-
-#filterControls {
-    border: 2px solid;
-    border-color: LightBlue;
-    border-radius: 4px;
-    margin-bottom: 8px;
-    display: inline-block;
-    padding: 4px;
-}
-
-#graphControls {
-    border: 2px solid;
-    border-color: LightBlue;
-    border-radius: 4px;
-    margin-bottom: 8px;
-    margin-left: 8px;
-    display: inline-block;
-    padding: 4px;
-}
-
-</style>
     <script src="external/jquery/jquery.js"></script>
     <script src="../libs/jquery-ui.js"></script>
     <script src="cypher.js"></script>
@@ -226,7 +95,7 @@ ENDBUG*/
             else {
                 var query = queryFrom(focus.type, focus.dbid, span, direction);
                 console.log( "filterGraph() ::: query=" + query );
-                request(query, cypherResponseCallback );
+                request(query, focus.dbid, cypherResponseCallback );
             }
         }
 
@@ -394,7 +263,7 @@ function getGraph( alertelement, alertID, hops, direction ) {
                        direction
                       );
     console.log( "query str: " + query );
-    request(query, cypherResponseCallback );
+    request(query, alertID, cypherResponseCallback );
 }//fn
 
 
@@ -478,16 +347,16 @@ function queryFromPath( path ) {
   
 */ 
  
- function request( query, callback){
+ function request( query, focusId, callback){
    xmlhttp=new XMLHttpRequest();
-   alert( "query str: " + query );  
+   /*  alert( "query str: " + query );  */
    console.log( "query str: " + query );
    
    // set callback 
    xmlhttp.onreadystatechange = function() {
     if( xmlhttp.readyState == 4) { 
       document.getElementById("resultDiv").innerHTML= xmlhttp.responseText; 
-      callback(JSON.parse( xmlhttp.responseText));      
+      callback(JSON.parse( xmlhttp.responseText), focusId);      
      }
     }//callback
  
@@ -509,9 +378,15 @@ function queryFromPath( path ) {
 /* ---------------------------
       CYPHER RESPONSE CALLBACK
 */ 
-function cypherResponseCallback( responseObj ){
+function cypherResponseCallback( responseObj, focusId ){
 
     graphDataStore.nodeArray = nodeArrayFrom(responseObj);
+    for (var idx = 0; idx < graphDataStore.nodeArray.length; idx++) {
+        if (graphDataStore.nodeArray[idx].dbid == focusId) {
+            graphDataStore.nodeArray[idx].focus = "true";
+            break;
+        }
+    }
     graphDataStore.linkStore = linkStoreFrom( responseObj );
     if( !graphDataStore.check() ) {   alert( "graph data store problem"); }
     testExpandAll();    
@@ -586,7 +461,7 @@ function getinitPortErrors() {
   var resultStr = 'RETURN h1, h2,i1, i2, z1, z2, r1, r2, r3, r4"'
   query = queryStringFrom( pathStr, resultStr );
   console.log("Init port query: " + query);
-  request(query, cypherResponseCallback );
+  request(query, null, cypherResponseCallback );
 }
 
 /* -------------------------
@@ -601,7 +476,7 @@ function getAll() {
   var resultStr = 'RETURN n1, r, n2"'
   query = queryStringFrom( pathStr, resultStr );
   console.log("get all query: " + query);
-  request(query, cypherResponseCallback );
+  request(query, null, cypherResponseCallback );
 }
 
 
@@ -617,7 +492,7 @@ function getFailedSwitchTenants() {
   var resultStr = 'RETURN t,r,s"'
   query = queryStringFrom( pathStr, resultStr );
   console.log("get all query: " + query);
-  request(query, cypherResponseCallback );
+  request(query, null, cypherResponseCallback );
 }
 
  

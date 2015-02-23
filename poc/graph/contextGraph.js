@@ -206,35 +206,17 @@ function contextGraph() {
         selectNode(null);
         selectLink(null);
 
-        if (focusId != null) {
-            var foundFocus = false;
-
-            for (var idx = 0; idx < newNodes.length; idx++) {
-                if (newNodes[idx].id == focusId) {
-                    foundFocus = true;
-                    break;
-                }
-            }
-
-            if (foundFocus == false) {
-                setFocusNode(null);
-            }
-        }
-
-
         nodes.length = 0;
         links.length = 0;
         expandedLinks.length = 0;
+
+        var focusNode = null;
 
         // Build an association array for quicker lookups...
         var nodeLookup = {};
         scrubNewNodes(newNodes);
         newNodes.forEach( function(node) {
             nodeLookup[node.id] = node;
-
-            if ( (node.id == focusId) && (focusEnabled == true) ) {
-                node.focus = "true";
-            }
 
             nodes.push(node);
             console.log( "NODE: type=" + node.type + 
@@ -243,6 +225,11 @@ function contextGraph() {
                          " highlight=" + node.highlight + 
                          " focus=" + node.focus + 
                          " status=" + node.status );
+
+            if (node.focus == "true") {
+                focusNode = node;
+            }
+
         } );
 
 
@@ -270,6 +257,11 @@ function contextGraph() {
         svg.transition()
             .duration(100)
             .call(zoom.translate([dx, dy]).scale(newScale).event);
+
+        if (focusSetCallback != null)
+        {
+            focusSetCallback(focusNode);
+        }
 
         start();
     }
