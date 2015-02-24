@@ -252,6 +252,7 @@ $( "#selectdirectionlist").selectmenu(  {width: 80} );
 function getGraph( alertelement, alertID, hops, direction ) {
     var maxSpan;
     if( "Any".localeCompare(hops) != 0){ maxSpan = hops;}
+	else {maxSpan = 4;}
     var idNull = alertID == null;
     if( alertID == "" ) {
       alert("Enter an alert ID"); 
