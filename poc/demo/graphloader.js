@@ -38,8 +38,9 @@ function expandSomePaths( expandThese) {
 function expandAllPaths() {
   loadGraphWithLinks( graphDataStore.linkStore.expandAll()); }//fn
   
-function loadGraphWithLinks( links ){  
-  myGraph.loadGraphData(  {"nodes": graphDataStore.getNodeArray(), "links": links}); }//fn
+function loadGraphWithLinks( links ) {  
+    myGraph.loadGraphData(  {"nodes": getConnectedNodes(links), "links": links}); 
+}//fn
 
 function expandPaths( expandThis ) {
   var data = graphDataStore.linkStore.expandSome(expandThis);
@@ -47,10 +48,21 @@ function expandPaths( expandThis ) {
 }//fn
 
 function updateGraphWithLinks( links ){  
-  myGraph.updateGraphData( { "nodes": graphDataStore.getNodeArray(), 
-                             "links": links 
-                           } ); }//fn
+  myGraph.updateGraphData( { "nodes": getConnectedNodes(links), "links": links } ); 
+}//fn
 
+function getConnectedNodes(links) {
+    var nodeLookup = {};
+    graphDataStore.getNodeArray().forEach( function(node) {
+        nodeLookup[node.id] = node;
+    } );
+    var nodeList = {};
+    links.forEach( function(link) {
+            nodeList[link.source] = nodeLookup[link.source];
+            nodeList[link.target] = nodeLookup[link.target];
+    } );
+    return Object.keys(nodeList).map(function (key) {return nodeList[key]} );
+}
 
 /************
   TEST
