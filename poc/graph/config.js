@@ -12,7 +12,7 @@ nodeShapes["hexagon"] = ["zone"];
 nodeShapes["rhombus"] = ["node"];
 nodeShapes["trapezoid"] = ["nodeElement"];
 nodeShapes["parallel"] = ["switch"];
-nodeShapes["oval"] = ["tenant"];
+nodeShapes["oval"] = ["project"];
 
 
 ////////////////////////////////////

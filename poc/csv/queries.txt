@@ -70,26 +70,26 @@ match (z:zone {id: toInt(line.zone)}), (i:initport {id: toInt(line.initport)}), 
 create (z)<-[:MEMBER]-(i),(z)<-[:MEMBER]-(t)
 
 
-//vms
-load csv with headers from "file:///c:/home/cloud/demo/d1/csv/vm.csv" as line
-create (v:vm {id:toInt(line.id), name: line.name, status:line.status})
+//instances
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/instance.csv" as line
+create (v:instance {id:toInt(line.id), name: line.name, status:line.status})
 
-// assign vms to hosts
+// assign instances to hosts
 using periodic commit
-load csv with headers from "file:///c:/home/cloud/demo/d1/csv/vmhost.csv" as line
-match (v:vm {id:toInt(line.vmid)}), (h:host {id:toInt(line.hostid)})  
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/instancehost.csv" as line
+match (v:instance {id:toInt(line.instanceid)}), (h:host {id:toInt(line.hostid)})  
 create (v)-[o:ON]->(h)
 
 
-//tenants
+//project
 using periodic commit
-load csv with headers from "file:///c:/home/cloud/demo/d1/csv/tenant.csv" as line
-create (t:tenant {name: line.name, id: toInt(line.id)})
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/project.csv" as line
+create (t:project {name: line.name, id: toInt(line.id)})
 
-//map vms to tenants
+//map instances to projects
 using periodic commit
-load csv with headers from "file:///c:/home/cloud/demo/d1/csv/tenantvm.csv" as line
-match (t:tenant {id:toInt(line.tenantid)}), (v:vm {id:toInt(line.vmid)}) 
+load csv with headers from "file:///c:/home/cloud/demo/d1/csv/projectinstance.csv" as line
+match (t:project {id:toInt(line.projectid)}), (v:instance {id:toInt(line.instanceid)}) 
 create (t)-[r:TN]->(v)
 
 
@@ -111,11 +111,11 @@ match (v:volume {id:toInt(line.volid)}), (h:host {id:toInt(line.hostid)})
 create (v)-[r:ATTACH]->(h)
 
 ----------------------------
-//Find tenants affected by array  failure
-match (t:tenant)--(:vm)--(h:host)--(i:initport)--(z:zone)--(p:targetport)--(a:array {name: "Array Red"}) return t,a
+//Find projects affected by array  failure
+match (t:project)--(:instance)--(h:host)--(i:initport)--(z:zone)--(p:targetport)--(a:array {name: "Array Red"}) return t,a
 
-//Return all the zones from a vm
-match(v:vm{id:'f003'})--(:host)--(:initport)-[z:ZONE]-(t:targetport)--(a:array) return v,z, t, a
+//Return all the zones from a instance
+match(v:instance{id:'f003'})--(:host)--(:initport)-[z:ZONE]-(t:targetport)--(a:array) return v,z, t, a
 
 //find zones with multiple initiators
 MATCH (i1:initport)-->(z1:zone), (i2:initport)-->(z2:zone)
@@ -123,5 +123,5 @@ WHERE z1.name = z2.name and i1.id <> i2.id
 return i1, i2, z1, z2
 	
 
-// find all tenants affected by switch failure
-match (t:tenant)--(v:vm)--(h:host)--(i:initport)--(s:switch {name: "SwitchB"})return t,v,h,i,s  
+// find all projects affected by switch failure
+match (t:project)--(v:instance)--(h:host)--(i:initport)--(s:switch {name: "SwitchB"})return t,v,h,i,s  
