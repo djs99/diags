@@ -80,7 +80,7 @@ text {
   stroke-width: .1px;
 }
 
-.node.vm {
+.node.instance {
   fill: #fcf;
   stroke: #c9c;
   stroke-width: .1px;
@@ -104,7 +104,7 @@ text {
   stroke-width: .1px;
 }
 
-.node.tenant {
+.node.project {
   fill: #cf9;
   stroke: #9c6;
   stroke-width: .1px;
