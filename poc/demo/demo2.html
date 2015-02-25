@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="us">
 <head>
 	<meta charset="utf-8">
@@ -118,6 +118,7 @@
             details += "<li><b>Type:</b> " + node.type + "</li>";
             details += "<li><b>State:</b> " + node.status + "</li>";
             details += "<li><a href='http://www.hp.com/' target='mgrWindow'>Element Manager</a></li>";
+            details += "<li><a href='http://www.hp.com/' target='mgrWindow'>Element CLI</a></li>";
 
             var links = myGraph.getNodeLinks(node);
             if (links["incoming"].length != 0)
@@ -155,7 +156,7 @@
             details += "<li><b>Relationship:</b> " + link.type + "</li>";
             details += "<li><b>Target:</b> " + link.target.name + "</li>";
             details += "<li><a href='http://www.hp.com/' target='mgrWindow'>Element Manager</a></li>";
-    
+                
             return details;
         }
     </script>
