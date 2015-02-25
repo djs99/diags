@@ -1,7 +1,15 @@
 //Creates the demo table
 
 function createTable() {
-	var data = {"703":{"type":"vm", "name":"Delta", "status":"critical"}, "101":{"type":"array", "name":"Array Orange", "status":"critical"}, "204":{"type":"host", "name":"Host E", "status":"warning"}, "501":{"type":"switch", "name":"Switch B", "status":"warning"}, "5000":{"type":"node", "name":"CinderNode", "status":"warning"}, "1001":{"type":"volume", "name":"volume", "status":"critical"}, "1013":{"type":"volume", "name":"volume", "status":"warning"}}
+    var data = {
+        "703": { "type": "vm", "name": "Delta", "status": "critical" },
+        "101": { "type": "array", "name": "Array Orange", "status": "critical" },
+        "204": { "type": "host", "name": "Host E", "status": "warning" },
+        "501": { "type": "switch", "name": "Switch B", "status": "warning" },
+        "5000": { "type": "node", "name": "CinderNode", "status": "warning" },
+        "1001": { "type": "volume", "name": "volume", "status": "critical" },
+        "1013": { "type": "volume", "name": "volume", "status": "warning" }
+    }
 	var table = "									\
 	<br></br>										\
 	<table id=alertentrytable>						\
@@ -51,7 +59,10 @@ function createTable() {
 }
 
 function createBestPractices() {
-	var data = {"One Init Port Per Zone":"2"}
+    var data = {
+        "One Init Port Per Zone": { "violations": "2", "button": "onClick='getinitPortErrors()'" },
+        "Redundant Volume Paths": {"violations": "0", "button": "disabled"}
+    }
 	var numOfItems = Object.keys(data);
 	var table = "																						\
 		<table id='bestpracticestable'>																	\
@@ -62,11 +73,13 @@ function createBestPractices() {
 			</tr>																						\
 		";
 	for (var item in data) {
+	    violations = "violations";
+	    button = "button";
 		table +=
 			"<tr>																						\
 				<td>" + item + "</td>																	\
-				<td>" + data[item] + "</td>																\
-				<td><button onClick='getinitPortErrors()'>Get Graph</button></td>														\
+				<td>" + data[item][violations] + "</td>																\
+				<td><button " + data[item][button] + ">Get Graph</button></td>														\
 			</tr>																						\
 			";
 	}
