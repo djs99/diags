@@ -489,7 +489,7 @@ function getAll() {
 //NEW
 function getFailedSwitchTenants() {
 
-  var pathStr = ' " MATCH (t:tenant)-[r*1..5]-(s:switch {status: \'critical\'} ) '
+  var pathStr = ' " MATCH (t:project)-[r*1..5]-(s:switch {status: \'critical\'} ) '
   var resultStr = 'RETURN t,r,s"'
   query = queryStringFrom( pathStr, resultStr );
   console.log("get all query: " + query);
