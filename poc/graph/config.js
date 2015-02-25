@@ -7,7 +7,7 @@ nodeShapes["triangle"] = ["volume"];
 nodeShapes["square"] = ["host"];
 nodeShapes["tall"] = ["array"];
 nodeShapes["wide"] = ["targetport"];
-nodeShapes["pentagon"] = ["vm"];
+nodeShapes["pentagon"] = ["instance"];
 nodeShapes["hexagon"] = ["zone"];
 nodeShapes["rhombus"] = ["node"];
 nodeShapes["trapezoid"] = ["nodeElement"];
@@ -33,14 +33,14 @@ var linkDistances = {};
 linkDistances["IMPLEMENTS"] = 10;
 linkDistances["CONN"] = 10;
 linkDistances["MEMBER"] = 10;
-linkDistances["TN"] = 10;
+linkDistances["OWNS"] = 10;
 
 var defaultLinkStrength = 0.3;
 var linkStrengths = {};
 linkStrengths["IMPLEMENTS"] = 0.3;
 linkStrengths["CONN"] = 0.3;
 linkStrengths["MEMBER"] = 0.3;
-linkStrengths["TN"] = 0.3;
+linkStrengths["OWNS"] = 0.3;
 
 
 //////////////

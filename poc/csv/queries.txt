@@ -90,7 +90,7 @@ create (t:project {name: line.name, id: toInt(line.id)})
 using periodic commit
 load csv with headers from "file:///c:/home/cloud/demo/d1/csv/projectinstance.csv" as line
 match (t:project {id:toInt(line.projectid)}), (v:instance {id:toInt(line.instanceid)}) 
-create (t)-[r:TN]->(v)
+create (t)-[r:OWNS]->(v)
 
 
 //volumes
