@@ -21,39 +21,65 @@ function contextGraph() {
 
     var expandedLinks = [];
 
+    var container = null;
+
     //
     // Behaviors . . .
     //
+
+    function doZoom () {
+        container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+    }
 
     var zoom = d3.behavior.zoom()
                           .scaleExtent([minZoom, maxZoom])
                           .size([svgWidth, svgHeight])
                           .on("zoom", doZoom );
 
-    function doZoom () {
-        var t = d3.event.translate;
-        var s = d3.event.scale;
-        svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-    }
-
-
     //
-    // SVG . . .
+    // Initialize the SVG . . .
     //
 
     var svg = d3.select("body").append("svg")
         .attr("width", svgWidth)
         .attr("height", svgHeight)           
         .attr("class", "graph-svg-component")
-        .append("g")
         .call(zoom);
 
+    // Create the SVG
+    svg.append("rect")
+        .attr("class", "overlay")
+        .attr("width", svgWidth)
+        .attr("height", svgHeight)
+        .style("fill", "none")
+        .style("pointer-events", "all");
 
-    //
-    // Force layout
-    //
+    container = svg.append("g")
+        .attr("name", "container");
 
     var force = d3.layout.force();
+
+    force.nodes(nodes)                           
+        .links(links)                          
+        .charge(forceCharge)
+        .gravity(forceGravity)
+        .linkDistance(function(link) { return setLinkDistance(link); })
+        .linkStrength(function(link) { return setLinkStrength(link); })
+        .size([svgWidth, svgHeight])
+        .on("tick", doTick);                    
+
+    // Define the arrow heads for paths.
+    svg.append("defs").append("svg:marker")
+        .attr("id", "arrowhead")
+        .attr("viewBox", "0 -5 10 10")
+        .attr("refX", 10) 
+        .attr("refY", 0)
+        .attr("markerWidth", 10)
+        .attr("markerHeight", 10)
+        .attr("orient", "auto")
+        .append("path")
+            .attr("d", "M 0,-1.5 L 4,0 L 0,1.5"); 
+
 
     //
     // External APIs . . .
@@ -120,7 +146,7 @@ function contextGraph() {
 
         console.log("ZOOM2FIT : newScale=" + newScale + " dx=" + dx + " dy=" + dy);
 
-        svg.transition()
+        container.transition()
             .duration(500)
             .call(zoom.translate([dx, dy]).scale(newScale).event);
     }
@@ -254,7 +280,7 @@ function contextGraph() {
         console.log("LOAD : nodes.length=" + nodes.length);
         console.log("LOAD : newScale=" + newScale + " dx=" + dx + " dy=" + dy);
 
-        svg.transition()
+        container.transition()
             .duration(100)
             .call(zoom.translate([dx, dy]).scale(newScale).event);
 
@@ -305,43 +331,6 @@ function contextGraph() {
         start();
     }
 
-
-    //
-    // Initialize the graph.
-    //
-    this.initialize = function () {
-        // Create the SVG
-        svg.append("rect")
-            .attr("class", "overlay")
-            .attr("width", svgWidth)
-            .attr("height", svgHeight)
-            .style("fill", "none")
-            .style("pointer-events", "all");
-
-        var container = svg.append("g");
-
-        force.nodes(nodes)                           
-            .links(links)                          
-            .charge(forceCharge)
-            .gravity(forceGravity)
-            .linkDistance(function(link) { return setLinkDistance(link); })
-            .linkStrength(function(link) { return setLinkStrength(link); })
-            .size([svgWidth, svgHeight])
-            .on("tick", doTick);                    
-
-        // Define the arrow heads for paths.
-        svg.append("defs").append("svg:marker")
-            .attr("id", "arrowhead")
-            .attr("viewBox", "0 -5 10 10")
-            .attr("refX", 10) 
-            .attr("refY", 0)
-            .attr("markerWidth", 10)
-            .attr("markerHeight", 10)
-            .attr("orient", "auto")
-            .append("path")
-                .attr("d", "M 0,-1.5 L 4,0 L 0,1.5"); 
-
-    }
 
     //
     // Custom link settings by type.
@@ -449,28 +438,28 @@ function contextGraph() {
 
 
     // Shortcut selections for graph entities.
-    var circle = svg.selectAll(".circle");    
-    var oval = svg.selectAll(".ellipse");    
-    var square = svg.selectAll(".rect");   
-    var tall = svg.selectAll(".rect");   
-    var wide = svg.selectAll(".rect");   
-    var triangle = svg.selectAll(".polygon");   
-    var pentagon = svg.selectAll(".polygon");   
-    var hexagon = svg.selectAll(".polygon");   
-    var rhombus = svg.selectAll(".polygon");   
-    var trapezoid = svg.selectAll(".polygon");   
-    var parallel = svg.selectAll(".polygon");   
+    var circle = container.selectAll(".circle");    
+    var oval = container.selectAll(".ellipse");    
+    var square = container.selectAll(".rect");   
+    var tall = container.selectAll(".rect");   
+    var wide = container.selectAll(".rect");   
+    var triangle = container.selectAll(".polygon");   
+    var pentagon = container.selectAll(".polygon");   
+    var hexagon = container.selectAll(".polygon");   
+    var rhombus = container.selectAll(".polygon");   
+    var trapezoid = container.selectAll(".polygon");   
+    var parallel = container.selectAll(".polygon");   
 
-    var text = svg.selectAll(".text");   
-    var warn = svg.selectAll(".warn");   
-    var warnLabel = svg.selectAll(".warnLabel");   
-    var crit = svg.selectAll(".crit");   
-    var link = svg.selectAll(".link");   
-    var linkClickArea = svg.selectAll(".link-click-area");   
-    var highlight = svg.selectAll(".highlight");   
-    var bracket = svg.selectAll(".bracket");   
-    var focus = svg.selectAll(".focus");
-    var allNodes = svg.selectAll(".node");
+    var text = container.selectAll(".text");   
+    var warn = container.selectAll(".warn");   
+    var warnLabel = container.selectAll(".warnLabel");   
+    var crit = container.selectAll(".crit");   
+    var link = container.selectAll(".link");   
+    var linkClickArea = container.selectAll(".link-click-area");   
+    var highlight = container.selectAll(".highlight");   
+    var bracket = container.selectAll(".bracket");   
+    var focus = container.selectAll(".focus");
+    var allNodes = container.selectAll(".node");
 
 
     //
@@ -479,7 +468,7 @@ function contextGraph() {
     function start () {
         // Highlight backgrounds
         highlight.remove();
-        highlight = svg.selectAll(".highlight");
+        highlight = container.selectAll(".highlight");
         highlight = highlight.data( getHighlightedNodes(force.nodes() ) )
             .enter().append("rect")
             .attr("height", 5.2)
@@ -490,7 +479,7 @@ function contextGraph() {
 
         // Highlight brackets
         bracket.remove();
-        bracket = svg.selectAll(".bracket");
+        bracket = container.selectAll(".bracket");
         bracket = bracket.data( getHighlightedNodes(force.nodes() ) )
             .enter().append("path")
             .attr("d", "M -2.6,-1.5 L -2.6,-2.6 L -1.5,-2.6 \
@@ -501,7 +490,7 @@ function contextGraph() {
 
         // Links
         link.remove();
-        link = svg.selectAll(".link");
+        link = container.selectAll(".link");
         link = link.data(force.links(), function(d) { return d.source.id + "-" + d.target.id; });
         var linkbox = link.enter().append("g").attr("class", "linkbox");
         link.append("line")
@@ -526,7 +515,7 @@ function contextGraph() {
 
         // Circles
         circle.remove();
-        circle = svg.selectAll(".circle");
+        circle = container.selectAll(".circle");
         circle = circle.data(getNodesOfShape(force.nodes(), "circle"), function(d) { return d.id; });
         circle.enter().append("g").attr("class", "nodebox")
             .append("circle")
@@ -536,7 +525,7 @@ function contextGraph() {
 
         // Ovals
         oval.remove();
-        oval = svg.selectAll(".ellipse");
+        oval = container.selectAll(".ellipse");
         oval = oval.data(getNodesOfShape(force.nodes(), "oval"), function(d) { return d.id; });
         oval.enter().append("g").attr("class", "nodebox")
             .append("ellipse")
@@ -547,7 +536,7 @@ function contextGraph() {
 
         // Squares
         square.remove();
-        square = svg.selectAll(".square");
+        square = container.selectAll(".square");
         square = square.data(getNodesOfShape(force.nodes(), "square"), function(d) { return d.id; } );
         square.enter().append("g").attr("class", "nodebox")
             .append("rect")
@@ -560,7 +549,7 @@ function contextGraph() {
 
         // Tall Rectangles
         tall.remove();
-        tall = svg.selectAll(".rect");
+        tall = container.selectAll(".rect");
         tall = tall.data( getNodesOfShape(force.nodes(), "tall"), function(d) { return d.id; } );
         tall.enter().append("g").attr("class", "nodebox")
             .append("rect")
@@ -573,7 +562,7 @@ function contextGraph() {
 
         // Wide Rectangles
         wide.remove();
-        wide = svg.selectAll(".rect");
+        wide = container.selectAll(".rect");
         wide = wide.data( getNodesOfShape(force.nodes(), "wide"), function(d) { return d.id; } );
         wide.enter().append("g").attr("class", "nodebox")
             .append("rect")
@@ -586,7 +575,7 @@ function contextGraph() {
 
         // Triangles
         triangle.remove();
-        triangle = svg.selectAll(".polygon");
+        triangle = container.selectAll(".polygon");
         triangle = triangle.data( getNodesOfShape(force.nodes(), "triangle"), function(d) { return d.id; } );
         triangle.enter().append("g").attr("class", "nodebox")
             .append("polygon")
@@ -596,7 +585,7 @@ function contextGraph() {
 
         // Pentagons
         pentagon.remove();
-        pentagon = svg.selectAll(".polygon");
+        pentagon = container.selectAll(".polygon");
         pentagon = pentagon.data( getNodesOfShape(force.nodes(), "pentagon"), function(d) { return d.id; } )
         pentagon.enter().append("g").attr("class", "nodebox")
             .append("polygon")
@@ -606,7 +595,7 @@ function contextGraph() {
 
         // Hexagons
         hexagon.remove();
-        hexagon = svg.selectAll(".polygon");
+        hexagon = container.selectAll(".polygon");
         hexagon = hexagon.data( getNodesOfShape(force.nodes(), "hexagon"), function(d) { return d.id; } )
         hexagon.enter().append("g").attr("class", "nodebox")
             .append("polygon")
@@ -616,7 +605,7 @@ function contextGraph() {
 
         // Rhombi
         rhombus.remove();
-        rhombus = svg.selectAll(".polygon");
+        rhombus = container.selectAll(".polygon");
         rhombus = rhombus.data( getNodesOfShape(force.nodes(), "rhombus"), function(d) { return d.id; } )
         rhombus.enter().append("g").attr("class", "nodebox")
             .append("polygon")
@@ -626,7 +615,7 @@ function contextGraph() {
 
         // Trapezoids
         trapezoid.remove();
-        trapezoid = svg.selectAll(".polygon");
+        trapezoid = container.selectAll(".polygon");
         trapezoid = trapezoid.data( getNodesOfShape(force.nodes(), "trapezoid"), function(d) { return d.id; } )
         trapezoid.enter().append("g").attr("class", "nodebox")
             .append("polygon")
@@ -636,7 +625,7 @@ function contextGraph() {
 
         // Parallelograms
         parallel.remove();
-        parallel= svg.selectAll(".polygon");
+        parallel= container.selectAll(".polygon");
         parallel= parallel.data( getNodesOfShape(force.nodes(), "parallel"), function(d) { return d.id; } )
         parallel.enter().append("g").attr("class", "nodebox")
             .append("polygon")
@@ -646,7 +635,7 @@ function contextGraph() {
 
         // Warning icons
         warn.remove();
-        warn = svg.selectAll(".warn");
+        warn = container.selectAll(".warn");
         warn = warn.data( getNodesByStatus(force.nodes(), "warning") )
             .enter().append("polygon")
             .attr("class", "warning")
@@ -654,7 +643,7 @@ function contextGraph() {
     
         // Putting an "!" on the Warning icons
         warnLabel.remove();
-        warnLabel = svg.selectAll(".warnLabel");
+        warnLabel = container.selectAll(".warnLabel");
         warnLabel = warnLabel.data( getNodesByStatus(force.nodes(), "warning") )
             .enter().append("text")
             .attr("class", "warnLabel")
@@ -664,7 +653,7 @@ function contextGraph() {
 
         // Crit icons
         crit.remove();
-        crit = svg.selectAll(".crit");
+        crit = container.selectAll(".crit");
         crit = crit.data( getNodesByStatus(force.nodes(), "critical") )
             .enter().append("polygon")
             .attr("class", "critical")
@@ -672,7 +661,7 @@ function contextGraph() {
 
         // Focus indicator
         focus.remove();
-        focus = svg.selectAll(".focus");
+        focus = container.selectAll(".focus");
         var focused = getFocusNode( force.nodes() );
         if (focused.length != 0) {
             focus = focus.data(focused).enter()
@@ -687,14 +676,14 @@ function contextGraph() {
         //
         // Attributes common to all nodes ...
         //
-        var allNodes = svg.selectAll(".node").data( force.nodes(), function(d) { return d.id; } );
+        var allNodes = container.selectAll(".node").data( force.nodes(), function(d) { return d.id; } );
         allNodes.on("mouseover", function(d) { return nodeToolTipIn(d); } ) 
                 .on("mouseout", function(d) { return toolTipOut(d); } )
                 .on("click", function(d) { return selectNode(d); } )
                 .on("dblclick", function(d) { d3.event.stopPropagation(); return setFocusNode(d); } )
                 .call( force.drag );
 
-        var allNodeBoxes = svg.selectAll(".nodebox").data( force.nodes(), function(d) { return d.id; } );
+        var allNodeBoxes = container.selectAll(".nodebox").data( force.nodes(), function(d) { return d.id; } );
         allNodeBoxes.append("text")
             .attr("text-anchor", "middle")
             .attr("fill", "#000000")
@@ -855,7 +844,7 @@ function contextGraph() {
                 focused[0].focus = "false";
             }
             d.focus = "true";
-            focus = svg.selectAll(".focus");
+            focus = container.selectAll(".focus");
             focus = focus.data([d]).enter()
                 .append("path")
                 .attr("d", "M  2.5,0.0 L  4.0,-0.5 L  4.0,0.5 Z \
