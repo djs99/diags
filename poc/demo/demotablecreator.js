@@ -2,7 +2,7 @@
 
 function createTable() {
     var data = {
-        "703": { "type": "vm", "name": "Delta", "status": "critical" },
+        "703": { "type": "instance", "name": "Delta", "status": "critical" },
         "101": { "type": "array", "name": "Array Orange", "status": "critical" },
         "204": { "type": "host", "name": "Host E", "status": "warning" },
         "501": { "type": "switch", "name": "Switch B", "status": "warning" },
