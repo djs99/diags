@@ -59,6 +59,13 @@ function contextGraph() {
 
     var force = d3.layout.force();
 
+    var dragger = force.drag()
+        .on("dragstart", dragstarted);
+
+    function dragstarted(d) {
+        d3.event.sourceEvent.stopPropagation();
+    }
+
     force.nodes(nodes)                           
         .links(links)                          
         .charge(forceCharge)
@@ -681,7 +688,7 @@ function contextGraph() {
                 .on("mouseout", function(d) { return toolTipOut(d); } )
                 .on("click", function(d) { return selectNode(d); } )
                 .on("dblclick", function(d) { d3.event.stopPropagation(); return setFocusNode(d); } )
-                .call( force.drag );
+                .call( dragger );
 
         var allNodeBoxes = container.selectAll(".nodebox").data( force.nodes(), function(d) { return d.id; } );
         allNodeBoxes.append("text")
