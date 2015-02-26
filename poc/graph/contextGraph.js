@@ -334,6 +334,9 @@ function contextGraph() {
             links.push(newLink);
         } );
 
+        selectNode(null);
+        selectLink(null);
+
         // Restart the force layout.
         start();
     }
