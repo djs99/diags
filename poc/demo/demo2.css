@@ -148,4 +148,9 @@
         padding: 2px;
     }
 
+    .expandButton {
+        font: 60% "Trebuchet MS", sans-serif;
+        padding: 0px;
+    }
+
 </style>

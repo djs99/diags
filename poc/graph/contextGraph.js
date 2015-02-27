@@ -182,9 +182,16 @@ function contextGraph() {
         expandLinkCallback = callback;
     }
 
-    this.expandLink = function (sourceId, targetId) {
+    this.expandThisLink = function (sourceId, targetId) {
         expandedLinks.push( {"start":sourceId, "end":targetId} );
         return expandLinkCallback(expandedLinks); 
+    } 
+
+    expandMyLink = function (sourceId, targetId) {
+        if (expandLinkCallback != null) {
+            expandedLinks.push( {"start":sourceId, "end":targetId} );
+            return expandLinkCallback(expandedLinks); 
+        }
     } 
 
     this.setFocus = function (nodeId) {
@@ -210,21 +217,33 @@ function contextGraph() {
 
         var incoming = [];
         var outgoing = [];
+        var compressed = [];
 
         for (idx = 0; idx < links.length; idx++)
         {
             var link = links[idx];
             if (link.source.id == node.id) {
-                outgoing.push(link);
+                if (link.type == "compressed") {
+                    compressed.push(link);
+                }
+                else {
+                    outgoing.push(link);
+                }
             }
             else if (link.target.id == node.id) {
-                incoming.push(link);
+                if (link.type == "compressed") {
+                    compressed.push(link);
+                }
+                else {
+                    incoming.push(link);
+                }
             }
         }
 
         var result = {};
         result["incoming"] = incoming;
         result["outgoing"] = outgoing;
+        result["compressed"] = compressed;
 
         return result;
     }
@@ -334,8 +353,8 @@ function contextGraph() {
             links.push(newLink);
         } );
 
-        selectNode(null);
-        selectLink(null);
+        selectNode(selectedNode);
+        // selectLink(null);
 
         // Restart the force layout.
         start();
@@ -512,8 +531,7 @@ function contextGraph() {
             .on("dblclick", function(d) { 
                     if (d.type == "compressed") {
                             d3.event.stopPropagation(); 
-                            expandedLinks.push( {"start":d.source.id, "end":d.target.id} );
-                            return expandLinkCallback(expandedLinks); } 
+                            return expandMyLink(d.source.id, d.target.id); } 
                     } );
         link.append("text")
             .attr("class", "linktext")
