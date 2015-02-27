@@ -29,9 +29,9 @@ details.detail-header {
 }
 
 .link.compressed {
-  stroke: #aaf;
+  stroke: #ddd;
   stroke-width: .30px;
-  // stroke-dasharray: .4 .2;
+  stroke-dasharray: .4 .3;
 }
 
 #arrowhead {
