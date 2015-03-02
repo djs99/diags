@@ -85,7 +85,7 @@ function contextGraph() {
         .attr("markerHeight", 10)
         .attr("orient", "auto")
         .append("path")
-            .attr("d", "M 0,-1.5 L 4,0 L 0,1.5"); 
+            .attr("d", "M 0,-1.5 L 10,0 L 0,1.5"); 
 
 
     //
@@ -421,6 +421,19 @@ function contextGraph() {
     }
 
     //
+    // Returns an array of all nodes which are of the given type.
+    //
+    function getNodesOfType (nodes, type) {
+        var outputArray = [];
+        nodes.forEach( function(node) {
+            if (node.type == type) {
+                outputArray.push(node);
+            };
+        } );
+        return outputArray;
+    }
+
+    //
     // Return a list of nodes in the specified state.
     //
     function getNodesByStatus (nodes, status) {
@@ -467,17 +480,17 @@ function contextGraph() {
 
 
     // Shortcut selections for graph entities.
-    var circle = container.selectAll(".circle");    
-    var oval = container.selectAll(".ellipse");    
-    var square = container.selectAll(".rect");   
-    var tall = container.selectAll(".rect");   
-    var wide = container.selectAll(".rect");   
-    var triangle = container.selectAll(".polygon");   
-    var pentagon = container.selectAll(".polygon");   
-    var hexagon = container.selectAll(".polygon");   
-    var rhombus = container.selectAll(".polygon");   
-    var trapezoid = container.selectAll(".polygon");   
-    var parallel = container.selectAll(".polygon");   
+    var initports = container.selectAll(".initport");    
+    var projects = container.selectAll(".project");    
+    var hosts = container.selectAll(".host");   
+    var arrays = container.selectAll(".array");   
+    var targetports = container.selectAll(".targetport");   
+    var volumes = container.selectAll(".volume");   
+    var instances = container.selectAll(".instance");   
+    var zones = container.selectAll(".zone");   
+    var cloudNodes = container.selectAll(".cloudNode");   
+    var nodeElements = container.selectAll(".nodeElement");   
+    var switches = container.selectAll(".switch");   
 
     var text = container.selectAll(".text");   
     var warn = container.selectAll(".warn");   
@@ -541,125 +554,159 @@ function contextGraph() {
             .text( function(d) { return d.type; } );
         link.exit().remove();
 
-        // Circles
-        circle.remove();
-        circle = container.selectAll(".circle");
-        circle = circle.data(getNodesOfShape(force.nodes(), "circle"), function(d) { return d.id; });
-        circle.enter().append("g").attr("class", "nodebox")
-            .append("circle")
-            .attr("class", function(d) { return "node " + d.type; })
-            .attr("r", 2.0);
-        circle.exit().remove();
-
-        // Ovals
-        oval.remove();
-        oval = container.selectAll(".ellipse");
-        oval = oval.data(getNodesOfShape(force.nodes(), "oval"), function(d) { return d.id; });
-        oval.enter().append("g").attr("class", "nodebox")
-            .append("ellipse")
-            .attr("class", function(d) { return "node " + d.type; })
-            .attr("rx", 2.0)
-            .attr("ry", 1.2);
-        oval.exit().remove();
-
-        // Squares
-        square.remove();
-        square = container.selectAll(".square");
-        square = square.data(getNodesOfShape(force.nodes(), "square"), function(d) { return d.id; } );
-        square.enter().append("g").attr("class", "nodebox")
-            .append("rect")
+        // Init Ports
+        initports.remove();
+        initports = container.selectAll(".initport");
+        initports = initports.data(getNodesOfType(force.nodes(), "initport"), function(d) { return d.id; } );
+        initports.enter().append("g").attr("class", "nodebox")
+            .append("image")
             .attr("class", function(d) { return "node " + d.type; } )
-            .attr("height", 3.2)
-            .attr("width", 3.2)
-            .attr("x", -1.6)
-            .attr("y", -1.6);
-        square.exit().remove();
+            .attr("xlink:href", nodeIcons["initport"] )
+            .attr("x", -1.0)
+            .attr("y", -1.0)
+            .attr("height", 2.0)
+            .attr("width", 2.0);
+        initports.exit().remove();
 
-        // Tall Rectangles
-        tall.remove();
-        tall = container.selectAll(".rect");
-        tall = tall.data( getNodesOfShape(force.nodes(), "tall"), function(d) { return d.id; } );
-        tall.enter().append("g").attr("class", "nodebox")
-            .append("rect")
+        // Target Ports
+        targetports.remove();
+        targetports = container.selectAll(".targetport");
+        targetports = targetports.data( getNodesOfType(force.nodes(), "targetport"), function(d) { return d.id; } );
+        targetports.enter().append("g").attr("class", "nodebox")
+            .append("image")
             .attr("class", function(d) { return ( "node " + d.type ); } )
-            .attr("height", 4.4)
-            .attr("width", 3.0)
+            .attr("xlink:href", nodeIcons["targetport"] )
+            .attr("x", -1.0)
+            .attr("y", -1.0)
+            .attr("height", 2.0)
+            .attr("width", 2.0);
+        targetports.exit().remove();
+
+        // Projects
+        projects.remove();
+        projects = container.selectAll(".project");
+        projects = projects.data(getNodesOfType(force.nodes(), "project"), function(d) { return d.id; } );
+        projects.enter().append("g").attr("class", "nodebox")
+            .append("image")
+            .attr("class", function(d) { return "node " + d.type; } )
+            .attr("xlink:href", nodeIcons["project"] )
             .attr("x", -1.5)
-            .attr("y", -2.2);
-        tall.exit().remove();
+            .attr("y", -1.5)
+            .attr("height", 3)
+            .attr("width", 3);
+        projects.exit().remove();
 
-        // Wide Rectangles
-        wide.remove();
-        wide = container.selectAll(".rect");
-        wide = wide.data( getNodesOfShape(force.nodes(), "wide"), function(d) { return d.id; } );
-        wide.enter().append("g").attr("class", "nodebox")
-            .append("rect")
+        // Hosts
+        hosts.remove();
+        hosts = container.selectAll(".host");
+        hosts = hosts.data(getNodesOfType(force.nodes(), "host"), function(d) { return d.id; } );
+        hosts.enter().append("g").attr("class", "nodebox")
+            .append("image")
+            .attr("class", function(d) { return "node " + d.type; } )
+            .attr("xlink:href", nodeIcons["host"] )
+            .attr("x", -1.5)
+            .attr("y", -1.5)
+            .attr("height", 3)
+            .attr("width", 3);
+        hosts.exit().remove();
+
+        // Arrays
+        arrays.remove();
+        arrays = container.selectAll(".array");
+        arrays = arrays.data( getNodesOfType(force.nodes(), "array"), function(d) { return d.id; } );
+        arrays.enter().append("g").attr("class", "nodebox")
+            .append("image")
             .attr("class", function(d) { return ( "node " + d.type ); } )
+            .attr("xlink:href", nodeIcons["array"] )
+            .attr("x", -1.5)
+            .attr("y", -1.5)
             .attr("height", 3.0)
-            .attr("width", 4.4)
-            .attr("x", -2.2)
-            .attr("y", -1.5);
-        wide.exit().remove();
+            .attr("width", 3.0);
+        arrays.exit().remove();
 
-        // Triangles
-        triangle.remove();
-        triangle = container.selectAll(".polygon");
-        triangle = triangle.data( getNodesOfShape(force.nodes(), "triangle"), function(d) { return d.id; } );
-        triangle.enter().append("g").attr("class", "nodebox")
-            .append("polygon")
+        // Volumes
+        volumes.remove();
+        volumes = container.selectAll(".volume");
+        volumes = volumes.data( getNodesOfType(force.nodes(), "volume"), function(d) { return d.id; } );
+        volumes.enter().append("g").attr("class", "nodebox")
+            .append("image")
             .attr("class", function(d) { return ( "node " + d.type ); } )
-            .attr("points", "0,-2.0 -1.8,1.0 1.8,1.0");
-        triangle.exit().remove();
+            .attr("xlink:href", nodeIcons["volume"] )
+            .attr("x", -1.5)
+            .attr("y", -1.5)
+            .attr("height", 3.0)
+            .attr("width", 3.0);
+        volumes.exit().remove();
 
-        // Pentagons
-        pentagon.remove();
-        pentagon = container.selectAll(".polygon");
-        pentagon = pentagon.data( getNodesOfShape(force.nodes(), "pentagon"), function(d) { return d.id; } )
-        pentagon.enter().append("g").attr("class", "nodebox")
-            .append("polygon")
+        // Instances
+        instances.remove();
+        instances = container.selectAll(".instance");
+        instances = instances.data( getNodesOfType(force.nodes(), "instance"), function(d) { return d.id; } );
+        instances.enter().append("g").attr("class", "nodebox")
+            .append("image")
             .attr("class", function(d) { return ( "node " + d.type ); } )
-            .attr("points", "0,-2.0 -2.0,-.6 -1.2,1.6 1.2,1.6 2.0,-.6");
-        pentagon.exit().remove();
+            .attr("xlink:href", nodeIcons["instance"] )
+            .attr("x", -1.5)
+            .attr("y", -1.5)
+            .attr("height", 3.0)
+            .attr("width", 3.0);
+        instances.exit().remove();
 
-        // Hexagons
-        hexagon.remove();
-        hexagon = container.selectAll(".polygon");
-        hexagon = hexagon.data( getNodesOfShape(force.nodes(), "hexagon"), function(d) { return d.id; } )
-        hexagon.enter().append("g").attr("class", "nodebox")
-            .append("polygon")
+        // Zones
+        zones.remove();
+        zones = container.selectAll(".zone");
+        zones = zones.data( getNodesOfType(force.nodes(), "zone"), function(d) { return d.id; } );
+        zones.enter().append("g").attr("class", "nodebox")
+            .append("image")
             .attr("class", function(d) { return ( "node " + d.type ); } )
-            .attr("points", "1.2,-2.0 -1.2,-2.0 -2.4,0 -1.2,2.0 1.2,2.0 2.4,0");
-        hexagon.exit().remove();
+            .attr("xlink:href", nodeIcons["zone"] )
+            .attr("x", -1.5)
+            .attr("y", -1.5)
+            .attr("height", 3.0)
+            .attr("width", 3.0);
+        zones.exit().remove();
 
-        // Rhombi
-        rhombus.remove();
-        rhombus = container.selectAll(".polygon");
-        rhombus = rhombus.data( getNodesOfShape(force.nodes(), "rhombus"), function(d) { return d.id; } )
-        rhombus.enter().append("g").attr("class", "nodebox")
-            .append("polygon")
-            .attr("class", function(d) { return ( "node " + d.type ); } )
-            .attr("points", "0,-2.0 2.0,0 0,2.0 -2.0,0");
-        rhombus.exit().remove();
+        // cloudNodes
+        cloudNodes.remove();
+        cloudNodes = container.selectAll(".cloudNode");
+        cloudNodes = cloudNodes.data( getNodesOfType(force.nodes(), "node"), function(d) { return d.id; } );
+        cloudNodes.enter().append("g").attr("class", "nodebox")
+            .append("image")
+            .attr("class", function(d) { return ( "node " + "cloudNode" ); } )
+            .attr("xlink:href", nodeIcons["node"] )
+            .attr("x", -1.5)
+            .attr("y", -1.5)
+            .attr("height", 3.0)
+            .attr("width", 3.0);
+        cloudNodes.exit().remove();
 
-        // Trapezoids
-        trapezoid.remove();
-        trapezoid = container.selectAll(".polygon");
-        trapezoid = trapezoid.data( getNodesOfShape(force.nodes(), "trapezoid"), function(d) { return d.id; } )
-        trapezoid.enter().append("g").attr("class", "nodebox")
-            .append("polygon")
+        // nodeElements
+        nodeElements.remove();
+        nodeElements = container.selectAll(".nodeElement");
+        nodeElements = nodeElements.data( getNodesOfType(force.nodes(), "nodeElement"), function(d) { return d.id; } );
+        nodeElements.enter().append("g").attr("class", "nodebox")
+            .append("image")
             .attr("class", function(d) { return ( "node " + d.type ); } )
-            .attr("points", "-1.0,-2.0 1.0,-2.0 2.0,2.0 -2.0,2.0");
-        trapezoid.exit().remove();
+            .attr("xlink:href", nodeIcons["nodeElement"] )
+            .attr("x", -1.5)
+            .attr("y", -1.5)
+            .attr("height", 3.0)
+            .attr("width", 3.0);
+        nodeElements.exit().remove();
 
-        // Parallelograms
-        parallel.remove();
-        parallel= container.selectAll(".polygon");
-        parallel= parallel.data( getNodesOfShape(force.nodes(), "parallel"), function(d) { return d.id; } )
-        parallel.enter().append("g").attr("class", "nodebox")
-            .append("polygon")
+        // Switches
+        switches.remove();
+        switches = container.selectAll(".switch");
+        switches = switches.data( getNodesOfType(force.nodes(), "switch"), function(d) { return d.id; } );
+        switches.enter().append("g").attr("class", "nodebox")
+            .append("image")
             .attr("class", function(d) { return ( "node " + d.type ); } )
-            .attr("points", "-1.0,-2.0 2.0,-2.0 1.0,2.0 -2.0,2.0");
-        parallel.exit().remove();
+            .attr("xlink:href", nodeIcons["switch"] )
+            .attr("x", -1.5)
+            .attr("y", -1.5)
+            .attr("height", 3.0)
+            .attr("width", 3.0);
+        switches.exit().remove();
 
         // Warning icons
         warn.remove();
@@ -715,7 +762,7 @@ function contextGraph() {
         allNodeBoxes.append("text")
             .attr("text-anchor", "middle")
             .attr("fill", "#000000")
-            .attr("y", ".31em")
+            .attr("y", "-1.5px")
             .text(function(d) {return d.name;});
 
         force.start();
@@ -726,17 +773,17 @@ function contextGraph() {
     // Run a cycle of the force layout's positioning algorithm.
     //
     function doTick () {
-        circle.attr("transform", transform);
-        oval.attr("transform", transform);
-        square.attr("transform", transform);
-        tall.attr("transform", transform);
-        wide.attr("transform", transform);
-        triangle.attr("transform", transform);  
-        pentagon.attr("transform", transform);  
-        hexagon.attr("transform", transform);  
-        rhombus.attr("transform", transform);  
-        trapezoid.attr("transform", transform);  
-        parallel.attr("transform", transform);  
+        initports.attr("transform", transform);
+        projects.attr("transform", transform);
+        hosts.attr("transform", transform);
+        arrays.attr("transform", transform);
+        targetports.attr("transform", transform);
+        volumes.attr("transform", transform);  
+        instances.attr("transform", transform);  
+        zones.attr("transform", transform);  
+        cloudNodes.attr("transform", transform);  
+        nodeElements.attr("transform", transform);  
+        switches.attr("transform", transform);  
 
         warn.attr("transform", transform);  
         warnLabel.attr("transform", transform);  

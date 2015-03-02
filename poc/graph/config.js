@@ -14,6 +14,19 @@ nodeShapes["trapezoid"] = ["nodeElement"];
 nodeShapes["parallel"] = ["switch"];
 nodeShapes["oval"] = ["project"];
 
+var nodeIcons = {};
+nodeIcons["initport"] = "icons/Init_port.png";
+nodeIcons["volume"] = "icons/Server_and_storage.png";
+nodeIcons["host"] = "icons/Server.png";
+nodeIcons["array"] = "icons/Storage.png";
+nodeIcons["targetport"] = "icons/Target_port.png";
+nodeIcons["instance"] = "icons/vm-instance.png";
+nodeIcons["zone"] = "icons/Zone.png";
+nodeIcons["node"] = "icons/Cloud_system.png";
+nodeIcons["nodeElement"] = "icons/Process.png";
+nodeIcons["switch"] = "icons/Core_switch.png";
+nodeIcons["project"] = "icons/Project.png";
+
 
 ////////////////////////////////////
 // Parameters for the force layout
