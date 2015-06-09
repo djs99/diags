@@ -386,6 +386,7 @@ function queryFromPath( path ) {
   xmlhttp.open("POST", url, true);
   xmlhttp.setRequestHeader("Content-type","application/json");
   xmlhttp.setRequestHeader("Accept", "application/json; charset=UTF-8");
+  xmlhttp.setRequestHeader("Authorization", "Basic " + btoa("neo4j:hpinvent") );
   document.getElementById("queryDiv").innerHTML = query;
   xmlhttp.send(query);
 }//fn
