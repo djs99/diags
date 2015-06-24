@@ -17,47 +17,39 @@ class HP3PAR(checks.AgentCheck):
 
         error_dict = {}
 
-        try:
-            logfile1 = open(f1, 'r+')
-            error_dict.update(self.read_file(logfile1))
-            logfile1.seek(0)
-            logfile1.truncate()
-            logfile1.close()
-        except IOError:
-            raise Exception(
-                'Unable to open %s. Check that the file exists and that '
-                'permissions allow for read & write.' % f1)
-
+        error_dict.update(self.read_file(f1))
         time.sleep(1)  # wait so files are staggered
-
-        try:
-            logfile2 = open(f2, 'r+')
-            error_dict.update(self.read_file(logfile2))
-            logfile2.seek(0)
-            logfile2.truncate()
-            logfile2.close()
-        except IOError:
-            raise Exception(
-                'Unable to open %s. Check that the file exists and that '
-                'permissions allow for read & write.' % f2)
+        error_dict.update(self.read_file(f2))
 
         for key in error_dict:
             dimensions = self._set_dimensions(error_dict[key], instance)
-            self.increment('HP3PAR.clear_files.' + error_dict[key][
-                'error_type'], dimensions=dimensions)
+            self.increment('HP3PAR.method.' +
+                           error_dict[key]['error_type'],
+                           dimensions=dimensions)
 
     @staticmethod
-    def read_file(f):
+    def read_file(path):
         error_dict = {}
-        for line in iter(f):
-            try:
-                data = json.loads(line.replace(" ", "_"))
-                dims = {'service': data['type'],
-                        'hostname': data['host'],
-                        'error': data['message'],
-                        'cause': data['possible_cause'],
-                        'error_type': data['name']}
-                error_dict[line] = dims
-            except (ValueError, KeyError):
-                log.warn('Incorrectly formatted line: %s' % line)
+        try:
+            f = open(path, 'r+')
+            for line in iter(f):
+                try:
+                    data = json.loads(line.replace(" ", "_"))
+                    dims = {'service': data['type'],
+                            'hostname': data['host'],
+                            'error': data['message'],
+                            'cause': data['possible_cause'],
+                            'error_type': data['name']}
+                    error_dict[line] = dims
+                except (ValueError, KeyError):
+                    log.warn('Incorrectly formatted line: %s' % line)
+            f.seek(0)
+            f.truncate()
+            f.close()
+        except IOError:
+            raise Exception(
+                'Unable to open %s. Check that the file exists and that '
+                'permissions allow for read & write.' % path)
         return error_dict
+
+
