@@ -8,23 +8,19 @@ log = logging.getLogger(__name__)
 class HP3PAR(checks.AgentCheck):
 
     def check(self, instance):
-        """ This check opens a text file created by logstash
-            Creates a metric for each error in that file
-            Empties the file to avoid duplication
-         """
-        f1 = '/home/vagrant/monasca-logs/3par1.txt'
-        f2 = '/home/vagrant/monasca-logs/3par2.txt'
+        """ This check reads json text outputted by logstash
+            For reliability it reads 2 files at a staggered interval
+        """
 
         error_dict = {}
 
-        error_dict.update(self.read_file(f1))
+        error_dict.update(self.read_file(instance.get('logpath1')))
         time.sleep(1)  # wait so files are staggered
-        error_dict.update(self.read_file(f2))
+        error_dict.update(self.read_file(instance.get('logpath2')))
 
         for key in error_dict:
             dimensions = self._set_dimensions(error_dict[key], instance)
-            self.increment('HP3PAR.method.' +
-                           error_dict[key]['error_type'],
+            self.increment('HP3PAR.' + error_dict[key]['error_type'],
                            dimensions=dimensions)
 
     @staticmethod
@@ -40,7 +36,7 @@ class HP3PAR(checks.AgentCheck):
                             'error': data['message'],
                             'cause': data['possible_cause'],
                             'error_type': data['name']}
-                    error_dict[line] = dims
+                    error_dict[data['@uuid']] = dims
                 except (ValueError, KeyError):
                     log.warn('Incorrectly formatted line: %s' % line)
             f.seek(0)
@@ -51,5 +47,4 @@ class HP3PAR(checks.AgentCheck):
                 'Unable to open %s. Check that the file exists and that '
                 'permissions allow for read & write.' % path)
         return error_dict
-
 
