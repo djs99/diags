@@ -20,8 +20,8 @@ class HP3PAR(checks.AgentCheck):
 
         for key in error_dict:
             dimensions = self._set_dimensions(error_dict[key], instance)
-            self.increment('HP3PAR.' + error_dict[key]['error_type'],
-                           dimensions=dimensions)
+            self.increment('HP3PAR.' + error_dict[key]['error_type'], dimensions=dimensions)
+
 
     @staticmethod
     def read_file(path):
@@ -38,13 +38,14 @@ class HP3PAR(checks.AgentCheck):
                             'error_type': data['name']}
                     error_dict[data['@uuid']] = dims
                 except (ValueError, KeyError):
-                    log.warn('Incorrectly formatted line: %s' % line)
+                    log.warn('Incorrectly formatted line: "%s" in file %s.  '
+                             ' Check your Logstash configuration.' % (line, path))
             f.seek(0)
             f.truncate()
             f.close()
         except IOError:
-            raise Exception(
-                'Unable to open %s. Check that the file exists and that '
-                'permissions allow for read & write.' % path)
+            log.error(
+                'Unable to open %s. Check that Logstash is running'
+                ' and permissions allow for read & write.  '
+                'You may need to restart Logstash.' % path)
         return error_dict
-
