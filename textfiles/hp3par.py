@@ -1,5 +1,6 @@
 import json
 import time
+import re
 import logging
 import monasca_agent.collector.checks as checks
 
@@ -20,8 +21,8 @@ class HP3PAR(checks.AgentCheck):
 
         for key in error_dict:
             dimensions = self._set_dimensions(error_dict[key], instance)
-            self.increment('HP3PAR.' + error_dict[key]['error_type'], dimensions=dimensions)
-
+            self.increment('HP3PAR.' + error_dict[key]['error_type'],
+                           dimensions=dimensions)
 
     @staticmethod
     def read_file(path):
@@ -31,11 +32,14 @@ class HP3PAR(checks.AgentCheck):
             for line in iter(f):
                 try:
                     data = json.loads(line.replace(" ", "_"))
+                    #  these fields must be created by Logstash
                     dims = {'service': data['type'],
                             'hostname': data['host'],
                             'error': data['message'],
                             'cause': data['possible_cause'],
                             'error_type': data['name']}
+                    for dim in dims:  # forbidden characters for dimensions
+                        dims[dim] = re.sub(r'[><=()\'\\;&\{\}\",]', "", dims[dim])
                     error_dict[data['@uuid']] = dims
                 except (ValueError, KeyError):
                     log.warn('Incorrectly formatted line: "%s" in file %s.  '
