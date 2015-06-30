@@ -1,6 +1,0 @@
-init_config:
-
-instances:
-    -  array: 3par
-       logpath1: '/home/vagrant/monasca-logs/3par1.txt'
-       logpath2: '/home/vagrant/monasca-logs/3par2.txt'

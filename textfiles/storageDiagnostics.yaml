@@ -1,0 +1,7 @@
+init_config:
+
+instances:
+    -  array: 3par
+       logpath1: '/var/log/storage-diagnostics/errorlog1.txt'
+       logpath2: '/var/log/storage-diagnostics/errorlog2.txt'
+

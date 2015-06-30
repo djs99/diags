@@ -21,7 +21,7 @@ class HP3PAR(checks.AgentCheck):
 
         for key in error_dict:
             dimensions = self._set_dimensions(error_dict[key], instance)
-            self.increment('0630-13.' + error_dict[key]['error_type'],
+            self.increment('storageDiagnostics.' + error_dict[key]['error_type'],
                            dimensions=dimensions)
 
     @staticmethod
