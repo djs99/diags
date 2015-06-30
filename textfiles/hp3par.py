@@ -21,7 +21,7 @@ class HP3PAR(checks.AgentCheck):
 
         for key in error_dict:
             dimensions = self._set_dimensions(error_dict[key], instance)
-            self.increment('HP3PAR.' + error_dict[key]['error_type'],
+            self.increment('0630-13.' + error_dict[key]['error_type'],
                            dimensions=dimensions)
 
     @staticmethod
@@ -35,11 +35,13 @@ class HP3PAR(checks.AgentCheck):
                     #  these fields must be created by Logstash
                     dims = {'service': data['type'],
                             'hostname': data['host'],
-                            'error': data['message'],
+                            'error': re.sub(
+                                r'(\d{4}(-\d\d){2}_(\d\d:?){3}\.\d+_|\[+\w?\d+\w?|;\d+\w)',
+                                "", data['message']),
                             'cause': data['possible_cause'],
                             'error_type': data['name']}
                     for dim in dims:  # forbidden characters for dimensions
-                        dims[dim] = re.sub(r'[><=()\'\\;&\{\}\",]', "", dims[dim])
+                        dims[dim] = re.sub(r'[><=()\'\\;&\{\}\",\^\[\]]', "", dims[dim])
                     error_dict[data['@uuid']] = dims
                 except (ValueError, KeyError):
                     log.warn('Incorrectly formatted line: "%s" in file %s.  '
