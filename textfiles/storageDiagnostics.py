@@ -38,10 +38,11 @@ class HP3PAR(checks.AgentCheck):
                             'hostname': data['host'],
                             'error': data['log_message'],
                             'cause': data['possible_cause'],
-                            'error_type': data['name']}
+                            'error_type': data['name'],
+                            'comments': data['comments']}
                     for dim in dims:
                         # strip forbidden characters from dimensions
-                        dims[dim] = re.sub(r'[><=()\'\\;&\{\}\",\^\[\]]', "",
+                        dims[dim] = re.sub(r'[><=()\'\\;&\{\}\",\^\]', "",
                                            dims[dim])
                     error_dict[data['@uuid']] = dims
                 except (ValueError, KeyError):
