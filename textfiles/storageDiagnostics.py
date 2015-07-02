@@ -19,10 +19,11 @@ class HP3PAR(checks.AgentCheck):
         time.sleep(1)  # wait so files are staggered
         error_dict.update(self.read_file(instance.get('logpath2')))
 
-        for key in error_dict:
-            dimensions = self._set_dimensions(error_dict[key], instance)
-            self.increment('storageDiagnostics.' + error_dict[key]['error_type'],
-                           dimensions=dimensions)
+        for uuid in error_dict:
+            dimensions = self._set_dimensions(error_dict[uuid], instance)
+            self.increment(
+                'storageDiagnostics.' + error_dict[uuid]['error_type'],
+                dimensions=dimensions)
 
     @staticmethod
     def read_file(path):
@@ -35,17 +36,18 @@ class HP3PAR(checks.AgentCheck):
                     #  these fields must be created by Logstash
                     dims = {'service': data['type'],
                             'hostname': data['host'],
-                            'error': re.sub(
-                                r'(\d{4}(-\d\d){2}_(\d\d:?){3}\.\d+_|\[+\w?\d+\w?|;\d+\w)',
-                                "", data['message']),
+                            'error': data['log_message'],
                             'cause': data['possible_cause'],
                             'error_type': data['name']}
-                    for dim in dims:  # forbidden characters for dimensions
-                        dims[dim] = re.sub(r'[><=()\'\\;&\{\}\",\^\[\]]', "", dims[dim])
+                    for dim in dims:
+                        # strip forbidden characters from dimensions
+                        dims[dim] = re.sub(r'[><=()\'\\;&\{\}\",\^\[\]]', "",
+                                           dims[dim])
                     error_dict[data['@uuid']] = dims
                 except (ValueError, KeyError):
-                    log.warn('Incorrectly formatted line: "%s" in file %s.  '
-                             ' Check your Logstash configuration.' % (line, path))
+                    log.warn(
+                        'Incorrectly formatted line: "%s" in file %s. Check '
+                        'your Logstash configuration.' % (line, path))
             f.seek(0)
             f.truncate()
             f.close()
