@@ -42,7 +42,7 @@ class HP3PAR(checks.AgentCheck):
                             'comments': data['comments']}
                     for dim in dims:
                         # strip forbidden characters from dimensions
-                        dims[dim] = re.sub(r'[><=()\'\\;&\{\}\",\^\]', "",
+                        dims[dim] = re.sub(r'[><=()\'\\;&\{\}\",\^]', "",
                                            dims[dim])
                     error_dict[data['@uuid']] = dims
                 except (ValueError, KeyError):
