@@ -1,0 +1,6 @@
+init_config:
+
+instances:
+    -  logpath1: '/var/log/cinder-diagnostics/errorlog1.txt'
+       logpath2: '/var/log/cinder-diagnostics/errorlog2.txt'
+
