@@ -9,13 +9,16 @@ class BadCredentialsTest(base.BaseCinderDiagnosticsTest):
       def test_cinder_credentials(self):
         
         # List metric by metric name
-        metric_name = 'storageDiagnostics.credentials'
+        metric_name = 'cinderDiagnostics.credentials'
         fields = {'name': metric_name}
         fields['timestamp'] = int((time.time()*1000))
         response = self.call(self.monitoring_client.metrics.list ,fields)
-        self.assertEquals(metric_name, response[0]['name'])
-        self.assertEquals('Forbidden_HTTP_403_5_-_invalid_username_or_password', response[0]['dimensions']['error'])
-        
+        if len(response) > 0 :
+           self.assertEquals(metric_name, response[0]['name'])
+           self.assertEquals('Forbidden_HTTP_403_5_-_invalid_username_or_password', response[0]['dimensions']['error'])
+        else :
+           self.fail("No metric " + metric_name + " found " )
+
         notification_name = 'notification-credentials'
         notification_address = 'root@localhost'
         notification_id = None
@@ -28,7 +31,7 @@ class BadCredentialsTest(base.BaseCinderDiagnosticsTest):
         
         
         alarm_name = metric_name
-        expression = 'storageDiagnostics.credentials > 0'
+        expression = 'cinderDiagnostics.credentials > 0'
         description = 'Bad 3PAR Credentials' 
         severity = 'HIGH'
         alarm_definations = self.find_alarm_defination_byname(alarm_name)

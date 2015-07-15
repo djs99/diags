@@ -9,13 +9,15 @@ class BadCPGTest(base.BaseCinderDiagnosticsTest):
       def test_cinder_cpg(self):
         
         # List metric by metric name
-        metric_name = 'storageDiagnostics.CPG'
+        metric_name = 'cinderDiagnostics.CPG'
         fields = {'name': metric_name}
         fields['timestamp'] = int((time.time()*1000))
         response = self.call(self.monitoring_client.metrics.list ,fields)
-        self.assertEquals(metric_name, response[0]['name'])
-        self.assertEquals('Invalid_input_received:_CPG', response[0]['dimensions']['error'])
-        
+        if len(response) > 0 :
+           self.assertEquals(metric_name, response[0]['name'])
+           self.assertEquals('Invalid_input_received:_CPG', response[0]['dimensions']['error'])
+        else :
+           self.fail("No metric " + metric_name + " found " )
       
         notification_name = 'notification-cpg'
         notification_address = 'root@localhost'
@@ -28,8 +30,8 @@ class BadCPGTest(base.BaseCinderDiagnosticsTest):
           
         
         
-        alarm_name = 'storageDiagnostics.CPG'
-        expression = 'storageDiagnostics.CPG > 0'
+        alarm_name = metric_name
+        expression = 'cinderDiagnostics.CPG > 0'
         description = 'Bad 3PAR CPG' 
         severity = 'HIGH'
         alarm_definations = self.find_alarm_defination_byname(alarm_name)
