@@ -47,7 +47,7 @@ class BaseCinderDiagnosticsTest(unittest.TestCase):
         return result['state']
 
     @classmethod
-    def get(self, alarm_id):
+    def get_alarm(self, alarm_id):
         result = self.monitoring_client.alarms.get(**{'alarm_id': alarm_id})
         return result
 
@@ -73,26 +73,27 @@ class BaseCinderDiagnosticsTest(unittest.TestCase):
          self.monitoring_client.alarms.patch(**fields)
 
     @classmethod
-    def set_optional_field(self,name, value, fields):
+    def set_optional_field(self, name, value, fields):
         if value is not None:
            fields[name] = value
 
     @classmethod
-    def create(self, name, description, expression, ok_actions=None,
+    def create_alarm_defination(self, name, description, expression, severity, ok_actions=None,
            alarm_actions=None, undetermined_actions=None):
         fields = {}
         fields['name'] = name
         fields['expression'] = expression
-        set_optional_field('description', description, fields)
-        set_optional_field('ok_actions', ok_actions, fields)
-        set_optional_field('alarm_actions', alarm_actions, fields)
-        set_optional_field('undetermined_actions', undetermined_actions, fields)
-        result = self.monitoring_client.alarms.create(**fields)
+        self.set_optional_field('description', description, fields)
+        self.set_optional_field('severity', severity, fields)
+        self.set_optional_field('ok_actions', ok_actions, fields)
+        self.set_optional_field('alarm_actions', alarm_actions, fields)
+        self.set_optional_field('undetermined_actions', undetermined_actions, fields)
+        result = self.monitoring_client.alarm_definitions.create(**fields)
         return result['id']
 
 
-    def find_alarm_byname(self, alarm_name):
-        alarms = self.monitoring_client.alarms.list(**{})
+    def find_alarm_defination_byname(self, alarm_name):
+        alarms = self.monitoring_client.alarm_definitions.list(**{})
         for alarm in alarms:
            if alarm['name'] == alarm_name:
               return alarm
@@ -100,26 +101,26 @@ class BaseCinderDiagnosticsTest(unittest.TestCase):
 
 
     @classmethod
-    def create(self, name, email):
+    def create_notification(self, name, email):
         kwargs = {'name': name, 'address': email, 'type': 'EMAIL'}
         result = self.monitoring_client.notifications.create(**kwargs)
         return result['id']
     
     @classmethod
-    def update(self, notification_id, name, email):
+    def update_notification(self, notification_id, name, email):
         kwargs = {'id': notification_id, 'name': name, 'address': email,
                   'type': 'EMAIL'}
         result = mon_client.notifications.update(**kwargs)
         return result['id']
     
     @classmethod
-    def get(self, notification_id):
+    def get_notification(self, notification_id):
         kwargs = {'notification_id': notification_id}
         result = self.monitoring_client.notifications.get(**kwargs)
         return result
     
     @classmethod
-    def find_by_name(self, name):
+    def find_notification_by_name(self, name):
         result = self.monitoring_client.notifications.list(**{})
         for notification in result:
             if notification['name'] == name:

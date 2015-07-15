@@ -44,11 +44,17 @@ class CinderErrors(object):
             #print "Injecting bad 3par credential"
             badCredential={'hp3par_username' : badUserName, 'hp3par_password' : badPassword}
             self.inject_error_in_cinder_configuration(badCredential,"3PAR-SLEEPYKITTY-FC")
+            
 
         def bad_3par_cpg(self, badCpg):
             #print "Injecting bad 3par cpg"
             badCpg={'hp3par_cpg' : badCpg}
             self.inject_error_in_cinder_configuration(badCpg,"3PAR-SLEEPYKITTY-FC")
+            
+            
+        def missing_package_3parclient(self):
+            self.inject_missing_package_error('hp3parclient')
+            
 
        	#def inject_error_in_cinder_configuration(self , dict) :
        	#	self.stop_cinder_service()
@@ -72,6 +78,23 @@ class CinderErrors(object):
 	#      	os.remove(self.cinder_config) 
         #	os.rename(backup_cinder_config , self.cinder_config)    
         #	self.restart_cinder_service();
+        
+        def inject_missing_package_error(self, package_name) :
+            try :  
+                cmnd = "yes | sudo -H pip  uninstall " + package_name
+                os.popen(cmnd)
+                time.sleep(5)
+                self.restart_cinder_service();
+                time.sleep(15)
+            
+            except: # catch *all* exceptions
+                          print sys.exc_info()[0]    
+            finally :
+                # Install package again
+                cmnd = "yes | sudo -H pip install " + package_name
+                os.popen(cmnd)
+                time.sleep(5)
+                self.restart_cinder_service();
    
         def inject_error_in_cinder_configuration(self , dict, section) :
 
@@ -143,12 +166,12 @@ class LogVerify:
                 isInjected = False
                 for error in line:
                         if 'Forbidden (HTTP 403) 5 - invalid username or password' in error:
-                                print "Error bad_3par_credential Injected Successfuly "
+                                print "Error bad_3par_credential Injected Successfully "
                                 print  line
                                 isInjected = True
                                 break
                 if not isInjected :
-                  print "Error bad_3par_credential Injected UnSuccessfuly "
+                  print "Error bad_3par_credential Injected UnSuccessfully "
                     
         def check_log_for_bad_3par_cpg(self):
 
@@ -158,14 +181,27 @@ class LogVerify:
                 isInjected = False
                 for error in line:
                         if "Invalid input received: CPG (badcpg) doesn't exist on array" in error:
-                                print "Error bad_3par_cpg Injected Successfuly "
+                                print "Error bad_3par_cpg Injected Successfully "
                                 print  line
                                 isInjected = True
                                 break
                 if not isInjected :
-                  print "Error bad_3par_cpg Injected UnSuccessfuly "              
+                  print "Error bad_3par_cpg Injected UnSuccessfully "              
 
-        
+        def check_log_for_missing_package_3parclient(self):
+            cmnd = '''grep "You must install hp3parclient before using 3PAR drivers" ''' + cinder_log_path
+            proc = subprocess.Popen(cmnd, stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell = True)
+            lines = proc.stdout.readlines()
+            isInjected = False
+            for errLine in lines:
+                if "You must install hp3parclient before using 3PAR drivers" in errLine:
+                    print "Error missing_package_3parclient Injected Successfully "
+                    print errLine
+                    isInjected = True
+                    break
+            if not isInjected :
+                print "Error missing_package_3parclient Injected UnSuccessfully "
+                         
 
 
 
@@ -180,6 +216,8 @@ parser.add_argument("--debug", dest="debug", action="store_true", help="List out
 # Errors
 parser.add_argument("--bad_3par_credential", dest="bad_3par_credential", action="store_true", help="inject 3par bad credential")
 parser.add_argument("--bad_3par_cpg", dest="bad_3par_cpg", action="store_true", help="inject 3par bad cpg")
+parser.add_argument("--missing_package_3parclient", dest="missing_package_3parclient", action="store_true",
+                        help="inject missing package 3parclient")
 
 args = parser.parse_args()
 
@@ -192,6 +230,10 @@ if len(sys.argv) > 1:
   if args.bad_3par_cpg :
      cinder.bad_3par_cpg("badcpg")
      log_verify.check_log_for_bad_3par_cpg()
+     
+  if args.missing_package_3parclient :
+     cinder.missing_package_3parclient()
+     log_verify.check_log_for_missing_package_3parclient()
 
 cinder.restart_cinder_service()
 log.terminate_thread()

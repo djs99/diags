@@ -6,7 +6,7 @@ from Config import Config
 
 class BadCredentialsTest(base.BaseCinderDiagnosticsTest):
 
-      def test_cinder_cpg(self):
+      def test_cinder_credentials(self):
         
         # List metric by metric name
         metric_name = 'storageDiagnostics.credentials'
@@ -15,6 +15,25 @@ class BadCredentialsTest(base.BaseCinderDiagnosticsTest):
         response = self.call(self.monitoring_client.metrics.list ,fields)
         self.assertEquals(metric_name, response[0]['name'])
         self.assertEquals('Forbidden_HTTP_403_5_-_invalid_username_or_password', response[0]['dimensions']['error'])
+        
+        notification_name = 'notification-credentials'
+        notification_address = 'root@localhost'
+        notification_id = None
+        notification = self.find_notification_by_name(notification_name)
+        if notification is None :
+            notification_id = self.create_notification(notification_name, notification_address)
+        else :
+            notification_id = notification['id']
+          
+        
+        
+        alarm_name = metric_name
+        expression = 'storageDiagnostics.credentials > 0'
+        description = 'Bad 3PAR Credentials' 
+        severity = 'HIGH'
+        alarm_definations = self.find_alarm_defination_byname(alarm_name)
+        if alarm_definations is None :
+            self.create_alarm_defination(alarm_name, description, expression, severity, notification_id, notification_id, notification_id)
         
         
         metric_start_time = time.time()
@@ -37,7 +56,7 @@ class BadCredentialsTest(base.BaseCinderDiagnosticsTest):
         # First inject 3par bad credential error
         filesToCopy = ["ErrorInjection.py"]
         response = sshClient.executeCommand(Config().devstackVM, Config().devstackSshUser, Config().devstackSshPassword, "python ErrorInjection.py --bad_3par_credential", filesToCopy)
-        self.assertEqual("Error bad_3par_credential Injected Successfuly \n",response[0])
+        self.assertEqual("Error bad_3par_credential Injected Successfully \n",response[0])
          # First inject 3par bad credential error
  
         
