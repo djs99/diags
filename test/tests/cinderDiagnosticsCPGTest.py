@@ -35,9 +35,13 @@ class BadCPGTest(base.BaseCinderDiagnosticsTest):
         description = 'Bad 3PAR CPG' 
         severity = 'HIGH'
         alarm_definations = self.find_alarm_defination_byname(alarm_name)
+        alarm_id =  None
         if alarm_definations is None :
-            self.create_alarm_defination(alarm_name, description, expression, severity, notification_id, notification_id, notification_id)
+            alarm_id = self.create_alarm_defination(alarm_name, description, expression, severity, notification_id, notification_id, notification_id)
+        else :
+            alarm_id = alarm_definations['id']
         
+#        self.enable(alarm_id)
         
         metric_start_time = time.time()
         metric_end_time = time.time()
@@ -86,10 +90,10 @@ class BadCPGTest(base.BaseCinderDiagnosticsTest):
         if len(response[0]['measurements']) == 0:
              self.fail("No measurements found for " + metric_name )
         
-        alarms = self.monitoring_client.alarms.list(**{})
-        for alarm in alarms:
-          print alarm 
-          print  "\n\n"
+ #       alarms = self.get_alarm(alarm_id)
+ #       for alarm in alarms:
+ #         print alarm 
+ #         print  "\n\n"
 
 
 

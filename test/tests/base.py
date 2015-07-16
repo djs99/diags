@@ -43,7 +43,7 @@ class BaseCinderDiagnosticsTest(unittest.TestCase):
            return resp
     @classmethod
     def get_state(self, alarm_id):
-        result = get(alarm_id)
+        result = self.get(alarm_id)
         return result['state']
 
     @classmethod
@@ -53,16 +53,16 @@ class BaseCinderDiagnosticsTest(unittest.TestCase):
 
     @classmethod
     def disable(self, alarm_id):
-        patch(alarm_id, {'actions_enabled': False})
+        self.patch(alarm_id, {'actions_enabled': False})
 
     @classmethod
     def enable(self, alarm_id):
-        patch(alarm_id, {'actions_enabled': True})
+        self.patch(alarm_id, {'actions_enabled': True})
 
     @classmethod
     def set_state(self, alarm_id, state):
-        patch( alarm_id, {'state': state})
-        new_state = get_state(alarm_id)
+        self.patch( alarm_id, {'state': state})
+        new_state = self.get_state(alarm_id)
         if new_state != state:
             return False
         return True
