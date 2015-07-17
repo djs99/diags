@@ -4,14 +4,15 @@ import datetime
 from oslo_serialization import jsonutils as json
 from monascaclient import client
 from monascaclient import ksclient
+from Config import Config
 """
      methods for testing
 """
-api_version = '2_0'
-OS_USERNAME = 'mini-mon'
-OS_PASSWORD = 'password'
-OS_PROJECT_NAME = 'mini-mon'
-OS_AUTH_URL = 'http://192.168.10.5:35357/v3/'
+api_version = Config().api_version
+OS_USERNAME = Config().os_username
+OS_PASSWORD = Config().os_password
+OS_PROJECT_NAME = Config().os_project_name
+OS_AUTH_URL = Config().os_auth_url
 
 
 def create_monasca_client() :
