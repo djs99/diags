@@ -205,13 +205,9 @@ class LogVerify:
 
 
 
-log = LogCapture()
-log.start()
-log_verify = LogVerify(1)
-cinder = CinderErrors()
 
+#....................................Command Line argument......................................................................
 parser = argparse.ArgumentParser(usage="./ErrorInjection.py [options]...\nExecute'\n")
-
 parser.add_argument("--debug", dest="debug", action="store_true", help="List out given params")
 # Errors
 parser.add_argument("--bad_3par_credential", dest="bad_3par_credential", action="store_true", help="inject 3par bad credential")
@@ -219,6 +215,11 @@ parser.add_argument("--bad_3par_cpg", dest="bad_3par_cpg", action="store_true", 
 parser.add_argument("--missing_package_3parclient", dest="missing_package_3parclient", action="store_true",
                         help="inject missing package 3parclient")
 
+#................................................ Start Injection..................................................................
+log = LogCapture()
+log.start()
+log_verify = LogVerify(1)
+cinder = CinderErrors()
 args = parser.parse_args()
 
 if len(sys.argv) > 1:
@@ -227,14 +228,16 @@ if len(sys.argv) > 1:
      cinder.bad_3par_credential("bad3paradm","bad3pardata")
      log_verify.check_log_for_bad_3par_credential()
 
-  if args.bad_3par_cpg :
+  elif args.bad_3par_cpg :
      cinder.bad_3par_cpg("badcpg")
      log_verify.check_log_for_bad_3par_cpg()
      
-  if args.missing_package_3parclient :
+  elif args.missing_package_3parclient :
      cinder.missing_package_3parclient()
      log_verify.check_log_for_missing_package_3parclient()
-
+  else : 
+    print ' Error Injection does not support : ' + sys.argv[1]
 cinder.restart_cinder_service()
 log.terminate_thread()
 log.cleanup()
+#................................................ End Injection..................................................................
