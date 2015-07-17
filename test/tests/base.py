@@ -1,11 +1,11 @@
 import utils
 import time
-import json
 import unittest
 import pytz
-import sys
 from datetime import datetime
 import monascaclient.exc as exc
+import sshClient
+from Config import Config
 
 class BaseCinderDiagnosticsTest(unittest.TestCase):
 
@@ -18,17 +18,104 @@ class BaseCinderDiagnosticsTest(unittest.TestCase):
          
        cls.monitoring_client = utils.create_monasca_client()
     
-    @classmethod
-    def deserialize(self, body):
-        return json.loads(body.replace("\n", ""))
-    @classmethod
-    def serialize(self, body):
-        return json.dumps(body)
     @classmethod    
     def create_timestamp(self, seconds):
       utcTimestamp = pytz.utc.localize(datetime.utcfromtimestamp(seconds))
       return utcTimestamp.strftime("%Y-%m-%dT%H:%M:%S%z")
     
+   
+    def run_functional_testcase(self , metric_name , alarm_description , error_injection_name ) :  
+       # List metric by metric name
+       
+        fields = {'name': metric_name}
+        fields['timestamp'] = int((time.time()*1000))
+        response = self.call(self.monitoring_client.metrics.list ,fields)
+        if len(response) > 0 :
+           self.assertEquals(metric_name, response[0]['name'])
+           #self.assertEquals(error_description, response[0]['dimensions']['error'])
+        else :
+           self.fail("No metric " + metric_name + " found " )
+      
+        notification_name = metric_name
+        notification_address = 'root@localhost'
+        notification_id = None
+        notification = self.find_notification_by_name(notification_name)
+        if notification is None :
+            notification_id = self.create_notification(notification_name, notification_address)
+        else :
+            notification_id = notification['id']
+          
+        
+        alarm_name = metric_name
+        expression = '%s > 0' % (metric_name)
+
+        description = alarm_description 
+        severity = 'HIGH'
+        alarm_definations = self.find_alarm_defination_byname(alarm_name)
+        alarm_definations_id =  None
+        if alarm_definations is None :
+            alarm_definations_id = self.create_alarm_defination(alarm_name, description, expression, severity, notification_id, notification_id, notification_id)
+        else :
+            alarm_definations_id = alarm_definations['id']
+      
+        metric_start_time = time.time()
+        metric_end_time = time.time()
+        if (metric_end_time - metric_start_time) < 1:
+            metric_end_time = metric_start_time + 1 
+        fields = {'name': metric_name}
+        fields['end_time'] = self.create_timestamp(metric_end_time)
+        fields['start_time'] = self.create_timestamp(metric_start_time);
+        fields['timestamp'] = int((time.time()*1000))
+        fields['merge_metrics'] = 'true'
+        response = self.call(self.monitoring_client.metrics.list_measurements ,fields)
+        self.assertEquals(metric_name, response[0]['name'])
+        self.assertEquals({}, response[0]['dimensions'])
+        self.assertEquals([], response[0]['measurements'])
+        self.assertEquals(None, response[0]['id'])
+        
+        # First inject 3par bad credential error
+        filesToCopy = ["ErrorInjection.py"]
+        response = sshClient.executeCommand(Config().devstackVM, Config().devstackSshUser, Config().devstackSshPassword, "python ErrorInjection.py --"+error_injection_name, filesToCopy)
+        self.assertEqual("Error "+error_injection_name+" Injected Successfully \n",response[0])
+        
+        # Add sleep if you are commenting the error injection
+        #time.sleep(2)        
+        metric_end_time = time.time()
+        fields = {'name': metric_name}
+        fields['end_time'] = self.create_timestamp(metric_end_time)
+        fields['start_time'] = self.create_timestamp(metric_start_time)
+        fields['timestamp'] = int((time.time()*1000))
+        fields['merge_metrics'] = 'true'
+        
+        isMeasurementsFound = False
+        isAlarmFound = False
+        isStateChangeToAlarm = False
+        
+        for i in range(0, 30):
+            response = self.call(self.monitoring_client.metrics.list_measurements ,fields)
+            if len(response[0]['measurements']) == 1:
+                isMeasurementsFound = True ;
+                break 
+            time.sleep(2)
+        
+        for i in range(0, 60):
+            response = self.find_alarm_by_definition_id(alarm_definations_id)
+            if response is not None:
+               isAlarmFound = True
+               if response['state'] == 'ALARM' :
+                  isStateChangeToAlarm = True
+                  break 
+            time.sleep(3)
+        
+        
+        if not isMeasurementsFound and not isStateChangeToAlarm :
+             self.fail("No measurements found for " + metric_name )
+        if not isAlarmFound :
+             self.fail("No alarm found for " + metric_name )
+        if not isStateChangeToAlarm :
+             self.fail("No state change to ALARM  for  metric " + metric_name )
+   
+   
     @classmethod      
     def call(self, method, fields):
        try:
@@ -98,6 +185,13 @@ class BaseCinderDiagnosticsTest(unittest.TestCase):
            if alarm['name'] == alarm_name:
               return alarm
         return None
+    
+    def find_alarm_by_definition_id(self, alarm_definition_id):
+        alarms = self.monitoring_client.alarms.list(**{})
+        for alarm in alarms:
+           if alarm['alarm_definition']['id'] == alarm_definition_id :
+              return alarm
+        return None    
 
 
     @classmethod
@@ -126,3 +220,4 @@ class BaseCinderDiagnosticsTest(unittest.TestCase):
             if notification['name'] == name:
                 return notification
         return None
+    
