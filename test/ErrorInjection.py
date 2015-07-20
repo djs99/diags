@@ -44,6 +44,12 @@ class CinderErrors(object):
             #print "Injecting bad 3par credential"
             badCredential={'hp3par_username' : badUserName, 'hp3par_password' : badPassword}
             self.inject_error_in_cinder_configuration(badCredential,"3PAR-SLEEPYKITTY-FC")
+        
+        
+        def bad_3par_iscsi_ips(self, badIscsiIps):
+            #print "Injecting bad 3par credential"
+            hp3parbadIscsiIps={'hp3par_iscsi_ips' : badIscsiIps}
+            self.inject_error_in_cinder_configuration(hp3parbadIscsiIps,"3PAR-SLEEPYKITTY")    
             
 
         def bad_3par_cpg(self, badCpg):
@@ -201,7 +207,21 @@ class LogVerify:
                     break
             if not isInjected :
                 print "Error missing_package_3parclient Injected UnSuccessfully "
-                         
+        
+        def check_log_for_bad_3par_iscsi_ips(self):
+            cmnd = '''grep "Invalid input received: At least one valid iSCSI IP address must be set" ''' + cinder_log_path
+            proc = subprocess.Popen(cmnd, stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell = True)
+            lines = proc.stdout.readlines()
+            isInjected = False
+            for errLine in lines:
+                if "Invalid input received: At least one valid iSCSI IP address must be set" in errLine:
+                    print "Error bad_3par_iscsi_ips Injected Successfully "
+                    print errLine
+                    isInjected = True
+                    break
+            if not isInjected :
+                print "Error bad_3par_iscsi_ips Injected UnSuccessfully "
+                 
 
 
 
@@ -214,6 +234,8 @@ parser.add_argument("--bad_3par_credential", dest="bad_3par_credential", action=
 parser.add_argument("--bad_3par_cpg", dest="bad_3par_cpg", action="store_true", help="inject 3par bad cpg")
 parser.add_argument("--missing_package_3parclient", dest="missing_package_3parclient", action="store_true",
                         help="inject missing package 3parclient")
+parser.add_argument("--bad_3par_iscsi_ips", dest="bad_3par_iscsi_ips", action="store_true",
+                        help="Inject error 3par bad iscsi ips")                        
 
 #................................................ Start Injection..................................................................
 log = LogCapture()
@@ -231,10 +253,14 @@ if len(sys.argv) > 1:
   elif args.bad_3par_cpg :
      cinder.bad_3par_cpg("badcpg")
      log_verify.check_log_for_bad_3par_cpg()
-     
+  
   elif args.missing_package_3parclient :
      cinder.missing_package_3parclient()
-     log_verify.check_log_for_missing_package_3parclient()
+     log_verify.check_log_for_missing_package_3parclient()   
+  
+  elif args.bad_3par_iscsi_ips :
+     cinder.bad_3par_iscsi_ips("10.250.100.220555555555:3260")
+     log_verify.check_log_for_bad_3par_iscsi_ips()
   else : 
     print ' Error Injection does not support : ' + sys.argv[1]
 cinder.restart_cinder_service()

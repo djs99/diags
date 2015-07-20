@@ -35,6 +35,41 @@ def executeCommand(hostName, sshUserName, sshPassword , command, filesToCopy = [
     except IndexError:
         pass
 
+def connect(hostName, sshUserName, sshPassword) :
+    """ Connect and perform action to remote machine using SSH 
+    """
+    try:
+            # Connect to remote host
+            client = paramiko.SSHClient()
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            client.connect(hostName, username=sshUserName, password=sshPassword)
+           
+            return client
+            
+    except IndexError:
+        pass
+        
+def copyFile(client, fromLocation, toLocation) :
+    """ perform copy action to remote machine using SSH 
+    """
+    try:
+            # Setup sftp connection and transmit this script
+            sftp = client.open_sftp()
+            sftp.put(fromLocation, toLocation)
+            sftp.close()
+                        
+    except IndexError:
+        pass
+        
+def disconnect(client) :
+    """ perform copy action to remote machine using SSH 
+    """
+    try:
+            client.close()
+                        
+    except IndexError:
+        pass        
+
 def execute(client, command ):
             response = []
             # Run the transmitted script remotely without args and show its output.
