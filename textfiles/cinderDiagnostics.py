@@ -6,7 +6,7 @@ import monasca_agent.collector.checks as checks
 
 log = logging.getLogger(__name__)
 
-class HP3PAR(checks.AgentCheck):
+class Diagnostics(checks.AgentCheck):
 
     def check(self, instance):
         """ This check reads json text outputted by logstash
