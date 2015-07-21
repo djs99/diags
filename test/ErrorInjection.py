@@ -55,7 +55,7 @@ class CinderErrors(object):
         def bad_3par_cpg(self, badCpg):
             #print "Injecting bad 3par cpg"
             badCpg={'hp3par_cpg' : badCpg}
-            self.inject_error_in_cinder_configuration(badCpg,"3PAR-SLEEPYKITTY-FC")
+            self.inject_error_in_cinder_configuration(badCpg,"3PAR-THEVERSE-FC")
             
             
         def missing_package_3parclient(self):
