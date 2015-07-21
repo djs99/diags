@@ -26,15 +26,17 @@ class BaseCinderDiagnosticsTest(unittest.TestCase):
    
     def run_functional_testcase(self , metric_name , alarm_description , error_injection_name ) :  
        # List metric by metric name
-       
-        fields = {'name': metric_name}
-        fields['timestamp'] = int((time.time()*1000))
-        response = self.call(self.monitoring_client.metrics.list ,fields)
+         
+        metricFields = {'name': metric_name}
+        metricFields['timestamp'] = int((time.time()*1000))
+        isMetricAvailable = True
+        response = self.call(self.monitoring_client.metrics.list ,metricFields)
         if len(response) > 0 :
            self.assertEquals(metric_name, response[0]['name'])
            #self.assertEquals(error_description, response[0]['dimensions']['error'])
         else :
-           self.fail("No metric " + metric_name + " found " )
+           isMetricAvailable = False
+           # self.fail("No metric " + metric_name + " found " )
       
         notification_name = metric_name
         notification_address = 'root@localhost'
@@ -67,17 +69,29 @@ class BaseCinderDiagnosticsTest(unittest.TestCase):
         fields['start_time'] = self.create_timestamp(metric_start_time);
         fields['timestamp'] = int((time.time()*1000))
         fields['merge_metrics'] = 'true'
-        response = self.call(self.monitoring_client.metrics.list_measurements ,fields)
-        self.assertEquals(metric_name, response[0]['name'])
-        self.assertEquals({}, response[0]['dimensions'])
-        self.assertEquals([], response[0]['measurements'])
-        self.assertEquals(None, response[0]['id'])
+        if isMetricAvailable :
+           response = self.call(self.monitoring_client.metrics.list_measurements ,fields)
+           self.assertEquals(metric_name, response[0]['name'])
+           self.assertEquals({}, response[0]['dimensions'])
+           self.assertEquals([], response[0]['measurements'])
+           self.assertEquals(None, response[0]['id'])
         
         # First inject 3par bad credential error
         filesToCopy = ["ErrorInjection.py"]
         response = sshClient.executeCommand(Config().devstackVM, Config().devstackSshUser, Config().devstackSshPassword, "python ErrorInjection.py --"+error_injection_name, filesToCopy)
         self.assertEqual("Error "+error_injection_name+" Injected Successfully \n",response[0])
         
+        if not isMetricAvailable :
+             for i in range(0, 30):
+                 response = self.call(self.monitoring_client.metrics.list ,metricFields)
+                 if len(response) > 0 :
+                    self.assertEquals(metric_name, response[0]['name'])
+                    isMetricAvailable = True
+                    break
+                    #self.assertEquals(error_description, response[0]['dimensions']['error'])
+                 
+        if not isMetricAvailable :   
+           self.fail("No metric " + metric_name + " found " )
         # Add sleep if you are commenting the error injection
         #time.sleep(2)        
         metric_end_time = time.time()
