@@ -43,13 +43,13 @@ class CinderErrors(object):
         def bad_3par_credential(self, badUserName, badPassword):
             #print "Injecting bad 3par credential"
             badCredential={'hp3par_username' : badUserName, 'hp3par_password' : badPassword}
-            self.inject_error_in_cinder_configuration(badCredential,"3PAR-SLEEPYKITTY-FC")
+            self.inject_error_in_cinder_configuration(badCredential,"3PAR-THEVERSE-FC")
         
         
         def bad_3par_iscsi_ips(self, badIscsiIps):
             #print "Injecting bad 3par credential"
             hp3parbadIscsiIps={'hp3par_iscsi_ips' : badIscsiIps}
-            self.inject_error_in_cinder_configuration(hp3parbadIscsiIps,"3PAR-SLEEPYKITTY")    
+            self.inject_error_in_cinder_configuration(hp3parbadIscsiIps,"3PAR-THEVERSE")    
             
 
         def bad_3par_cpg(self, badCpg):
