@@ -1,7 +1,7 @@
 logfile1="/var/log/cinder-diagnostics/errorlog1.txt"
 logfile2="/var/log/cinder-diagnostics/errorlog2.txt"
 cinder_diagnostics_log="/var/log/cinder-diagnostics"
-monasca_lib_agent="/etc  /monasca/agent/conf.d/"
+monasca_lib_agent="/etc/monasca/agent/conf.d/"
 monasca_agent="/usr/lib/monasca/agent/conf.d/"
 cinder_diagnostics_conf="cinderDiagnostics.conf"
 cinder_diagnostics_yaml="cinderDiagnostics.yaml"
