@@ -1,0 +1,48 @@
+- name: Cinder Diagnostics Alarm Definitions
+  monasca_alarm_definition:
+    name: "{{item.name}}"
+    description: "{{item.description | default('') }}"
+    expression: "{{item.expression}}"
+    keystone_token: "{{default_notification.keystone_token}}"
+    match_by: "{{item.match_by | default(['hostname']) }}"
+    monasca_api_url: "{{default_notification.monasca_api_url}}"
+    severity: "{{item.severity | default('HIGH') }}"
+    alarm_actions:
+      - "{{default_notification.notification_method_id}}"
+    ok_actions:
+      - "{{default_notification.notification_method_id}}"
+    undetermined_actions:
+      - "{{default_notification.notification_method_id}}"
+  with_items:
+    - { name: "Bad iSCSI IP Address",
+        description: "Alert when array configuration has a bad iSCSI address",
+        expression: "cinder-diagnostics.iSCSI > 0",
+        severity: "HIGH" }
+    - { name: "Missing sysfsutils",
+        description: "Alert when sysfsutils software package is not found.",
+        expression: "cinder-diagnostics.sysfsutils > 0",
+        severity: "HIGH" }
+    - { name: "Missing SG3-utils",
+        description: "Alert when SG3-utils software package is not found.",
+        expression: "cinder-diagnostics.sg3-utils > 0",
+        severity: "HIGH" }
+    - { name: "Bad 3PAR WS URL",
+        description: "Alert when array configuration has a bad WS URL",
+        expression: "cinder-diagnostics.WS > 0",
+        severity: "HIGH" }
+    - { name: "Bad 3PAR CPG",
+        description: "Alert when array configuration has a bad CPG name",
+        expression: "cinder-diagnostics.CPG > 0",
+        severity: "HIGH" }
+    - { name: "Bad 3PAR credentials",
+        description: "Alert when array configuration has bad username/password",
+        expression: "cinder-diagnostics.credentials > 0",
+        severity: "HIGH" }
+    - { name: "Missing 3PAR driver",
+        description: "Alert when 3PAR driver software package is not found",
+        expression: "cinder-diagnostics.initialization > 0",
+        severity: "HIGH" }
+    - { name: "Missing hp3parclient",
+        description: "Alert when 3PAR client software package is not found",
+        expression: "cinder-diagnostics.3par > 0",
+        severity: "HIGH" }
