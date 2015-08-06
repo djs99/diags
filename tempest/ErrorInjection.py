@@ -79,8 +79,44 @@ class CinderErrors(object):
             
         def missing_package_3parclient(self):
             self.inject_cinder_missing_package_error('hp3parclient')
-            
         
+        def missing_package_sg3utils(self):
+            try :  
+                cmnd = "sudo apt-get --assume-yes remove sg3-utils" 
+                os.popen(cmnd)
+                  
+            finally: # catch *all* exceptions
+                time.sleep(20) 
+                #self.restart_cinder_service();
+        
+        def available_package_sg3utils(self):
+            try :  
+                cmnd = "sudo apt-get --assume-yes install sg3-utils" 
+                os.popen(cmnd)
+                  
+            finally: # catch *all* exceptions
+                time.sleep(15)   
+        def missing_package_sysfsutils(self):
+            try :  
+                cmnd = "sudo apt-get --assume-yes remove sysfsutils" 
+                os.popen(cmnd)
+                  
+            finally: # catch *all* exceptions
+                time.sleep(20) 
+                #self.restart_cinder_service();
+        
+        def available_package_sysfsutils(self):
+            try :  
+                cmnd = "sudo apt-get --assume-yes install sysfsutils" 
+                os.popen(cmnd)
+                  
+            finally: # catch *all* exceptions
+                time.sleep(15)          
+        
+       
+       
+#...................................Common Functions........................................................................       
+       
         def inject_cinder_missing_package_error(self, package_name) :
             try :  
                 cmnd = "yes | sudo -H pip  uninstall " + package_name
@@ -244,7 +280,6 @@ class LogVerify:
 
 
 
-
 #....................................Command Line argument......................................................................
 parser = argparse.ArgumentParser(usage="./ErrorInjection.py [options]...\nExecute'\n")
 parser.add_argument("--debug", dest="debug", action="store_true", help="List out given params")
@@ -256,8 +291,15 @@ parser.add_argument("--missing_package_3parclient", dest="missing_package_3parcl
 parser.add_argument("--bad_3par_iscsi_ips", dest="bad_3par_iscsi_ips", action="store_true",
                         help="Inject error 3par bad iscsi ips") 
 parser.add_argument("--bad_3par_ws_url", dest="bad_3par_ws_url", action="store_true",
-                        help="Inject error bad 3par ws url")                        
-
+                        help="Inject error bad 3par ws url")   
+parser.add_argument("--missing_package_sg3utils", dest="missing_package_sg3utils", action="store_true",
+                        help="Inject error missing package sg3utils")  
+parser.add_argument("--available_package_sg3utils", dest="available_package_sg3utils", action="store_true",
+                        help="Install missing package sg3utils")                      
+parser.add_argument("--missing_package_sysfsutils", dest="missing_package_sysfsutils", action="store_true",
+                        help="Inject error missing package sysfsutils")  
+parser.add_argument("--available_package_sysfsutils", dest="available_package_sysfsutils", action="store_true",
+                        help="Install missing package sysfsutils")  
 #................................................ Start Injection..................................................................
 log = LogCapture()
 log.start()
@@ -285,6 +327,18 @@ if len(sys.argv) > 1:
   
   elif args.bad_3par_ws_url :
      cinder.bad_3par_ws_url("https://theverse.cxo.sdsdsadhp.com:8080/api/v1")
+  
+  elif args.missing_package_sg3utils :
+     cinder.missing_package_sg3utils()  
+  
+  elif args.available_package_sg3utils :
+     cinder.available_package_sg3utils()   
+  
+  elif args.missing_package_sysfsutils :
+     cinder.missing_package_sysfsutils()  
+  
+  elif args.available_package_sysfsutils :
+     cinder.available_package_sysfsutils()        
   else : 
     print ' Error Injection does not support : ' + sys.argv[1]
 cinder.restart_cinder_service()
