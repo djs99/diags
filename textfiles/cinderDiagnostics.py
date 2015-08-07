@@ -10,7 +10,6 @@ from monasca_agent.collector.checks import AgentCheck
 # die alone and santa isn't real
 import sys
 sys.path.append('/usr/local/lib/python2.7/dist-packages/')
-
 from cinder_diagnostics import config_tester
 
 log = logging.getLogger(__name__)
@@ -54,8 +53,8 @@ class Diagnostics(AgentCheck):
             f = open(path, 'r+')
             for line in iter(f):
                 try:
-                    # data = json.loads(line)
-                    data = json.loads(line.replace(" ", "_"))
+                    data = json.loads(line)
+                    # data = json.loads(line.replace(" ", "_"))
                     #  these fields must be created by Logstash
                     dims = {'service': data['type'],
                             'hostname': data['host'],
