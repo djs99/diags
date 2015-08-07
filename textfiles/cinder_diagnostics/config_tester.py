@@ -55,25 +55,27 @@ def bad_cpg_list():
     bad_cpgs = []
     for section_name in hp3pars:
         client = get_client(section_name)
-        creds = cred_is_valid(section_name, client)
-        if client and creds and not cpg_is_valid(section_name, client):
-            bad_cpgs.append(section_name)
-        elif client and creds:
-            client.logout()
+        if client:
+            creds = cred_is_valid(section_name, client)
+            if creds and not cpg_is_valid(section_name, client):
+                bad_cpgs.append(section_name)
+            elif creds:
+                client.logout()
     return "__".join(bad_cpgs)
 
 
 def bad_iscsi_list():
     bad_ips = []
     for section_name in hp3pars:
-        if 'iscsi'in parser.get(section_name, 'volume_driver'):
+        if 'iscsi' in parser.get(section_name, 'volume_driver'):
             client = get_client(section_name)
-            creds = cred_is_valid(section_name, client)
-            if client and creds and not iscsi_is_valid(section_name, client):
-                bad_ips.append(section_name)
-            elif client and creds:
-                client.logout()
-        return "__".join(bad_ips)
+            if client:
+                creds = cred_is_valid(section_name, client)
+                if creds and not iscsi_is_valid(section_name, client):
+                    bad_ips.append(section_name)
+                elif creds:
+                    client.logout()
+    return "__".join(bad_ips)
 
 
 # Config testing methods check if option values are valid
