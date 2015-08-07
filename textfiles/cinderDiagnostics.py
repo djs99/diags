@@ -28,26 +28,20 @@ class Diagnostics(AgentCheck):
 
         error_dict = {}
 
-        bad_arrays = {'WS': config_tester.bad_url_list(),
-                      'credentials': config_tester.bad_cred_list(),
-                      'CPG': config_tester.bad_cpg_list(),
-                      'iSCSI': config_tester.bad_iscsi_list(),
-                      }
-
         error_dict.update(self.read_file(instance.get('logpath1')))
         time.sleep(1)  # wait so files are staggered
         error_dict.update(self.read_file(instance.get('logpath2')))
 
         for uuid in error_dict:
-            error_dict[uuid]['arrays'] = \
-                bad_arrays[error_dict[uuid]['error_type']]
+            error_dict[uuid]['arrays'] = self.get_arrays(error_dict[uuid][
+                                                             'error_type'])
             # strip all dimensions of forbidden characters
             for dim in error_dict[uuid]:
                 error_dict[uuid][dim] = \
                     re.sub(r'[><=()\'\\;&\{\}\",\^]', '',
                            error_dict[uuid][dim].replace(' ', '_'))
             dimensions = self._set_dimensions(error_dict[uuid], instance)
-            self.increment('zz.0807.test3.' + error_dict[uuid][
+            self.increment('zz.0807.test4.' + error_dict[uuid][
                 'error_type'], dimensions=dimensions)
 
     @staticmethod
@@ -85,4 +79,17 @@ class Diagnostics(AgentCheck):
                 ' and permissions allow for read & write.  '
                 'You may need to restart Logstash.' % path)
         return error_dict
+
+    @staticmethod
+    def get_arrays(error_type):
+        if error_type == 'WS':
+            return config_tester.bad_url_list()
+        elif error_type == 'credentials':
+            return config_tester.bad_cred_list()
+        elif error_type == 'CPG':
+            return config_tester.bad_cpg_list()
+        elif error_type == 'iSCSI':
+            return config_tester.bad_iscsi_list()
+        else:
+            return 'unknown'
 
