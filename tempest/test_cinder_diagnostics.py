@@ -60,12 +60,11 @@ class MonitoringCinderDiagnosticsTestJSON(base.BaseMonitoringTest):
         error_injection_name ="bad_3par_ws_url"
         self._test_cinder_diagnostics(metric_name, error_injection_name);
     
+    # FC does not work on the vagrant environment , need to skip the testcases 
     #@test.attr(type="gate")
     def _test_missing_package_sg3utils(self):
         metric_name = "cinderDiagnostics.sg3utils"
         error_injection_name ="available_package_sg3utils"
-        
-        
         
         self.manager = self.os
         #self.adm_manager= self.os_adm
@@ -81,9 +80,6 @@ class MonitoringCinderDiagnosticsTestJSON(base.BaseMonitoringTest):
             display_name=name, volume_type='3PAR-THEVERSE')
         self.manager.volumes_client.wait_for_volume_status(volume['id'],
                                                          'available')
-        
-        
-        
         # Test normal case for successful connection on first try
         client = ssh.Client(CONF.cinder_diagnostics.cinder_ssh_ip, CONF.cinder_diagnostics.cinder_ssh_user, CONF.cinder_diagnostics.cinder_ssh_password, timeout=30)
         sshconnection = client._get_ssh_connection(sleep=1)
@@ -97,7 +93,6 @@ class MonitoringCinderDiagnosticsTestJSON(base.BaseMonitoringTest):
         except IndexError:
             pass
         
-       
         # Step 2: create vm instance
         vm_name = data_utils.rand_name("instance")
       
@@ -107,7 +102,6 @@ class MonitoringCinderDiagnosticsTestJSON(base.BaseMonitoringTest):
         waiters.wait_for_server_status(self.manager.servers_client, server_id,
                                        'ACTIVE')
         # Step 3: attach and detach volume to vm
-        
         self.manager.servers_client.attach_volume(server_id,
                                                   volume['id'],
                                                   '/dev/vdc')
@@ -116,29 +110,21 @@ class MonitoringCinderDiagnosticsTestJSON(base.BaseMonitoringTest):
         self.manager.volumes_client.detach_volume(volume['id'])
         self.manager.volumes_client.wait_for_volume_status(volume['id'], 'available')
         
-         # Step 5: delete volume
+        # Step 5: delete volume
         self.manager.volumes_client.delete_volume(volume['id'])
         self.manager.volumes_client.wait_for_resource_deletion(volume['id'])
         
         # Step 4: delete vm
         self.manager.servers_client.delete_server(server_id)
         self.manager.servers_client.wait_for_server_termination(server_id)
-       
-
-       
-        
-        
-        
         self._test_cinder_diagnostics(metric_name, error_injection_name);
     
-    
- 
+    # common for all testcases 
     def _test_cinder_diagnostics(self,  metric_name, error_injection_name):
         
         
         m_starttime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         m_starttime = m_starttime.replace(' ', 'T') + 'Z'
-        
         # Test case to check if new notification is created successfully.
         notification_name = data_utils.rand_name('notification-')
         notification_type = 'EMAIL'
@@ -148,7 +134,7 @@ class MonitoringCinderDiagnosticsTestJSON(base.BaseMonitoringTest):
         self.assertEqual(notification_name, response['name'])
         notification_id = response['id']
         # Delete notification
-        # 
+        
         
         #alarm_def_name = metric_name
         alarm_def_name = data_utils.rand_name('test_monasca_alarm_definition')
@@ -167,7 +153,6 @@ class MonitoringCinderDiagnosticsTestJSON(base.BaseMonitoringTest):
         self.assertEqual('200', body.response['status'])
         response = json.loads(body.data)
               
-        
         # Test normal case for successful connection on first try
         client = ssh.Client(CONF.cinder_diagnostics.cinder_ssh_ip, CONF.cinder_diagnostics.cinder_ssh_user, CONF.cinder_diagnostics.cinder_ssh_password, timeout=100)
         sshconnection = client._get_ssh_connection(sleep=1)
@@ -190,12 +175,10 @@ class MonitoringCinderDiagnosticsTestJSON(base.BaseMonitoringTest):
               if len(response['elements']) < 1 :
                    isMetricAvailable = False
                    
-        
         isMeasurementsFound = False
         isAlarmFound = False
         isStateChangeToAlarm = False     
        
-        
         for i in range(0, 30):
               m_statistics = 'count'
               m_endtime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
