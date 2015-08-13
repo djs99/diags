@@ -10,7 +10,7 @@ class HP3ParClient(object):
 
     PORT_MODE_TARGET = 2
     PORT_PROTO_ISCSI = 2
-    PORT_SiTATE_READY = 4
+    PORT_STATE_READY = 4
 
     API_URL = 'http://test.ws.url:8080/api/v1'
     USERNAME = 'testuser'
