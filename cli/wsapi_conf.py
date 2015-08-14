@@ -7,14 +7,12 @@ Assumes the volume_driver is correctly set
 """
 import ConfigParser
 
-
-
 from oslo_utils import importutils
-import testclient
 hp3parclient = importutils.try_import("hp3parclient")
 if hp3parclient:
     from hp3parclient import client as hpclient
     from hp3parclient import exceptions as hpexceptions
+    import testclient
 else:
     raise ImportError('hp3parclient package is not installed')
 
@@ -34,10 +32,6 @@ class WSChecker(object):
         self.is_test = test
         self.conf = conf
 
-
-        # This should be set based on where SSHClient copies/location of
-        # test version. Read from cli.conf?  cli.conf read here or values
-        # received from caller?
         parser.read(self.conf)
         self.hp3pars = []
         for section in parser.sections():
