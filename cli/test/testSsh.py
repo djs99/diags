@@ -68,16 +68,16 @@ class CinderDiagnostics3PARCliSshClientTest(BaseCinderDiagnosticsCliToolTest):
             if client is not None :
                 client.disconnect()
 
-    def _failed_ssh_connection_with_mock(self) :
+    def test_failed_ssh_connection_with_mock(self) :
         """ Test SSH Connection with mock """
 
         try :
-            self._mock_exec_command(Exception())
+            self._mock_exec_command(Exception("Connection unSuccessful"))
             client = Client('127.0.0.1' , 'mock', 'mock')
             output = client.execute('echo Successful')
             self.fail("Connection unSuccessful" )
         except Exception as e :
-            pass
+            self.assertEqual("Connection unSuccessful", e.message)
 
         finally:
             if client is not None :
