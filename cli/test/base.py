@@ -33,9 +33,11 @@ class BaseCinderDiagnosticsCliToolTest(unittest.TestCase):
          c_mock.return_value = client_mock
          client_mock.exec_command.return_value = [[], client_mock]
 
-         client_mock.read.return_value =  client_mock
+         client_mock.read.return_value =  return_value
 
-         client_mock.__getitem__.return_value =  return_value
+
+
+
 
 
 

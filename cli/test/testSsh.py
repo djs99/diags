@@ -24,10 +24,10 @@ class CinderDiagnostics3PARCliSshClientTest(BaseCinderDiagnosticsCliToolTest):
         try :
             client = Client(CONF.cinder_hostname, CONF.cinder_ssh_username, CONF.cinder_ssh_password)
             output = client.execute('echo Successful')
-            self.assertEqual(output, "Successful")
+            self.assertEqual(output, "Successful\n")
 
-        except Exception :
-            self.fail("Connection unSuccessful" )
+        except Exception as e:
+            self.fail("Connection unSuccessful " + e.message)
 
         finally:
             if client is not None :
@@ -43,8 +43,8 @@ class CinderDiagnostics3PARCliSshClientTest(BaseCinderDiagnosticsCliToolTest):
             client.get_file('/etc/cinder/cinder.conf', temp_file)
             self.assertEqual(True,os.path.isfile(temp_file))
 
-        except Exception :
-            self.fail("Failed to get the file" )
+        except Exception as e:
+            self.fail("Failed to get the file " + e.message)
 
         finally:
             if client is not None :
@@ -53,17 +53,31 @@ class CinderDiagnostics3PARCliSshClientTest(BaseCinderDiagnosticsCliToolTest):
                 os.remove(temp_file)
 
 
-    def test_ssh_connection_with_mock(self) :
+    def test_successful_ssh_connection_with_mock(self) :
         """ Test SSH Connection with mock """
 
         try :
             self._mock_exec_command("Successful")
             client = Client('127.0.0.1' , 'mock', 'mock')
             output = client.execute('echo Successful')
-            print output
             self.assertEqual(output, "Successful")
         except Exception as e :
             self.fail("Connection unSuccessful" )
+
+        finally:
+            if client is not None :
+                client.disconnect()
+
+    def _failed_ssh_connection_with_mock(self) :
+        """ Test SSH Connection with mock """
+
+        try :
+            self._mock_exec_command(Exception())
+            client = Client('127.0.0.1' , 'mock', 'mock')
+            output = client.execute('echo Successful')
+            self.fail("Connection unSuccessful" )
+        except Exception as e :
+            pass
 
         finally:
             if client is not None :
