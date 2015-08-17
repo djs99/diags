@@ -44,4 +44,4 @@ class Client(object):
                 # Run the transmitted script remotely without args and show its output.
                 # SSHClient.exec_command() returns the tuple (stdin,stdout,stderr)
                 stdout = self.client.exec_command(command)[1]
-                return stdout.read()[:-1]
+                return stdout.read()
