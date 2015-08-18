@@ -1,5 +1,6 @@
 
 from sshClient import Client
+import pkg_checks
 import config as config
 from base import *
 import os
@@ -52,10 +53,19 @@ class CinderDiagnostics3PARCliSshClientTest(BaseCinderDiagnosticsCliToolTest):
             if os.path.isfile(temp_file) is True:
                 os.remove(temp_file)
 
+    def test_nova_pkg_checks(self) :
+        """ Test nova packages """
+
+        try :
+            packages = pkg_checks.nova_check(CONF.nova_hostname, CONF.nova_ssh_username, CONF.nova_ssh_password)
+            self.assertEqual(2,len(packages))
+
+        except Exception as e:
+            self.fail(e.message)
+
 
     def test_successful_ssh_connection_with_mock(self) :
         """ Test SSH Connection with mock """
-
         try :
             self._mock_exec_command("Successful")
             client = Client('127.0.0.1' , 'mock', 'mock')

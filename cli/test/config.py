@@ -11,6 +11,9 @@ class Config(object):
     cinder_hostname = None
     cinder_ssh_username = None
     cinder_ssh_password = None
+    nova_hostname = None
+    nova_ssh_username = None
+    nova_ssh_password = None
   
     api_version = None
     os_username = None
@@ -34,7 +37,9 @@ class Config(object):
                 if config.has_option('Devstack', 'devstack_ssh_username'): Config().cinder_ssh_username = config.get('Devstack', 'devstack_ssh_username')
                 if config.has_option('Devstack', 'devstack_ssh_password'): Config().cinder_ssh_password = config.get('Devstack', 'devstack_ssh_password')
                
-               
+                if config.has_option('Devstack', 'devstack_host'): Config().nova_hostname = config.get('Devstack', 'devstack_host')
+                if config.has_option('Devstack', 'devstack_ssh_username'): Config().nova_ssh_username = config.get('Devstack', 'devstack_ssh_username')
+                if config.has_option('Devstack', 'devstack_ssh_password'): Config().nova_ssh_password = config.get('Devstack', 'devstack_ssh_password')
                 
                 if config.has_option('Identity', 'api_version'): Config().api_version = config.get('Identity', 'api_version') 
                 if config.has_option('Identity', 'username'): Config().os_username = config.get('Identity', 'username') 
