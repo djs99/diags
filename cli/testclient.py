@@ -2,7 +2,10 @@
 This fakes 3PAR REST API Client behavior to allow for testing of the Cinder
 Diagnostics tool without access to a 3PAR array
 """
-
+# -----------------------------------------------------------
+import sys
+sys.path.append('/usr/local/lib/python2.7/dist-packages')
+# -----------------------------------------------------------
 from hp3parclient import exceptions
 
 
@@ -43,12 +46,12 @@ class HP3ParClient(object):
                  'linkState': self.PORT_STATE_READY,
                  'protocol': self.PORT_PROTO_ISCSI,
                  'IPAddr': '1.1.1.1'
-        }
+                 }
         second = {'mode': self.PORT_MODE_TARGET,
                  'linkState': self.PORT_STATE_READY,
                  'protocol': self.PORT_PROTO_ISCSI,
                  'IPAddr': '2.2.2.2'
-        }
+                  }
         ports = {'members': [first, second]}
         return ports
 

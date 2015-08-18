@@ -6,7 +6,6 @@ Requires the python hp3parclient: sudo pip install hp3parclient
 Assumes the volume_driver is correctly set
 """
 import ConfigParser
-
 from oslo_utils import importutils
 hp3parclient = importutils.try_import("hp3parclient")
 if hp3parclient:
@@ -24,13 +23,15 @@ class WSChecker(object):
     """
     Tests web service api configurations by section in the cinder.conf file
     """
-    def __init__(self, test=False, conf='/etc/cinder/cinder.conf'):
+    def __init__(self, conf, node, test=False):
         """
-        :param test: use testing client
         :param conf: location of cinder.conf
+        :param node: cinder node the cinder.conf was copied from
+        :param test: use testing client
         """
         self.is_test = test
         self.conf = conf
+        self.node = node
 
         parser.read(self.conf)
         self.hp3pars = []
@@ -61,6 +62,7 @@ class WSChecker(object):
                  "credentials": "unknown",
                  "cpg": "unknown",
                  "iscsi": "unknown",
+                 "node": self.node,
                  }
         if section_name in self.hp3pars:
             client = get_client(section_name, self.is_test)
@@ -72,7 +74,10 @@ class WSChecker(object):
                         tests["cpg"] = "pass"
                     else:
                         tests["cpg"] = "fail"
-                    if iscsi_is_valid(section_name, client):
+                    if 'iscsi' in parser.get(section_name,
+                                             'volume_driver') \
+                            and iscsi_is_valid(
+                            section_name, client):
                         tests["iscsi"] = "pass"
                     else:
                         tests["iscsi"] = "fail"
@@ -82,9 +87,9 @@ class WSChecker(object):
 
             else:
                 tests["url"] = "fail"
+            return tests
         else:
-            raise ValueError('%s not found in %s' % (section_name, self.conf))
-        return tests
+            return None
 
 
 # Config testing methods check if option values are valid
