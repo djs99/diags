@@ -10,7 +10,7 @@ def nova_check(ip, user, pswd):
     for pkg in packages:
         response = client.execute("dpkg-query -W -f='${Status} ${Version}' " +
                                   pkg['name'])
-        if response != '':
+        if 'install ok installed' in response:
             pkg['installed'] = 'pass'
             version = re.search('([\d\.]+)', response)
             if version.group(0) >= pkg['min_version']:
