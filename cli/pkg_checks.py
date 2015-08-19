@@ -3,6 +3,14 @@ import re
 
 
 def nova_check(ip, user, pswd, pkg_info=('default', 'default')):
+    """
+    Check for installed packages on the nova node
+    :param ip: address of nova node
+    :param user: ssh username
+    :param pswd: ssh password
+    :param pkg_info: tuple of ('package name', 'minimum version')
+    :return: list of dictionaries
+    """
     packages = [('sysfsutils',  '2.1'),
                 ('sg3-utils', '1.3'),
                 ]
