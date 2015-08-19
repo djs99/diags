@@ -125,18 +125,65 @@ class CinderDiagnostics3PARCliSshClientTest(BaseCinderDiagnosticsCliToolTest):
             if client is not None :
                 client.disconnect()
     #@test.attr(type="gate")
-    def test_nova_pkg_checks_with_mock(self) :
+    def test_install_nova_pkg_checks_with_mock(self) :
         """ Test SSH Connection with mock """
 
         try :
             self._mock_exec_command("install ok installed 2.1.0+repack-3")
-            packages = pkg_checks.nova_check('127.0.0.1' , 'mock', 'mock')
-            self.assertEqual(2,len(packages))
+            responses = pkg_checks.nova_check('127.0.0.1' , 'mock', 'mock')
+            for response_item in responses :
+                 self.assertEqual("pass",response_item.get("installed"))
+                 self.assertEqual("pass",response_item.get("version"))
+        except Exception as e :
+            self.assertEqual("Connection unSuccessful", e.message)
+
+    def test_version_failure_for_install_nova_pkg(self) :
+        """ Test SSH Connection with mock """
+
+        try :
+            self._mock_exec_command("install ok installed 1.1.0+repack-3")
+            responses = pkg_checks.nova_check('127.0.0.1' , 'mock', 'mock')
+            for response_item in responses :
+                 self.assertEqual("pass",response_item.get("installed"))
+                 self.assertEqual("fail",response_item.get("version"))
         except Exception as e :
             self.assertEqual("Connection unSuccessful", e.message)
 
 
+    #@test.attr(type="gate")
+    def test_uninstall_nova_pkg_checks_with_mock(self) :
+        """ Test SSH Connection with mock """
 
+        try :
+            self._mock_exec_command("dpkg-query: no packages found matching sysutils")
+            responses = pkg_checks.nova_check('127.0.0.1' , 'fake', 'fake')
+            for response_item in responses :
+                 self.assertEqual("fail",response_item.get("installed"))
+        except Exception as e :
+             self.fail(e.message)
+    #@test.attr(type="gate")
+    def test_version_failure_for_install_nova_pkg(self) :
+        """ Test SSH Connection with mock """
+
+        try :
+            self._mock_exec_command("install ok installed 1.1.0+repack-3")
+            responses = pkg_checks.nova_check('127.0.0.1' , 'mock', 'mock')
+            for response_item in responses :
+                 self.assertEqual("pass",response_item.get("installed"))
+                 self.assertEqual("fail",response_item.get("version"))
+        except Exception as e :
+            self.assertEqual("Connection unSuccessful", e.message)
+
+    #@test.attr(type="gate")
+    def test_vaque_response_for_install_nova_pkg(self) :
+        """ Test SSH Connection with mock """
+        try :
+            self._mock_exec_command("vaque response")
+            responses = pkg_checks.nova_check('127.0.0.1' , 'mock', 'mock')
+            for response_item in responses :
+                 self.assertEqual("fail",response_item.get("installed"))
+        except Exception as e :
+            self.assertEqual("Connection unSuccessful", e.message)
 
 if __name__ == '__main__':
     unittest.main()
