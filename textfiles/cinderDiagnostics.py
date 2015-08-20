@@ -40,7 +40,7 @@ class Diagnostics(AgentCheck):
                     re.sub(r'[><=()\'\\;&\{\}\",\^]', '',
                            error_dict[uuid][dim].replace(' ', '_'))
             dimensions = self._set_dimensions(error_dict[uuid], instance)
-            self.increment('cinderDiagnostics.' + error_dict[uuid][
+            self.increment('08/11.test01.' + error_dict[uuid][
                 'error_type'], dimensions=dimensions)
 
     @staticmethod

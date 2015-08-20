@@ -35,7 +35,8 @@ def bad_url_list():
         client = get_client(section_name)
         if not client:
             bad_urls.append(section_name)
-    return "__".join(bad_urls)
+    return bad_urls
+    # return "__".join(bad_urls)
 
 
 def bad_cred_list():
@@ -47,8 +48,8 @@ def bad_cred_list():
             bad_creds.append(section_name)
         elif client:
             client.logout()
-
-    return "__".join(bad_creds)
+    return bad_creds
+    # return "__".join(bad_creds)
 
 
 def bad_cpg_list():
@@ -61,7 +62,8 @@ def bad_cpg_list():
                 bad_cpgs.append(section_name)
             elif creds:
                 client.logout()
-    return "__".join(bad_cpgs)
+    return bad_cpgs
+    # return "__".join(bad_cpgs)
 
 
 def bad_iscsi_list():
@@ -75,7 +77,8 @@ def bad_iscsi_list():
                     bad_ips.append(section_name)
                 elif creds:
                     client.logout()
-    return "__".join(bad_ips)
+    return bad_ips
+    # return "__".join(bad_ips)
 
 
 # Config testing methods check if option values are valid
