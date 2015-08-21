@@ -19,7 +19,7 @@ class CheckArray(Lister):
 
     def take_action(self, parsed_args):
         # can we create the Reader in main & use it here?
-        reader = conf_reader.Reader()
+        reader = conf_reader.Reader(parsed_args.test)
         reader.copy_files()
         result = reader.ws_checks(parsed_args.arrayname)
         if len(result) < 1:
