@@ -1,0 +1,7 @@
+[cliff.cinderdiags]
+check array = cinderdiags.array:CheckArray
+check software = cinderdiags.software:CheckSoftware
+
+[console_scripts]
+cinderdiags = cinderdiags.main:main
+

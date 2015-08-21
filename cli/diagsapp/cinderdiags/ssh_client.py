@@ -1,6 +1,7 @@
-import sys
-sys.path.append('/usr/lib/python2.7/dist-packages')
 import paramiko
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Client(object):
@@ -18,6 +19,8 @@ class Client(object):
 
         except IndexError:
             pass
+        except paramiko.ssh_exception:
+
 
     def get_file(self, fromLocation, toLocation):
         """ perform copy action to remote machine using SSH
@@ -30,6 +33,7 @@ class Client(object):
 
         except IndexError:
             pass
+
 
     def disconnect(self):
         """ perform copy action to remote machine using SSH

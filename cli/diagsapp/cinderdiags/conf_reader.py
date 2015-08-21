@@ -18,7 +18,7 @@ class Reader(object):
         self.cinder_nodes = []
         self.nova_nodes = []
 
-        parser.read(PREFIX + 'cli.conf')
+        parser.read('cli.conf')
         if self.is_test:
             self.test_parse()
         else:
