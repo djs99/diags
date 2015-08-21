@@ -19,7 +19,6 @@ class Client(object):
 
         except IndexError:
             pass
-        except paramiko.ssh_exception:
 
 
     def get_file(self, fromLocation, toLocation):
