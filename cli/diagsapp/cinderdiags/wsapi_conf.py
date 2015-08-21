@@ -75,12 +75,13 @@ class WSChecker(object):
                     else:
                         tests["cpg"] = "fail"
                     if 'iscsi' in parser.get(section_name,
-                                             'volume_driver') \
-                            and iscsi_is_valid(
-                            section_name, client):
-                        tests["iscsi"] = "pass"
+                                             'volume_driver'):
+                        if iscsi_is_valid(section_name, client):
+                            tests["iscsi"] = "pass"
+                        else:
+                            tests["iscsi"] = "fail"
                     else:
-                        tests["iscsi"] = "fail"
+                        tests["iscsi"] = "N/A"
                     client.logout()
                 else:
                     tests["credentials"] = "fail"
