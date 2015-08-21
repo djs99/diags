@@ -10,7 +10,11 @@ class CheckArray(Lister):
 
     def get_parser(self, prog_name):
         parser = super(CheckArray, self).get_parser(prog_name)
-        parser.add_argument('arrayname', nargs='?', default='all')
+        parser.add_argument('-test', dest='test', action='store_true',
+                            help='check array will only look at cli.conf '
+                                 'sections with "service=test"')
+        parser.add_argument('arrayname', nargs='?', default='all',
+                            help='defaults to "all"')
         return parser
 
     def take_action(self, parsed_args):

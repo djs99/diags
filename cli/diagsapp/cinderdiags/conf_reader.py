@@ -27,17 +27,16 @@ class Reader(object):
 
     def test_parse(self):
         for section_name in list(parser.sections()):
-            if section_name != 'CLI':
-                if parser.get(section_name, 'service').lower() == 'test':
-                    self.cinder_nodes.append(section_name)
+            if parser.get(section_name, 'service').lower() == 'test':
+                self.cinder_nodes.append(section_name)
+                self.nova_nodes.append(section_name)
 
     def real_parse(self):
         for section_name in list(parser.sections()):
-            if section_name != 'CLI':
-                if parser.get(section_name, 'service').lower() == 'cinder':
-                    self.cinder_nodes.append(section_name)
-                elif parser.get(section_name, 'service').lower() == 'nova':
-                    self.nova_nodes.append(section_name)
+            if parser.get(section_name, 'service').lower() == 'cinder':
+                self.cinder_nodes.append(section_name)
+            elif parser.get(section_name, 'service').lower() == 'nova':
+                self.nova_nodes.append(section_name)
 
     def copy_files(self):
         for node in self.cinder_nodes:
