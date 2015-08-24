@@ -47,31 +47,29 @@ class Reader(object):
             client.get_file(parser.get(node, 'conf_source'), PREFIX + node + SUFFIX)
             client.disconnect()
 
-    def nova_checks(self, pkgs=('all', 'all')):
+    def nova_checks(self, pkgs=('default', 'default')):
         checks = []
         for node in self.nova_nodes:
-            print node
             client = ssh_client.Client(parser.get(node, 'host_ip'),
                                        parser.get(node, 'ssh_user'),
                                        parser.get(node, 'ssh_password')
                                        )
             if pkgs[0] == 'all':
-                checks = pkg_checks.check_all(client)
+                checks = pkg_checks.check_all(client, node)
             else:
-                checks.append(pkg_checks.check_package(client, pkgs))
+                checks.append(pkg_checks.check_package(client, node, pkgs))
             client.disconnect()
         return checks
 
-    def ws_checks(self, section_name='all'):
+    def ws_checks(self, section_name='arrays'):
         checks = []
         for node in self.cinder_nodes:
             checker = wsapi_conf.WSChecker(PREFIX + node + SUFFIX, node,
                                            self.is_test)
-            if section_name == 'all':
+            if section_name == 'arrays':
                 checks += checker.check_all()
             else:
                 found = checker.check_section(section_name)
                 if found:
                     checks.append(found)
-
         return checks

@@ -24,11 +24,13 @@ class CheckSoftware(Lister):
         reader = conf_reader.Reader(parsed_args.test)
         result = reader.nova_checks((parsed_args.software,
                                      parsed_args.version))
-        print result
 
-        columns = ('Software', 'Installed', 'Version')
+        columns = ('Nova Node', 'Software', 'Installed', 'Version')
         data = []
         for pkg in result:
-            data.append( (pkg['name'], pkg['installed'], pkg['version']) )
+            data.append( (pkg['node'],
+                          pkg['name'],
+                          pkg['installed'],
+                          pkg['version']) )
 
         return (columns, data)

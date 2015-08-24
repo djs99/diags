@@ -13,12 +13,11 @@ class CheckArray(Lister):
         parser.add_argument('-test', dest='test', action='store_true',
                             help='check array will only look at cli.conf '
                                  'sections with "service=test"')
-        parser.add_argument('arrayname', nargs='?', default='all',
-                            help='defaults to "all"')
+        parser.add_argument('arrayname', nargs='?', default='arrays',
+                            help='defaults to checking all arrays')
         return parser
 
     def take_action(self, parsed_args):
-        # can we create the Reader in main & use it here?
         reader = conf_reader.Reader(parsed_args.test)
         reader.copy_files()
         result = reader.ws_checks(parsed_args.arrayname)

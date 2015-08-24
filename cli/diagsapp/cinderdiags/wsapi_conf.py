@@ -80,14 +80,14 @@ class WSChecker(object):
                             tests["iscsi"] = "pass"
                         else:
                             tests["iscsi"] = "fail"
-                    else:
-                        tests["iscsi"] = "N/A"
                     client.logout()
                 else:
                     tests["credentials"] = "fail"
 
             else:
                 tests["url"] = "fail"
+            if 'hp_3par_fc' in parser.get(section_name, 'volume_driver'):
+                tests["iscsi"] = "N/A"
             return tests
         else:
             return None
