@@ -12,6 +12,7 @@ import cinderdiags.main as cli
 import cinderdiags.pkg_checks as pkg_checks
 import sys
 import shutil
+import paramiko
 
 
 class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
@@ -171,7 +172,7 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
               self.assertEqual('unknown' , row['CPG'])
               self.assertEqual('fail' , row['Credentials'])
               self.assertEqual('pass' , row['WS API'])
-              self.assertEqual('unknown' , row['iSCSI IP(s)'])
+              self.assertEqual('N/A' , row['iSCSI IP(s)'])
 
         self._remove_file(self.cinder_config_file)
 
@@ -219,7 +220,7 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
               self.assertEqual('unknown' , row['CPG'])
               self.assertEqual('fail' , row['Credentials'])
               self.assertEqual('pass' , row['WS API'])
-              self.assertEqual('unknown' , row['iSCSI IP(s)'])
+              self.assertEqual('N/A' , row['iSCSI IP(s)'])
 
         self._remove_file(self.cinder_config_file)
 
@@ -269,6 +270,154 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
               self.assertEqual('N/A' , row['iSCSI IP(s)'])
 
         self._remove_file(self.cinder_config_file)
+
+    @test.attr(type="gate")
+    def test_diags_cli_check_array_command_with_cinder_file_not_found(self) :
+
+        # Mock permiko ssh client to return cinder file we want
+        self._mock_get_file(self.cinder_config_file,True)
+
+        # create cinder config,conf file and add 3par ISCSI section
+        cinder_dict = { }
+        # 3par ISCSI section
+        iscsi_section_name, iscsi_values = self._get_default_3par_iscsi_cinder_conf_section()
+
+        iscsi_values['hp3par_iscsi_ips'] = '10.20.15.11:3260'
+        cinder_dict[iscsi_section_name] = iscsi_values
+
+        # 3par FC section
+        fc_section_name, fc_values = self._get_default_3par_fc_cinder_conf_section()
+        fc_values['hp3par_cpg'] = 'badCPG'
+        cinder_dict[fc_section_name] = fc_values
+
+        #Create cinder.conf
+        self._create_config(self.cinder_config_file,  cinder_dict)
+
+
+        # Execute the CLI commnad
+        command_arvgs=['check', 'array', "-test"]
+        cli_exit_value , output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(1 , cli_exit_value)
+        self.assertEqual( len(output) , 0)
+
+
+        self._remove_file(self.cinder_config_file)
+
+    @test.attr(type="gate")
+    def test_diags_cli_check_array_command_with_wrong_cinder_node_ssh_credentials(self) :
+
+        # Mock permiko ssh client to return cinder file we want
+        self._mock_ssh_connection(paramiko.ssh_exception.AuthenticationException ())
+
+        # create cinder config,conf file and add 3par ISCSI section
+        cinder_dict = { }
+        # 3par ISCSI section
+        iscsi_section_name, iscsi_values = self._get_default_3par_iscsi_cinder_conf_section()
+        cinder_dict[iscsi_section_name] = iscsi_values
+
+        # 3par FC section
+        fc_section_name, fc_values = self._get_default_3par_fc_cinder_conf_section()
+        cinder_dict[fc_section_name] = fc_values
+
+        #Create cinder.conf
+        self._create_config(self.cinder_config_file,  cinder_dict)
+
+
+        # Execute the CLI commnad
+        command_arvgs=['check', 'array', "-test"]
+        cli_exit_value , output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual( len(output) , 2)
+
+
+        self._remove_file(self.cinder_config_file)
+
+    @test.attr(type="gate")
+    def test_diags_cli_check_sysfsutils_package_command(self) :
+        self._check_software_package('sysfsutils')
+        self._check_software_package('sg3-utils')
+
+
+    @test.attr(type="gate")
+    def test_diags_cli_check_sg3_utils_package_command(self) :
+        self._check_software_package('sg3-utils')
+
+
+
+    def _check_software_package(self, package) :
+
+        # Mock permiko ssh client to return cinder file we want
+        self._mock_exec_command({"dpkg-query -W -f='${Status} ${Version}' "+ package :'install ok installed 2.2.0'
+                                 })
+
+
+        # Execute the CLI commnad
+        command_arvgs=['check', 'software',package,'1.3','-test']
+        cli_exit_value , output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(len(output) , 1)
+
+        for row in output :
+            self.assertEqual(package , row['Software'])
+            self.assertEqual('pass' , row['Installed'])
+            self.assertEqual('pass' , row['Version'])
+
+
+         # Mock permiko ssh client to return cinder file we want
+        self._mock_exec_command({"dpkg-query -W -f='${Status} ${Version}' "+ package :'no packages found matching  '+package ,
+                                 })
+
+
+        # Execute the CLI commnad
+        command_arvgs=['check', 'software',package, '1.3', '-test']
+        cli_exit_value , output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(len(output) , 1)
+
+        for row in output :
+            self.assertEqual(package , row['Software'])
+            self.assertEqual('fail' , row['Installed'])
+            self.assertEqual('fail' , row['Version'])
+
+          # Mock permiko ssh client to return cinder file we want
+        self._mock_exec_command({"dpkg-query -W -f='${Status} ${Version}' " + package:'install ok installed 2.0+repack-3' ,
+                                 })
+
+
+        # Execute the CLI commnad
+        command_arvgs=['check', 'software',package, '2.1', '-test']
+        cli_exit_value , output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(len(output) , 1)
+
+        for row in output :
+            self.assertEqual(package , row['Software'])
+            self.assertEqual('pass' , row['Installed'])
+            self.assertEqual('fail' , row['Version'])
+
+         # Mock permiko ssh client to return cinder file we want
+        self._mock_exec_command({"dpkg-query -W -f='${Status} ${Version}' "+package :'Unknown Response' ,
+                                 })
+
+
+        # Execute the CLI commnad
+        command_arvgs=['check', 'software',package, '2.1', '-test']
+        cli_exit_value , output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(len(output) , 1)
+
+        for row in output :
+            self.assertEqual(package , row['Software'])
+            self.assertEqual('fail' , row['Installed'])
+            self.assertEqual('fail' , row['Version'])
+
+
 
 
 
@@ -413,7 +562,16 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
                 self._patch('paramiko.AutoAddPolicy'),
                 client_mock)
 
-    def _mock_get_file(self, config_file):
+    def _mock_ssh_connection(self, config_file, raiseException = 'None'):
+         c_mock, aa_mock, client_mock = self._set_ssh_connection_mocks()
+         s_mock = self._patch('time.sleep')
+         if raiseException == 'None'  :
+           c_mock.return_value = client_mock
+         else  :
+            c_mock.return_value = raiseException
+
+
+    def _mock_get_file(self, config_file, raiseException = False):
          c_mock, aa_mock, client_mock = self._set_ssh_connection_mocks()
          s_mock = self._patch('time.sleep')
          c_mock.return_value = client_mock
@@ -422,6 +580,10 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
 
          def my_side_effect(*args, **kwargs):
                  #fromLocation =  args[0]
+
+                 if raiseException :
+                     raise Exception()
+
                  toLocation  =  args[1]
                  os.popen("sudo cp " + config_file + " " +toLocation)
 
