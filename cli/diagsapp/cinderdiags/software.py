@@ -14,16 +14,18 @@ class CheckSoftware(Lister):
         parser.add_argument('-test', dest='test', action='store_true',
                             help='check software will only look at cli.conf '
                                  'sections with "service=test"')
-        parser.add_argument('software', nargs='?', default='all',
-                            help='package to be checked')
-        parser.add_argument('version', nargs='?', default='all',
-                            help='minimum version required')
+
+        parser.add_argument('-package', required=False,
+                            nargs=2, default=['all', 'default'],
+                            metavar=('PACKAGE-NAME', 'MINIMUM-VERSION'),
+                            help='package name and minimum version')
         return parser
 
     def take_action(self, parsed_args):
         reader = conf_reader.Reader(parsed_args.test)
-        result = reader.nova_checks((parsed_args.software,
-                                     parsed_args.version))
+        # result = reader.nova_checks((parsed_args.software,
+        #                              parsed_args.version))
+        result = reader.nova_checks(parsed_args.software)
 
         columns = ('Nova Node', 'Software', 'Installed', 'Version')
         data = []
