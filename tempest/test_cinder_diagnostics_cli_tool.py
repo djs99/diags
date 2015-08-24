@@ -3,7 +3,7 @@ import mock
 import time
 import ConfigParser
 import os
-import pkg_checks
+#import pkg_checks
 from tempest.api.volume import base
 from tempest import test
 from tempest import config
@@ -17,7 +17,7 @@ import sys
 class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
 
     """Test case class for all 3PAR cinder Diagnostics CLI Tool """
-
+    cinder_config_file = "cinder.conf"
 
     @classmethod
     def resource_setup(cls):
@@ -134,9 +134,9 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
         section_name, values = self._get_default_3par_fc_cinder_conf_section()
         dict[section_name] = values
         #Create cinder.conf
-        self._create_config("cinder.conf",  dict)
+        self._create_config(self.cinder_config_file,  dict)
 
-        output_file  = "output.%.7f.txt" % time.time()
+        output_file  = self._get_file()
 
         #open a file to capture the CLI output
         sys.stdout  = open(output_file, 'w')
@@ -155,12 +155,20 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
             self.assertEqual('pass' , row['WS API'])
 
 
-        # remove the file
-        if os.path.isfile(output_file) is True:
-                os.remove(output_file)
+        #self._remove_file([output_file , self.cinder_config_file])
 
-        if os.path.isfile("cinder.conf") is True:
-                os.remove("cinder.conf")
+
+
+
+    def _get_file(self):
+        return "output.%.7f.txt" % time.time()
+
+    def _remove_file(self, files):
+
+        # remove the file
+        for file in files :
+            if os.path.isfile(file) is True:
+                os.remove(file)
 
     def _convert_table_output(self, filename):
 
