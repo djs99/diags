@@ -3,32 +3,276 @@ import mock
 import time
 import ConfigParser
 import os
-#import pkg_checks
 from tempest.api.volume import base
 from tempest import test
 from tempest import config
 from tempest_lib.cli import output_parser
 from cinderdiags.ssh_client import Client
-
 import cinderdiags.main as cli
+import cinderdiags.pkg_checks as pkg_checks
 import sys
+import shutil
 
 
 class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
 
     """Test case class for all 3PAR cinder Diagnostics CLI Tool """
-    cinder_config_file = "cinder.conf"
 
+    cinder_config_file = "cinder.conf"
+    
     @classmethod
     def resource_setup(cls):
         super(CinderDiagnostics3PARCliToolTest, cls).resource_setup()
-        cls.mock_instances = []
+
+
+        if not os.path.exists('cinderdiags')  :
+               os.mkdir('cinderdiags',False)
+        if not os.path.exists('config')  :
+               os.mkdir('config', False)
 
     @classmethod
     def resource_cleanup(cls):
-        for mock_instance in cls.mock_instances :
-             mock_instance.stop()
+        if os.path.exists('cinderdiags')  :
+            shutil.rmtree("cinderdiags")
+        if os.path.exists('config')  :
+            shutil.rmtree("config")
 
+
+
+
+    @test.attr(type="gate")
+    def test_diags_cli_check_array_command(self) :
+
+        # Mock permiko ssh client to return cinder file we want
+        self._mock_get_file(self.cinder_config_file)
+
+
+        # create cinder config,conf file and add 3par ISCSI section
+        cinder_dict = { }
+        # 3par ISCSI section
+        section_name, values = self._get_default_3par_iscsi_cinder_conf_section()
+        cinder_dict[section_name] = values
+
+        # 3par FC section
+        section_name1, valuess = self._get_default_3par_fc_cinder_conf_section()
+        cinder_dict[section_name1] = valuess
+
+        #Create cinder.conf
+        self._create_config(self.cinder_config_file,  cinder_dict)
+
+
+        # Execute the CLI commnad
+        command_arvgs=['check', 'array', "-test"]
+        cli_exit_value , output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(len(output) , 2)
+
+        for row in output :
+            self.assertEqual('TEST' , row['Node'])
+            self.assertEqual('pass' , row['CPG'])
+            self.assertEqual('pass' , row['Credentials'])
+            self.assertEqual('pass' , row['WS API'])
+            if row['Name'] == '3PAR-SLEEPYKITTY-FC' :
+               self.assertEqual('N/A' , row['iSCSI IP(s)'])
+            else :
+               self.assertEqual('pass' , row['iSCSI IP(s)'])
+
+
+
+        self._remove_file(self.cinder_config_file)
+
+
+
+
+    @test.attr(type="gate")
+    def test_diags_cli_check_array_command_for_bad_ws_api(self) :
+
+        # Mock permiko ssh client to return cinder file we want
+        self._mock_get_file(self.cinder_config_file)
+
+
+        # create cinder config,conf file and add 3par ISCSI section
+        cinder_dict = { }
+        # 3par ISCSI section
+        iscsi_section_name, iscsi_values = self._get_default_3par_iscsi_cinder_conf_section()
+        iscsi_values['hp3par_api_url'] = 'http://bad.ws.url:8080/api/v1'
+        cinder_dict[iscsi_section_name] = iscsi_values
+
+        # 3par FC section
+        fc_section_name, fc_values = self._get_default_3par_fc_cinder_conf_section()
+        cinder_dict[fc_section_name] = fc_values
+
+        #Create cinder.conf
+        self._create_config(self.cinder_config_file,  cinder_dict)
+
+
+        # Execute the CLI commnad
+        command_arvgs=['check', 'array', "-test"]
+        cli_exit_value , output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual( len(output) , 2)
+
+        for row in output :
+           if row['Name'] == iscsi_section_name :
+              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('unknown' , row['CPG'])
+              self.assertEqual('unknown' , row['Credentials'])
+              self.assertEqual('fail' , row['WS API'])
+              self.assertEqual('unknown' , row['iSCSI IP(s)'])
+           else :
+              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('pass' , row['CPG'])
+              self.assertEqual('pass' , row['Credentials'])
+              self.assertEqual('pass' , row['WS API'])
+              self.assertEqual('N/A' , row['iSCSI IP(s)'])
+
+        self._remove_file(self.cinder_config_file)
+
+
+    @test.attr(type="gate")
+    def test_diags_cli_check_array_command_for_wrong_credential(self) :
+        # Mock permiko ssh client to return cinder file we want
+        self._mock_get_file(self.cinder_config_file)
+
+        # create cinder config,conf file and add 3par ISCSI section
+        cinder_dict = { }
+        # 3par ISCSI section
+        iscsi_section_name, iscsi_values = self._get_default_3par_iscsi_cinder_conf_section()
+        cinder_dict[iscsi_section_name] = iscsi_values
+
+        # 3par FC section
+        fc_section_name, fc_values = self._get_default_3par_fc_cinder_conf_section()
+        fc_values['hp3par_username'] = 'baduser'
+        fc_values['hp3par_password'] = 'badpass'
+        cinder_dict[fc_section_name] = fc_values
+
+        #Create cinder.conf
+        self._create_config(self.cinder_config_file,  cinder_dict)
+
+
+        # Execute the CLI commnad
+        command_arvgs=['check', 'array', "-test"]
+        cli_exit_value , output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual( len(output) , 2)
+
+        for row in output :
+           if row['Name'] == iscsi_section_name :
+              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('pass' , row['CPG'])
+              self.assertEqual('pass' , row['Credentials'])
+              self.assertEqual('pass' , row['WS API'])
+              self.assertEqual('pass' , row['iSCSI IP(s)'])
+           else :
+              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('unknown' , row['CPG'])
+              self.assertEqual('fail' , row['Credentials'])
+              self.assertEqual('pass' , row['WS API'])
+              self.assertEqual('unknown' , row['iSCSI IP(s)'])
+
+        self._remove_file(self.cinder_config_file)
+
+
+
+    @test.attr(type="gate")
+    def test_diags_cli_check_array_command_for_bad_CPG(self) :
+
+       # Mock permiko ssh client to return cinder file we want
+        self._mock_get_file(self.cinder_config_file)
+
+        # create cinder config,conf file and add 3par ISCSI section
+        cinder_dict = { }
+        # 3par ISCSI section
+        iscsi_section_name, iscsi_values = self._get_default_3par_iscsi_cinder_conf_section()
+        iscsi_values['hp3par_cpg'] = 'badCPG'
+        cinder_dict[iscsi_section_name] = iscsi_values
+
+        # 3par FC section
+        fc_section_name, fc_values = self._get_default_3par_fc_cinder_conf_section()
+        fc_values['hp3par_username'] = 'baduser'
+        fc_values['hp3par_password'] = 'badpass'
+        cinder_dict[fc_section_name] = fc_values
+
+        #Create cinder.conf
+        self._create_config(self.cinder_config_file,  cinder_dict)
+
+
+        # Execute the CLI commnad
+        command_arvgs=['check', 'array', "-test"]
+        cli_exit_value , output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual( len(output) , 2)
+
+        for row in output :
+           if row['Name'] == iscsi_section_name :
+              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('fail' , row['CPG'])
+              self.assertEqual('pass' , row['Credentials'])
+              self.assertEqual('pass' , row['WS API'])
+              self.assertEqual('pass' , row['iSCSI IP(s)'])
+           else :
+              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('unknown' , row['CPG'])
+              self.assertEqual('fail' , row['Credentials'])
+              self.assertEqual('pass' , row['WS API'])
+              self.assertEqual('unknown' , row['iSCSI IP(s)'])
+
+        self._remove_file(self.cinder_config_file)
+
+
+    @test.attr(type="gate")
+    def test_diags_cli_check_array_command_for_wrong_iscsi_IP(self) :
+
+        # Mock permiko ssh client to return cinder file we want
+        self._mock_get_file(self.cinder_config_file)
+
+        # create cinder config,conf file and add 3par ISCSI section
+        cinder_dict = { }
+        # 3par ISCSI section
+        iscsi_section_name, iscsi_values = self._get_default_3par_iscsi_cinder_conf_section()
+
+        iscsi_values['hp3par_iscsi_ips'] = '10.20.15.11:3260'
+        cinder_dict[iscsi_section_name] = iscsi_values
+
+        # 3par FC section
+        fc_section_name, fc_values = self._get_default_3par_fc_cinder_conf_section()
+        fc_values['hp3par_cpg'] = 'badCPG'
+        cinder_dict[fc_section_name] = fc_values
+
+        #Create cinder.conf
+        self._create_config(self.cinder_config_file,  cinder_dict)
+
+
+        # Execute the CLI commnad
+        command_arvgs=['check', 'array', "-test"]
+        cli_exit_value , output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual( len(output) , 2)
+
+        for row in output :
+           if row['Name'] == iscsi_section_name :
+              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('pass' , row['CPG'])
+              self.assertEqual('pass' , row['Credentials'])
+              self.assertEqual('pass' , row['WS API'])
+              self.assertEqual('fail' , row['iSCSI IP(s)'])
+           else :
+              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('fail' , row['CPG'])
+              self.assertEqual('pass' , row['Credentials'])
+              self.assertEqual('pass' , row['WS API'])
+              self.assertEqual('N/A' , row['iSCSI IP(s)'])
+
+        self._remove_file(self.cinder_config_file)
+
+
+
+    '''
     @test.attr(type="gate")
     def test_successful_ssh_connection_with_mock(self) :
         """ Test SSH Connection with mock """
@@ -117,63 +361,47 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
                  self.assertEqual("fail",response_item.get("installed"))
                  self.assertEqual(None,response_item.get("version"))
 
+    '''
 
-    @test.attr(type="gate")
-    def test_diags_cli_check_array_command(self) :
 
-        # Mock permiko ssh client to return cinder file we want
-        self._mock_get_file("cinder.conf")
+    def _execute_cli_command(self, command_arvgs) :
 
-        # create cinder config,conf file and add 3par ISCSI section
-        dict = { }
-        # 3par ISCSI section
-        section_name, values = self._get_default_3par_iscsi_cinder_conf_section()
-        dict[section_name] = values
 
-        # 3par FC section
-        section_name, values = self._get_default_3par_fc_cinder_conf_section()
-        dict[section_name] = values
-        #Create cinder.conf
-        self._create_config(self.cinder_config_file,  dict)
-
-        output_file  = self._get_file()
+        cli_dict = { }
+        section_name, values = self._get_default_cli_conf_section()
+        cli_dict[section_name] = values
+        self._create_config('cinderdiags/cli.conf',  cli_dict)
 
         #open a file to capture the CLI output
+        output_file  = self._get_file_name()
         sys.stdout  = open(output_file, 'w')
 
-        # Execute the CLI commnad
-        arv=['check', 'array']
-        cli_exit_value = cli.main(arv)
-        self.assertEqual(0 , cli_exit_value)
+        cli_exit_value = cli.main(command_arvgs)
 
-        table_output = self._convert_table_output(output_file)
+        sys.stdout .close()
+        output = self._convert_table_output(output_file)
 
-        for row in table_output :
-            self.assertEqual('CINDER' , row['node'])
-            self.assertEqual('pass' , row['CPG'])
-            self.assertEqual('pass' , row['Credentials'])
-            self.assertEqual('pass' , row['WS API'])
-
-
-        #self._remove_file([output_file , self.cinder_config_file])
+        self._remove_file(output_file)
 
 
 
+        return cli_exit_value , output
 
-    def _get_file(self):
+    def _get_file_name(self):
         return "output.%.7f.txt" % time.time()
 
-    def _remove_file(self, files):
+
+    def _remove_file(self, file):
 
         # remove the file
-        for file in files :
-            if os.path.isfile(file) is True:
-                os.remove(file)
+        if os.path.isfile(file) is True:
+               os.remove(file)
 
     def _convert_table_output(self, filename):
 
         data = open(filename).read()
         return output_parser.listing(data)
+
 
 
     def _set_ssh_connection_mocks(self):
@@ -226,7 +454,7 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
 
         p = mock.patch(target, **kwargs)
         m = p.start()
-        self. mock_instances.append(p)
+        self.addCleanup(p.stop)
         return m
 
 
@@ -236,16 +464,16 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
         dict = {  'volume_driver' : 'cinder.volume.drivers.san.hp.hp_3par_iscsi.HP3PARISCSIDriver',
                   'volume_backend_name' : '3PAR-SLEEPYKITTY',
                   'num_volume_device_scan_tries' : 10,
-                  'hp3par_api_url' : 'https://sleepykitty.cxo.hp.com:8080/api/v1',
-                  'hp3par_username' : '3paradm',
-                  'hp3par_password' : '3pardata',
+                  'hp3par_api_url' : 'http://test.ws.url:8080/api/v1',
+                  'hp3par_username' : 'testuser',
+                  'hp3par_password' : 'testpass',
                   'hp3par_debug' : True,
-                  'san_ip': 'sleepykitty.cxo.hp.com',
-                   'san_login' : '3paradm',
-                   'san_password' : '3pardata',
-                   'hp3par_cpg' : 'OpenStackCPG1',
-                   'hp3par_iscsi_ips' : '10.250.100.220:3260',
-                   'hp3par_iscsi_chap_enabled' : 'false' }
+                  'san_ip': 'http://test.ws.url:8080/api/v1',
+                  'san_login' : 'testuser',
+                  'san_password' : 'testpass',
+                  'hp3par_cpg' : 'testCPG',
+                  'hp3par_iscsi_ips' : '1.1.1.1:3260',
+                  'hp3par_iscsi_chap_enabled' : 'false' }
         return section_name , dict
 
     def _get_default_3par_fc_cinder_conf_section(self) :
@@ -253,14 +481,29 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
         section_name = '3PAR-SLEEPYKITTY-FC'
         dict = {  'volume_driver' : 'cinder.volume.drivers.san.hp.hp_3par_fc.HP3PARFCDriver',
                   'volume_backend_name' : '3PAR-SLEEPYKITTY-FC',
-                  'hp3par_api_url' : 'https://sleepykitty.cxo.hp.com:8080/api/v1',
-                  'hp3par_username' : '3paradm',
-                  'hp3par_password' : '3pardata',
+                  'hp3par_api_url' : 'http://test.ws.url:8080/api/v1',
+                  'hp3par_username' : 'testuser',
+                  'hp3par_password' : 'testpass',
                   'hp3par_debug' : True,
-                  'san_ip': 'sleepykitty.cxo.hp.com',
-                   'san_login' : '3paradm',
-                   'san_password' : '3pardata',
-                   'hp3par_cpg' : 'OpenStackCPG1' }
+                  'san_ip': 'http://test.ws.url:8080/api/v1',
+                  'san_login' : 'testuser',
+                  'san_password' : 'testpass',
+                  'hp3par_cpg' : 'testCPG'
+                               }
+
+
+        return section_name , dict
+
+
+    def _get_default_cli_conf_section(self) :
+
+        section_name = 'TEST'
+        dict = {  'service' : 'test',
+                  'host_ip' : '192.168.10.5',
+                  'ssh_user' : 'vagrant',
+                  'ssh_password' : 'vagrant',
+                  'conf_source' : '/etc/cinder/cinder.conf'
+                   }
 
         return section_name , dict
 
