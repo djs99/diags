@@ -109,7 +109,7 @@ def get_client(section_name, test):
 
         return cl
     except (hpexceptions.UnsupportedVersion, hpexceptions.HTTPBadRequest,
-            ConfigParser.NoOptionError):
+            ConfigParser.NoOptionError, TypeError):
         return None
 
 
