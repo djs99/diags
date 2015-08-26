@@ -21,6 +21,7 @@ class CheckArray(Lister):
         reader = conf_reader.Reader(parsed_args.test)
         reader.copy_files()
         result = reader.ws_checks(parsed_args.arrayname)
+        reader.cleanup()
         if len(result) < 1:
             raise ValueError("%s not found" % parsed_args.arrayname)
         columns = ('Node', 'Name', 'WS API', 'Credentials', 'CPG',
