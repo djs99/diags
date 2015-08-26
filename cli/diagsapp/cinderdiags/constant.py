@@ -1,3 +1,3 @@
-PREFIX = 'config/'
-SUFFIX = '.tmp'
+DIRECTORY = 'config/'
+EXTENSION = '.tmp'
 CLI_CONFIG = 'cinderdiags/cli.conf'
