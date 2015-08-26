@@ -6,9 +6,9 @@ import ConfigParser
 import wsapi_conf
 import ssh_client
 import pkg_checks
+import constant
 
-PREFIX = 'config/'
-SUFFIX = '.tmp'
+
 parser = ConfigParser.SafeConfigParser()
 
 
@@ -19,7 +19,7 @@ class Reader(object):
         self.cinder_nodes = []
         self.nova_nodes = []
 
-        parser.read('cinderdiags/cli.conf')
+        parser.read(constant.CLI_CONFIG)
         if self.is_test:
             self.test_parse()
         else:
@@ -44,7 +44,7 @@ class Reader(object):
                                        parser.get(node, 'ssh_user'),
                                        parser.get(node, 'ssh_password')
                                        )
-            client.get_file(parser.get(node, 'conf_source'), PREFIX + node + SUFFIX)
+            client.get_file(parser.get(node, 'conf_source'), constant.PREFIX + node + constant.SUFFIX)
             client.disconnect()
 
     def nova_checks(self, pkgs=('default', 'default')):
@@ -64,7 +64,7 @@ class Reader(object):
     def ws_checks(self, section_name='arrays'):
         checks = []
         for node in self.cinder_nodes:
-            checker = wsapi_conf.WSChecker(PREFIX + node + SUFFIX, node,
+            checker = wsapi_conf.WSChecker(constant.PREFIX + node + constant.SUFFIX, node,
                                            self.is_test)
             if section_name == 'arrays':
                 checks += checker.check_all()
