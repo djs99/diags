@@ -2,7 +2,7 @@
 import mock
 import time
 import ConfigParser
-import os
+import sys , shutil , paramiko , os
 from tempest.api.volume import base
 from tempest import test
 from tempest import config
@@ -10,9 +10,9 @@ from tempest_lib.cli import output_parser
 from cinderdiags.ssh_client import Client
 import cinderdiags.main as cli
 import cinderdiags.pkg_checks as pkg_checks
-import sys
-import shutil
-import paramiko
+import cinderdiags.constant as constant
+
+
 
 
 class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
@@ -23,23 +23,26 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
     
     @classmethod
     def resource_setup(cls):
-        super(CinderDiagnostics3PARCliToolTest, cls).resource_setup()
+      super(CinderDiagnostics3PARCliToolTest, cls).resource_setup()
 
+    def setUp(self):
+        super(CinderDiagnostics3PARCliToolTest, self).setUp()
+        constant.CLI_CONFIG = "cli.conf"
+        if not os.path.exists(constant.PREFIX)  :
+               os.mkdir(constant.PREFIX, True)
 
-        if not os.path.exists('cinderdiags')  :
-               os.mkdir('cinderdiags',False)
-        if not os.path.exists('config')  :
-               os.mkdir('config', False)
+        #Create test version of the CLI Configuration file for the CLI tool
+        cli_dict = { }
+        section_name, values = self._get_default_cli_conf_section()
+        cli_dict[section_name] = values
+        self._create_config( constant.CLI_CONFIG,  cli_dict)
 
-    @classmethod
-    def resource_cleanup(cls):
-        if os.path.exists('cinderdiags')  :
-            shutil.rmtree("cinderdiags")
+    def tearDown(self):
+        # Remove all the packages
         if os.path.exists('config')  :
-            shutil.rmtree("config")
+            shutil.rmtree(constant.PREFIX)
 
-
-
+        super(CinderDiagnostics3PARCliToolTest, self).tearDown()
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command(self) :
@@ -79,19 +82,11 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
             else :
                self.assertEqual('pass' , row['iSCSI IP(s)'])
 
-
-
-        self._remove_file(self.cinder_config_file)
-
-
-
-
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_for_bad_ws_api(self) :
 
         # Mock permiko ssh client to return cinder file we want
         self._mock_get_file(self.cinder_config_file)
-
 
         # create cinder config,conf file and add 3par ISCSI section
         cinder_dict = { }
@@ -106,7 +101,6 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
 
         #Create cinder.conf
         self._create_config(self.cinder_config_file,  cinder_dict)
-
 
         # Execute the CLI commnad
         command_arvgs=['check', 'array', "-test"]
@@ -128,9 +122,6 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
               self.assertEqual('pass' , row['Credentials'])
               self.assertEqual('pass' , row['WS API'])
               self.assertEqual('N/A' , row['iSCSI IP(s)'])
-
-        self._remove_file(self.cinder_config_file)
-
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_for_wrong_credential(self) :
@@ -173,10 +164,6 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
               self.assertEqual('fail' , row['Credentials'])
               self.assertEqual('pass' , row['WS API'])
               self.assertEqual('N/A' , row['iSCSI IP(s)'])
-
-        self._remove_file(self.cinder_config_file)
-
-
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_for_bad_CPG(self) :
@@ -222,9 +209,6 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
               self.assertEqual('pass' , row['WS API'])
               self.assertEqual('N/A' , row['iSCSI IP(s)'])
 
-        self._remove_file(self.cinder_config_file)
-
-
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_for_wrong_iscsi_IP(self) :
 
@@ -269,30 +253,11 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
               self.assertEqual('pass' , row['WS API'])
               self.assertEqual('N/A' , row['iSCSI IP(s)'])
 
-        self._remove_file(self.cinder_config_file)
-
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_with_cinder_file_not_found(self) :
 
         # Mock permiko ssh client to return cinder file we want
         self._mock_get_file(self.cinder_config_file,True)
-
-        # create cinder config,conf file and add 3par ISCSI section
-        cinder_dict = { }
-        # 3par ISCSI section
-        iscsi_section_name, iscsi_values = self._get_default_3par_iscsi_cinder_conf_section()
-
-        iscsi_values['hp3par_iscsi_ips'] = '10.20.15.11:3260'
-        cinder_dict[iscsi_section_name] = iscsi_values
-
-        # 3par FC section
-        fc_section_name, fc_values = self._get_default_3par_fc_cinder_conf_section()
-        fc_values['hp3par_cpg'] = 'badCPG'
-        cinder_dict[fc_section_name] = fc_values
-
-        #Create cinder.conf
-        self._create_config(self.cinder_config_file,  cinder_dict)
-
 
         # Execute the CLI commnad
         command_arvgs=['check', 'array', "-test"]
@@ -300,9 +265,6 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
 
         self.assertEqual(1 , cli_exit_value)
         self.assertEqual( len(output) , 0)
-
-
-        self._remove_file(self.cinder_config_file)
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_with_wrong_cinder_node_ssh_credentials(self) :
@@ -332,12 +294,9 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
         self.assertEqual( len(output) , 2)
 
 
-        self._remove_file(self.cinder_config_file)
-
     @test.attr(type="gate")
     def test_diags_cli_check_sysfsutils_package_command(self) :
         self._check_software_package('sysfsutils')
-        self._check_software_package('sg3-utils')
 
 
     @test.attr(type="gate")
@@ -345,14 +304,11 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
         self._check_software_package('sg3-utils')
 
 
-
     def _check_software_package(self, package) :
 
         # Mock permiko ssh client to return cinder file we want
         self._mock_exec_command({"dpkg-query -W -f='${Status} ${Version}' "+ package :'install ok installed 2.2.0'
                                  })
-
-
         # Execute the CLI commnad
         command_arvgs=['check', 'software',package,'1.3','-test']
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
@@ -365,12 +321,9 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
             self.assertEqual('pass' , row['Installed'])
             self.assertEqual('pass' , row['Version'])
 
-
          # Mock permiko ssh client to return cinder file we want
         self._mock_exec_command({"dpkg-query -W -f='${Status} ${Version}' "+ package :'no packages found matching  '+package ,
                                  })
-
-
         # Execute the CLI commnad
         command_arvgs=['check', 'software',package, '1.3', '-test']
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
@@ -386,8 +339,6 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
           # Mock permiko ssh client to return cinder file we want
         self._mock_exec_command({"dpkg-query -W -f='${Status} ${Version}' " + package:'install ok installed 2.0+repack-3' ,
                                  })
-
-
         # Execute the CLI commnad
         command_arvgs=['check', 'software',package, '2.1', '-test']
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
@@ -403,8 +354,6 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
          # Mock permiko ssh client to return cinder file we want
         self._mock_exec_command({"dpkg-query -W -f='${Status} ${Version}' "+package :'Unknown Response' ,
                                  })
-
-
         # Execute the CLI commnad
         command_arvgs=['check', 'software',package, '2.1', '-test']
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
@@ -416,10 +365,6 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
             self.assertEqual(package , row['Software'])
             self.assertEqual('fail' , row['Installed'])
             self.assertEqual('fail' , row['Version'])
-
-
-
-
 
     '''
     @test.attr(type="gate")
@@ -515,26 +460,20 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
 
     def _execute_cli_command(self, command_arvgs) :
 
-
-        cli_dict = { }
-        section_name, values = self._get_default_cli_conf_section()
-        cli_dict[section_name] = values
-        self._create_config('cinderdiags/cli.conf',  cli_dict)
-
         #open a file to capture the CLI output
         output_file  = self._get_file_name()
         sys.stdout  = open(output_file, 'w')
 
-        cli_exit_value = cli.main(command_arvgs)
+        try :
 
-        sys.stdout .close()
-        output = self._convert_table_output(output_file)
+          # execute the command
+          cli_exit_value = cli.main(command_arvgs)
+          sys.stdout.close()
+          return cli_exit_value,  self._convert_table_output(output_file)
 
-        self._remove_file(output_file)
+        finally :
+            self._remove_file(output_file)
 
-
-
-        return cli_exit_value , output
 
     def _get_file_name(self):
         return "output.%.7f.txt" % time.time()
@@ -585,7 +524,7 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
                      raise Exception()
 
                  toLocation  =  args[1]
-                 os.popen("sudo cp " + config_file + " " +toLocation)
+                 shutil.copy(config_file ,toLocation)
 
 
          client_mock.get.side_effect = my_side_effect
