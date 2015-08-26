@@ -16,9 +16,6 @@ else:
     raise ImportError('hp3parclient package is not installed')
 
 
-parser = ConfigParser.SafeConfigParser()
-
-
 class WSChecker(object):
     """
     Tests web service api configurations by section in the cinder.conf file
@@ -32,12 +29,12 @@ class WSChecker(object):
         self.is_test = test
         self.conf = conf
         self.node = node
-
-        parser.read(self.conf)
+        self.parser = ConfigParser.SafeConfigParser()
+        self.parser.read(self.conf)
         self.hp3pars = []
-        for section in parser.sections():
-            if parser.has_option(section, 'volume_driver') \
-                    and 'hp_3par' in parser.get(section, 'volume_driver'):
+        for section in self.parser.sections():
+            if self.parser.has_option(section, 'volume_driver') \
+                    and 'hp_3par' in self.parser.get(section, 'volume_driver'):
                 self.hp3pars.append(section)
 
     def check_all(self):
@@ -65,18 +62,18 @@ class WSChecker(object):
                  "node": self.node,
                  }
         if section_name in self.hp3pars:
-            client = get_client(section_name, self.is_test)
+            client = self.get_client(section_name, self.is_test)
             if client:
                 tests["url"] = "pass"
-                if cred_is_valid(section_name, client):
+                if self.cred_is_valid(section_name, client):
                     tests["credentials"] = "pass"
-                    if cpg_is_valid(section_name, client):
+                    if self.cpg_is_valid(section_name, client):
                         tests["cpg"] = "pass"
                     else:
                         tests["cpg"] = "fail"
-                    if 'iscsi' in parser.get(section_name,
+                    if 'iscsi' in self.parser.get(section_name,
                                              'volume_driver'):
-                        if iscsi_is_valid(section_name, client):
+                        if self.iscsi_is_valid(section_name, client):
                             tests["iscsi"] = "pass"
                         else:
                             tests["iscsi"] = "fail"
@@ -86,7 +83,7 @@ class WSChecker(object):
 
             else:
                 tests["url"] = "fail"
-            if 'hp_3par_fc' in parser.get(section_name, 'volume_driver'):
+            if 'hp_3par_fc' in self.parser.get(section_name, 'volume_driver'):
                 tests["iscsi"] = "N/A"
             return tests
         else:
@@ -94,72 +91,70 @@ class WSChecker(object):
 
 
 # Config testing methods check if option values are valid
-def get_client(section_name, test):
-    """
-    This tries to create a client and verifies the api url
-    :return: The client if url is valid, None if invalid/missing
-    """
-    try:
-        if test:
-            cl = testclient.HP3ParClient(parser.get(section_name,
-                                                     'hp3par_api_url'))
-        else:
-            cl = hpclient.HP3ParClient(parser.get(section_name,
-                                                 'hp3par_api_url'))
-
-        return cl
-    except (hpexceptions.UnsupportedVersion, hpexceptions.HTTPBadRequest,
-            ConfigParser.NoOptionError, TypeError):
-        return None
-
-
-def cred_is_valid(section_name, client):
-    """
-    This tries to login to the client to verify credentials
-    :return: True if credentials are valid, False if invalid/missing
-    """
-    try:
-        client.login(parser.get(section_name, 'hp3par_username'),
-                     parser.get(section_name, 'hp3par_password'))
-        return True
-    except (hpexceptions.HTTPForbidden,
-            hpexceptions.HTTPUnauthorized,
-            ConfigParser.NoOptionError):
-        return False
-
-
-def cpg_is_valid(section_name, client):
-    """
-    This tests to see if a cpg exists on the 3PAR array to verify cpg name
-    :return: True if cpg name is valid, False if invalid/missing
-    """
-    cpg_list = parser.get(section_name, 'hp3par_cpg').split(',')
-    for cpg in cpg_list:
+    def get_client(self, section_name, test):
+        """
+        This tries to create a client and verifies the api url
+        :return: The client if url is valid, None if invalid/missing
+        """
         try:
-            client.getCPG(cpg.strip())
-        except (hpexceptions.HTTPNotFound, ConfigParser.NoOptionError):
-            return False
-    return True
+            if test:
+                cl = testclient.HP3ParClient(self.parser.get(section_name,
+                                                         'hp3par_api_url'))
+            else:
+                cl = hpclient.HP3ParClient(self.parser.get(section_name,
+                                                     'hp3par_api_url'))
 
+            return cl
+        except (hpexceptions.UnsupportedVersion, hpexceptions.HTTPBadRequest,
+                ConfigParser.NoOptionError, TypeError):
+            return None
 
-def iscsi_is_valid(section_name, client):
-    """
-    This gets the iSCSI target ports from the client and checks the provided
-    iSCSI IPs.
-    :return: False if any of the provided IPs are wrong
-    """
-    valid_ips = []
-    try:
-        ip_list = parser.get(section_name, 'hp3par_iscsi_ips').split(",")
-    except ConfigParser.NoOptionError:
-        return False
-    for port in client.getPorts()['members']:
-        if (port['mode'] == client.PORT_MODE_TARGET and
-                port['linkState'] == client.PORT_STATE_READY and
-                port['protocol'] == client.PORT_PROTO_ISCSI):
-            valid_ips.append(port['IPAddr'])
-    for ip_addr in ip_list:
-        ip = ip_addr.strip().split(':')
-        if ip[0] not in valid_ips:
+    def cred_is_valid(self, section_name, client):
+        """
+        This tries to login to the client to verify credentials
+        :return: True if credentials are valid, False if invalid/missing
+        """
+        try:
+            client.login(self.parser.get(section_name, 'hp3par_username'),
+                         self.parser.get(section_name, 'hp3par_password'))
+            return True
+        except (hpexceptions.HTTPForbidden,
+                hpexceptions.HTTPUnauthorized,
+                ConfigParser.NoOptionError):
             return False
-    return True
+
+    def cpg_is_valid(self, section_name, client):
+        """
+        This tests to see if a cpg exists on the 3PAR array to verify cpg name
+        :return: True if cpg name is valid, False if invalid/missing
+        """
+        cpg_list = self.parser.get(section_name, 'hp3par_cpg').split(',')
+        for cpg in cpg_list:
+            try:
+                client.getCPG(cpg.strip())
+            except (hpexceptions.HTTPNotFound, ConfigParser.NoOptionError):
+                return False
+        return True
+
+    def iscsi_is_valid(self, section_name, client):
+        """
+        This gets the iSCSI target ports from the client and checks the provided
+        iSCSI IPs.
+        :return: False if any of the provided IPs are wrong
+        """
+        valid_ips = []
+        try:
+            ip_list = self.parser.get(section_name, 'hp3par_iscsi_ips').split(
+                ",")
+        except ConfigParser.NoOptionError:
+            return False
+        for port in client.getPorts()['members']:
+            if (port['mode'] == client.PORT_MODE_TARGET and
+                    port['linkState'] == client.PORT_STATE_READY and
+                    port['protocol'] == client.PORT_PROTO_ISCSI):
+                valid_ips.append(port['IPAddr'])
+        for ip_addr in ip_list:
+            ip = ip_addr.strip().split(':')
+            if ip[0] not in valid_ips:
+                return False
+        return True
