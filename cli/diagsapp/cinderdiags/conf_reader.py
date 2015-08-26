@@ -47,17 +47,27 @@ class Reader(object):
             client.get_file(parser.get(node, 'conf_source'), PREFIX + node + SUFFIX)
             client.disconnect()
 
-    def nova_checks(self, pkgs=('default', 'default')):
+    def pkg_checks(self, name, service='default', version=None):
+        if service == 'nova':
+            checklist = self.nova_nodes
+        elif service == 'cinder':
+            checklist = self.cinder_nodes
+        else:
+            checklist = set(self.nova_nodes + self.cinder_nodes)
         checks = []
-        for node in self.nova_nodes:
+        for node in checklist:
             client = ssh_client.Client(parser.get(node, 'host_ip'),
                                        parser.get(node, 'ssh_user'),
                                        parser.get(node, 'ssh_password')
                                        )
-            if pkgs[0] == 'all':
-                checks = pkg_checks.check_all(client, node)
+            if name == 'default':
+                checks += pkg_checks.check_all(client, node, (parser.get(
+                    node, 'service').lower(), 'default'))
+
             else:
-                checks.append(pkg_checks.check_package(client, node, pkgs))
+
+                checks.append(pkg_checks.check_package(client, node, (name,
+                                                                      version)))
             client.disconnect()
         return checks
 
