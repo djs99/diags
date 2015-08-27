@@ -1,4 +1,4 @@
 *.pyc
 /.idea/workspace.xml
 /.idea/misc.xml
-/.cli/diagsapp/build
+cli/diagsapp/build/
