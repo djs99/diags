@@ -1,4 +1,5 @@
 import re
+import constant
 
 
 def check_all(client, node, pkg_info):
@@ -8,10 +9,8 @@ def check_all(client, node, pkg_info):
     :param pkg_info: tuple of ('package name', 'minimum version')
     :return: list of dictionaries
     """
-    default_nova = [('sysfsutils',  '2.1'),
-                ('sg3-utils', '1.3'),
-                ]
-    default_cinder = [('hp3parclient', '3.1.1')]
+    default_nova = constant.NOVA_PACKAGES
+    default_cinder = constant.CINDER_PACKAGES
 
     checked = []
     if pkg_info[1] == 'default':
