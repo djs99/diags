@@ -1,3 +1,4 @@
 *.pyc
 /.idea/workspace.xml
 /.idea/misc.xml
+./cli/diagsapp/build
