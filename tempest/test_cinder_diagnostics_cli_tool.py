@@ -17,7 +17,8 @@ import mock
 import time
 import ConfigParser
 import sys , shutil , paramiko , os
-from tempest.api.volume import base
+#from tempest.api.volume import base
+from tempest.tests import base
 from tempest import test
 from tempest import config
 from tempest_lib.cli import output_parser
@@ -26,7 +27,7 @@ import cinderdiags.main as cli
 import cinderdiags.pkg_checks as pkg_checks
 import cinderdiags.constant as constant
 
-class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
+class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     """Test case class for all 3PAR cinder Diagnostics CLI Tool """
 
