@@ -27,7 +27,7 @@ import cinderdiags.main as cli
 import cinderdiags.pkg_checks as pkg_checks
 import cinderdiags.constant as constant
 
-class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
+class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     """Test case class for all 3PAR cinder Diagnostics CLI Tool """
 
