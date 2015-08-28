@@ -6,6 +6,7 @@ Requires the python hp3parclient: sudo pip install hp3parclient
 Assumes the volume_driver is correctly set
 """
 import ConfigParser
+import logging
 from oslo_utils import importutils
 hp3parclient = importutils.try_import("hp3parclient")
 if hp3parclient:
@@ -14,6 +15,8 @@ if hp3parclient:
     import testclient
 else:
     raise ImportError('hp3parclient package is not installed')
+
+logger = logging.getLogger(__name__)
 
 
 class WSChecker(object):

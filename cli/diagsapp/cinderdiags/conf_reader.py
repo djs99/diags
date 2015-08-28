@@ -8,6 +8,9 @@ import ssh_client
 import pkg_checks
 import constant
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 parser = ConfigParser.SafeConfigParser()
@@ -18,6 +21,7 @@ class Reader(object):
     def __init__(self, is_test=False):
         self.is_test = is_test
         self.cinder_nodes = []
+        self.cinder_files = {}
         self.nova_nodes = []
 
         parser.read(constant.CLI_CONFIG)
@@ -56,8 +60,13 @@ class Reader(object):
                                        parser.get(node, 'ssh_user'),
                                        parser.get(node, 'ssh_password')
                                        )
-            client.get_file(parser.get(node, 'conf_source'), constant.DIRECTORY
-                            + node + constant.EXTENSION)
+            f = client.get_file(parser.get(node, 'conf_source'),
+                                constant.DIRECTORY + node + constant.EXTENSION)
+            if f:
+                self.cinder_files[node] = f
+            else:
+                logger.warning("%s ignored" % node)
+
             client.disconnect()
 
     def pkg_checks(self, name='default', service='default', version=None):
@@ -85,7 +94,6 @@ class Reader(object):
                     node, 'service').lower(), 'default'))
 
             else:
-
                 checks.append(pkg_checks.check_package(client, node,
                                                        (name, version)))
             client.disconnect()
@@ -100,9 +108,8 @@ class Reader(object):
         :return: list of dictionaries
         """
         checks = []
-        for node in self.cinder_nodes:
-            checker = wsapi_conf.WSChecker(constant.DIRECTORY + node +
-                                           constant.EXTENSION, node,
+        for node in self.cinder_files:
+            checker = wsapi_conf.WSChecker(self.cinder_files[node], node,
                                            self.is_test)
             if section_name == 'arrays':
                 checks += checker.check_all()
@@ -116,5 +123,5 @@ class Reader(object):
         """
         Delete all copied cinder.conf files
         """
-        for node in self.cinder_nodes:
-            os.remove(constant.DIRECTORY + node + constant.EXTENSION)
+        for node in self.cinder_files:
+            os.remove(self.cinder_files[node])

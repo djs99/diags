@@ -6,8 +6,7 @@ from cliff.lister import Lister
 
 class CheckArray(Lister):
     """
-    Check 3PAR array configuration options in the cinder.conf file
-    of all cinder nodes listed in cli.conf
+    Check 3PAR array configuration options in the cinder.conf of all cinder nodes listed in cli.conf
 
     "Node"                  = Section name in cli.conf.  These must be unique.
     "cinder.conf Section"   = Section name in cinder.conf on a node. These must be unique.
@@ -31,10 +30,10 @@ class CheckArray(Lister):
     def take_action(self, parsed_args):
         reader = conf_reader.Reader(parsed_args.test)
         reader.copy_files()
-        result = reader.ws_checks(parsed_args.arrayname)
+        result = reader.ws_checks(parsed_args.name)
         reader.cleanup()
         if len(result) < 1:
-            raise ValueError("%s not found" % parsed_args.arrayname)
+            raise ValueError("%s not found" % parsed_args.name)
         columns = ('Node', 'cinder.conf Section', 'WS API', 'Credentials',
                    'CPG',
                    'iSCSI IP(s)')
