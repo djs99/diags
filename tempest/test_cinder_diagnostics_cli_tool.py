@@ -1,3 +1,17 @@
+# Copyright 2013 IBM Corp.
+# All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
 
 import mock
 import time
@@ -12,9 +26,6 @@ import cinderdiags.main as cli
 import cinderdiags.pkg_checks as pkg_checks
 import cinderdiags.constant as constant
 
-
-
-
 class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
 
     """Test case class for all 3PAR cinder Diagnostics CLI Tool """
@@ -23,13 +34,17 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
     
     @classmethod
     def resource_setup(cls):
-      super(CinderDiagnostics3PARCliToolTest, cls).resource_setup()
+       super(CinderDiagnostics3PARCliToolTest, cls).resource_setup()
 
     def setUp(self):
+
         super(CinderDiagnostics3PARCliToolTest, self).setUp()
+
+        self.mock_instances = []
+
         constant.CLI_CONFIG = "cli.conf"
         if not os.path.exists(constant.PREFIX)  :
-               os.mkdir(constant.PREFIX, True)
+               os.mkdir(constant.PREFIX, False)
 
         #Create test version of the CLI Configuration file for the CLI tool
         cli_dict = { }
@@ -39,8 +54,12 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
 
     def tearDown(self):
         # Remove all the packages
-        if os.path.exists('config')  :
+        for instance in self.mock_instances :
+            instance.stop();
+
+        if os.path.exists(constant.PREFIX)  :
             shutil.rmtree(constant.PREFIX)
+        self._remove_file(self.cinder_config_file)
 
         super(CinderDiagnostics3PARCliToolTest, self).tearDown()
 
@@ -181,7 +200,7 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
         # 3par FC section
         fc_section_name, fc_values = self._get_default_3par_fc_cinder_conf_section()
         fc_values['hp3par_username'] = 'baduser'
-        fc_values['hp3par_password'] = 'badpass'
+        fc_values['hp3par_password'] = 'testpass'
         cinder_dict[fc_section_name] = fc_values
 
         #Create cinder.conf
@@ -293,15 +312,29 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
         self.assertEqual(0 , cli_exit_value)
         self.assertEqual( len(output) , 2)
 
-
     @test.attr(type="gate")
-    def test_diags_cli_check_sysfsutils_package_command(self) :
+    def test_diags_cli_wrong_command(self) :
+        # Execute the CLI commnad
+        command_arvgs=['check', 'array', 'wrong']
+        cli_exit_value , output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(1 , cli_exit_value)
+        self.assertEqual( len(output) , 0)
+
+
+    #@test.attr(type="gate")
+    def _test_diags_cli_check_sysfsutils_package_command(self) :
         self._check_software_package('sysfsutils')
 
 
-    @test.attr(type="gate")
-    def test_diags_cli_check_sg3_utils_package_command(self) :
+    #@test.attr(type="gate")
+    def _test_diags_cli_check_sg3_utils_package_command(self) :
         self._check_software_package('sg3-utils')
+
+
+    #@test.attr(type="gate")
+    def _test_diags_cli_check_hp3parclient_package_command(self) :
+        self._check_software_package('hp3parclient')
 
 
     def _check_software_package(self, package) :
@@ -366,7 +399,7 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
             self.assertEqual('fail' , row['Installed'])
             self.assertEqual('fail' , row['Version'])
 
-    '''
+
     @test.attr(type="gate")
     def test_successful_ssh_connection_with_mock(self) :
         """ Test SSH Connection with mock """
@@ -407,7 +440,7 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
             if client is not None :
                 client.disconnect()
 
-
+    '''
     @test.attr(type="gate")
     def test_installed_nova_pkgs(self) :
         """ Test SSH Connection with mock """
@@ -462,17 +495,19 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
 
         #open a file to capture the CLI output
         output_file  = self._get_file_name()
-        sys.stdout  = open(output_file, 'w')
-
         try :
-
           # execute the command
-          cli_exit_value = cli.main(command_arvgs)
-          sys.stdout.close()
-          return cli_exit_value,  self._convert_table_output(output_file)
+           cli_exit_value = -1
+           temp_store = sys.stdout
+           sys.stdout  = open(output_file, 'w')
+           try :
+              cli_exit_value = cli.main(command_arvgs)
+           finally :
+              sys.stdout.close() ; sys.stdout = temp_store
+           return cli_exit_value ,self._convert_table_output(output_file)
 
         finally :
-            self._remove_file(output_file)
+           self._remove_file(output_file)
 
 
     def _get_file_name(self):
@@ -555,7 +590,7 @@ class CinderDiagnostics3PARCliToolTest(base.BaseVolumeAdminTest):
 
         p = mock.patch(target, **kwargs)
         m = p.start()
-        self.addCleanup(p.stop)
+        self.mock_instances.append(p)
         return m
 
 
