@@ -17,7 +17,8 @@ import mock
 import time
 import ConfigParser
 import sys , shutil , paramiko , os
-from tempest.api.volume import base
+#from tempest.api.volume import base
+from tempest.tests import base
 from tempest import test
 from tempest import config
 from tempest_lib.cli import output_parser
