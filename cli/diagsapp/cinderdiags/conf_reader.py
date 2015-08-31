@@ -27,7 +27,7 @@ class Reader(object):
         self.cinder_files = {}
         self.nova_nodes = []
 
-        parser.read(resource_filename(constant.CLI_CONFIG))
+        parser.read(resource_filename('cinderdiags', constant.CLI_CONFIG))
         # parser.read(constant.CLI_CONFIG)
         if self.is_test:
             self.test_parse()
@@ -98,7 +98,7 @@ class Reader(object):
                     node, 'service').lower(), 'default'))
 
             else:
-                checks.append(pkg_checks.check_package(client, node,
+                checks.append(pkg_checks.dpkg_check(client, node,
                                                        (name, version)))
             client.disconnect()
         return checks
@@ -122,6 +122,7 @@ class Reader(object):
                 if found:
                     checks.append(found)
         return checks
+
 
     def cleanup(self):
         """
