@@ -9,6 +9,9 @@ import pkg_checks
 import constant
 import os
 import logging
+from pkg_resources import resource_filename
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +27,8 @@ class Reader(object):
         self.cinder_files = {}
         self.nova_nodes = []
 
-        parser.read(constant.CLI_CONFIG)
+        parser.read(resource_filename(constant.CLI_CONFIG))
+        # parser.read(constant.CLI_CONFIG)
         if self.is_test:
             self.test_parse()
         else:
@@ -61,7 +65,7 @@ class Reader(object):
                                        parser.get(node, 'ssh_password')
                                        )
             f = client.get_file(parser.get(node, 'conf_source'),
-                                constant.DIRECTORY + node + constant.EXTENSION)
+                                node + constant.EXTENSION)
             if f:
                 self.cinder_files[node] = f
             else:
