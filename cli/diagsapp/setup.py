@@ -41,9 +41,7 @@ setup(
     scripts=[],
 
     provides=[],
-    install_requires=['cliff', 'hp3parclient', 'paramiko',
-                      # 'oslo_utils'
-                      ],
+    install_requires=['cliff', 'hp3parclient', 'paramiko', 'oslo.utils'],
 
     namespace_packages=[],
     packages=find_packages(),
