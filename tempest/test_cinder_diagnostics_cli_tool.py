@@ -44,8 +44,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         self.mock_instances = []
 
         constant.CLI_CONFIG = "cli.conf"
-        if not os.path.exists(constant.PREFIX)  :
-               os.mkdir(constant.PREFIX, False)
+
 
         #Create test version of the CLI Configuration file for the CLI tool
         cli_dict = { }
@@ -58,8 +57,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         for instance in self.mock_instances :
             instance.stop();
 
-        if os.path.exists(constant.PREFIX)  :
-            shutil.rmtree(constant.PREFIX)
+
         self._remove_file(self.cinder_config_file)
 
         super(CinderDiagnostics3PARCliToolTest, self).tearDown()
