@@ -374,21 +374,21 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_hp3parclient_package_installed_with_unsupported_version(self) :
-        command_arvgs=['check', 'software', '-name' ,"hp3parclients",'--package-min-version','2.0','--service', 'nova','-test']
+        command_arvgs=['check', 'software', '-name' ,"hp3parclient",'--package-min-version','2.0','--service', 'nova','-test']
         ssh_mocked_response = "install ok installed 1.0 "
         self._check_software_package('hp3parclient', command_arvgs ,ssh_mocked_response, "pass", "fail")
 
     @test.attr(type="gate")
     def test_diags_hp3parclients_package_not_installed(self) :
-        command_arvgs=['check', 'software', '-name' ,"hp3parclients",'--package-min-version','2.0','--service', 'nova','-test']
-        ssh_mocked_response = 'no packages found matching  sysfsutils'
-        self._check_software_package('hp3parclients', command_arvgs ,ssh_mocked_response, "fail", "N/A")
+        command_arvgs=['check', 'software', '-name' ,"hp3parclient",'--package-min-version','2.0','--service', 'nova','-test']
+        ssh_mocked_response = 'no packages found matching  hp3parclient'
+        self._check_software_package('hp3parclient', command_arvgs ,ssh_mocked_response, "fail", "N/A")
 
     @test.attr(type="gate")
     def test_diags_hp3parclients_package_installed_with_no_min_version_check(self) :
-        command_arvgs=['check', 'software', '-name' ,"hp3parclients",'--service', 'nova','-test']
+        command_arvgs=['check', 'software', '-name' ,"hp3parclient",'--service', 'nova','-test']
         ssh_mocked_response = "install ok installed 1.0 "
-        self._check_software_package('hp3parclients', command_arvgs ,ssh_mocked_response, "pass", "N/A")
+        self._check_software_package('hp3parclient', command_arvgs ,ssh_mocked_response, "pass", "N/A")
 
 
     def _check_software_package(self, package ,command_arvgs, ssh_mocked_response, installed="pass" , min_version="pass") :
