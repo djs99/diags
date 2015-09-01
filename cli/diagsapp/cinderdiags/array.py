@@ -6,13 +6,14 @@ from cliff.lister import Lister
 
 class CheckArray(Lister):
     """
-    Check 3PAR array configuration options in the cinder.conf of all cinder nodes listed in cli.conf
+    Check 3PAR array configuration options in the cinder.conf file
+    of all cinder nodes listed in cli.conf 
 
     "Node"                  = Section name in cli.conf.  These must be unique.
     "cinder.conf Section"   = Section name in cinder.conf on a node. These must be unique.
     "WS API"                = hp3par_api_url option for a section in cinder.conf
     "Credentials"           = hp3par_username and hp3par_password options for a section in cinder.conf
-    "CPG"                   = hp3par_cpg option for a section in cinder.conf
+    "CPG"                   = hp3par_cpg option for a section in cinder.conf 
     "iSCSI IP(s)"           = hp3par_iscsi_ips option for a section in cinder.conf
     """
 
@@ -48,3 +49,4 @@ class CheckArray(Lister):
                           arr['iscsi']
                           ) )
         return (columns, data)
+

@@ -98,7 +98,7 @@ class Reader(object):
                     node, 'service').lower(), 'default'))
 
             else:
-                checks.append(pkg_checks.dpkg_check(client, node,
+                checks.append(pkg_checks.check_package(client, node,
                                                        (name, version)))
             client.disconnect()
         return checks
@@ -122,7 +122,6 @@ class Reader(object):
                 if found:
                     checks.append(found)
         return checks
-
 
     def cleanup(self):
         """

@@ -34,7 +34,7 @@ class Client(object):
                 sftp = self.client.open_sftp()
                 sftp.get(fromLocation, toLocation)
                 sftp.close()
-                return True
+                return toLocation
 
             except (IOError, paramiko.ssh_exception.SSHException):
                 logger.warning('Unable to copy %s. Verify path in cli.conf' %

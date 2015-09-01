@@ -20,8 +20,8 @@ class CheckSoftware(Lister):
     def get_parser(self, prog_name):
         parser = super(CheckSoftware, self).get_parser(prog_name)
         parser.formatter_class = argparse.RawTextHelpFormatter
-        parser.add_argument('-name', dest='name',  nargs='?',
-                            metavar='PACKAGE-NAME',
+        parser.add_argument('-name', dest='name',
+                            nargs='?', metavar='PACKAGE-NAME', 
                             help='Requires --service SERVICE-TYPE (cinder or '
                                  'nova) \nOptional --package-min-version '
                                  'MINIMUM-VERSION'
@@ -58,3 +58,4 @@ class CheckSoftware(Lister):
                           pkg['version']) )
 
         return (columns, data)
+
