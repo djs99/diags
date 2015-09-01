@@ -32,7 +32,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     """Test case class for all 3PAR cinder Diagnostics CLI Tool """
 
     cinder_config_file = "cinder.conf"
-    
+
     @classmethod
     def resource_setup(cls):
        super(CinderDiagnostics3PARCliToolTest, cls).resource_setup()
@@ -95,7 +95,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
             self.assertEqual('pass' , row['CPG'])
             self.assertEqual('pass' , row['Credentials'])
             self.assertEqual('pass' , row['WS API'])
-            if row['Name'] == '3PAR-SLEEPYKITTY-FC' :
+            if row['cinder.conf Section'] == '3PAR-SLEEPYKITTY-FC' :
                self.assertEqual('N/A' , row['iSCSI IP(s)'])
             else :
                self.assertEqual('pass' , row['iSCSI IP(s)'])
@@ -128,7 +128,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         self.assertEqual( len(output) , 2)
 
         for row in output :
-           if row['Name'] == iscsi_section_name :
+           if row['cinder.conf Section'] == iscsi_section_name :
               self.assertEqual('TEST' , row['Node'])
               self.assertEqual('unknown' , row['CPG'])
               self.assertEqual('unknown' , row['Credentials'])
@@ -170,7 +170,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         self.assertEqual( len(output) , 2)
 
         for row in output :
-           if row['Name'] == iscsi_section_name :
+           if row['cinder.conf Section'] == iscsi_section_name :
               self.assertEqual('TEST' , row['Node'])
               self.assertEqual('pass' , row['CPG'])
               self.assertEqual('pass' , row['Credentials'])
@@ -214,7 +214,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         self.assertEqual( len(output) , 2)
 
         for row in output :
-           if row['Name'] == iscsi_section_name :
+           if row['cinder.conf Section'] == iscsi_section_name :
               self.assertEqual('TEST' , row['Node'])
               self.assertEqual('fail' , row['CPG'])
               self.assertEqual('pass' , row['Credentials'])
@@ -258,7 +258,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         self.assertEqual( len(output) , 2)
 
         for row in output :
-           if row['Name'] == iscsi_section_name :
+           if row['cinder.conf Section'] == iscsi_section_name :
               self.assertEqual('TEST' , row['Node'])
               self.assertEqual('pass' , row['CPG'])
               self.assertEqual('pass' , row['Credentials'])
@@ -308,41 +308,95 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         command_arvgs=['check', 'array', "-test"]
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
 
-        self.assertEqual(0 , cli_exit_value)
-        self.assertEqual( len(output) , 2)
+        self.assertEqual(1, cli_exit_value)
+        self.assertEqual( len(output) , 0)
 
     @test.attr(type="gate")
     def test_diags_cli_wrong_command(self) :
         # Execute the CLI commnad
-        command_arvgs=['check', 'array', 'wrong']
+        command_arvgs=['check', 'array', 'not_a_command']
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
 
         self.assertEqual(1 , cli_exit_value)
         self.assertEqual( len(output) , 0)
 
 
-    #@test.attr(type="gate")
-    def _test_diags_cli_check_sysfsutils_package_command(self) :
-        self._check_software_package('sysfsutils')
+    @test.attr(type="gate")
+    def test_diags_sysfsutils_package_installed_with_supported_version(self) :
+        command_arvgs=['check', 'software', '-name' ,"sysfsutils",'--package-min-version','1.3','--service', 'nova','-test']
+        ssh_mocked_response = "install ok installed 2.2.0"
+        self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response)
+
+    @test.attr(type="gate")
+    def test_diags_sysfsutils_package_installed_with_unsupported_version(self) :
+        command_arvgs=['check', 'software', '-name' ,"sysfsutils",'--package-min-version','2.0','--service', 'nova','-test']
+        ssh_mocked_response = "install ok installed 1.0 "
+        self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response, "pass", "fail")
+
+    @test.attr(type="gate")
+    def test_diags_sysfsutils_package_not_installed(self) :
+        command_arvgs=['check', 'software', '-name' ,"sysfsutils",'--package-min-version','2.0','--service', 'nova','-test']
+        ssh_mocked_response = 'no packages found matching  sysfsutils'
+        self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response, "fail", "N/A")
+
+    @test.attr(type="gate")
+    def test_diags_sysfsutils_package_installed_with_no_min_version_check(self) :
+        command_arvgs=['check', 'software', '-name' ,"sysfsutils",'--service', 'nova','-test']
+        ssh_mocked_response = "install ok installed 1.0 "
+        self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response, "pass", "N/A")
 
 
-    #@test.attr(type="gate")
-    def _test_diags_cli_check_sg3_utils_package_command(self) :
-        self._check_software_package('sg3-utils')
+
+    @test.attr(type="gate")
+    def test_diags_sg3_utils_package_installed_with_supported_version(self) :
+        command_arvgs=['check', 'software', '-name' ,"sg3-utils",'--package-min-version','1.3','--service', 'nova','-test']
+        ssh_mocked_response = "install ok installed 2.2.0"
+        self._check_software_package('sg3-utils', command_arvgs ,ssh_mocked_response)
+
+    @test.attr(type="gate")
+    def test_diags_sg3_utils_package_installed_with_unsupported_version(self) :
+        command_arvgs=['check', 'software', '-name' ,"sg3-utils",'--package-min-version','2.0','--service', 'nova','-test']
+        ssh_mocked_response = "install ok installed 1.0 "
+        self._check_software_package('sg3-utils', command_arvgs ,ssh_mocked_response, "pass", "fail")
+
+    @test.attr(type="gate")
+    def test_diags_sg3_utils_package_not_installed(self) :
+        command_arvgs=['check', 'software', '-name' ,"sg3-utils",'--package-min-version','2.0','--service', 'nova','-test']
+        ssh_mocked_response = 'no packages found matching  sysfsutils'
+        self._check_software_package('sg3-utils', command_arvgs ,ssh_mocked_response, "fail", "N/A")
+
+    @test.attr(type="gate")
+    def test_diags_sg3_utils_package_installed_with_no_min_version_check(self) :
+        command_arvgs=['check', 'software', '-name' ,"sysfsutils",'--service', 'nova','-test']
+        ssh_mocked_response = "install ok installed 1.0 "
+        self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response, "pass", "N/A")
 
 
-    #@test.attr(type="gate")
-    def _test_diags_cli_check_hp3parclient_package_command(self) :
-        self._check_software_package('hp3parclient')
+    @test.attr(type="gate")
+    def test_diags_hp3parclient_package_installed_with_unsupported_version(self) :
+        command_arvgs=['check', 'software', '-name' ,"hp3parclients",'--package-min-version','2.0','--service', 'nova','-test']
+        ssh_mocked_response = "install ok installed 1.0 "
+        self._check_software_package('hp3parclient', command_arvgs ,ssh_mocked_response, "pass", "fail")
+
+    @test.attr(type="gate")
+    def test_diags_hp3parclients_package_not_installed(self) :
+        command_arvgs=['check', 'software', '-name' ,"hp3parclients",'--package-min-version','2.0','--service', 'nova','-test']
+        ssh_mocked_response = 'no packages found matching  sysfsutils'
+        self._check_software_package('hp3parclients', command_arvgs ,ssh_mocked_response, "fail", "N/A")
+
+    @test.attr(type="gate")
+    def test_diags_hp3parclients_package_installed_with_no_min_version_check(self) :
+        command_arvgs=['check', 'software', '-name' ,"hp3parclients",'--service', 'nova','-test']
+        ssh_mocked_response = "install ok installed 1.0 "
+        self._check_software_package('hp3parclients', command_arvgs ,ssh_mocked_response, "pass", "N/A")
 
 
-    def _check_software_package(self, package) :
+    def _check_software_package(self, package ,command_arvgs, ssh_mocked_response, installed="pass" , min_version="pass") :
 
         # Mock permiko ssh client to return cinder file we want
-        self._mock_exec_command({"dpkg-query -W -f='${Status} ${Version}' "+ package :'install ok installed 2.2.0'
+        self._mock_exec_command({package : ssh_mocked_response
                                  })
         # Execute the CLI commnad
-        command_arvgs=['check', 'software',package,'1.3','-test']
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
 
         self.assertEqual(0 , cli_exit_value)
@@ -350,53 +404,8 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         for row in output :
             self.assertEqual(package , row['Software'])
-            self.assertEqual('pass' , row['Installed'])
-            self.assertEqual('pass' , row['Version'])
-
-         # Mock permiko ssh client to return cinder file we want
-        self._mock_exec_command({"dpkg-query -W -f='${Status} ${Version}' "+ package :'no packages found matching  '+package ,
-                                 })
-        # Execute the CLI commnad
-        command_arvgs=['check', 'software',package, '1.3', '-test']
-        cli_exit_value , output = self._execute_cli_command(command_arvgs)
-
-        self.assertEqual(0 , cli_exit_value)
-        self.assertEqual(len(output) , 1)
-
-        for row in output :
-            self.assertEqual(package , row['Software'])
-            self.assertEqual('fail' , row['Installed'])
-            self.assertEqual('fail' , row['Version'])
-
-          # Mock permiko ssh client to return cinder file we want
-        self._mock_exec_command({"dpkg-query -W -f='${Status} ${Version}' " + package:'install ok installed 2.0+repack-3' ,
-                                 })
-        # Execute the CLI commnad
-        command_arvgs=['check', 'software',package, '2.1', '-test']
-        cli_exit_value , output = self._execute_cli_command(command_arvgs)
-
-        self.assertEqual(0 , cli_exit_value)
-        self.assertEqual(len(output) , 1)
-
-        for row in output :
-            self.assertEqual(package , row['Software'])
-            self.assertEqual('pass' , row['Installed'])
-            self.assertEqual('fail' , row['Version'])
-
-         # Mock permiko ssh client to return cinder file we want
-        self._mock_exec_command({"dpkg-query -W -f='${Status} ${Version}' "+package :'Unknown Response' ,
-                                 })
-        # Execute the CLI commnad
-        command_arvgs=['check', 'software',package, '2.1', '-test']
-        cli_exit_value , output = self._execute_cli_command(command_arvgs)
-
-        self.assertEqual(0 , cli_exit_value)
-        self.assertEqual(len(output) , 1)
-
-        for row in output :
-            self.assertEqual(package , row['Software'])
-            self.assertEqual('fail' , row['Installed'])
-            self.assertEqual('fail' , row['Version'])
+            self.assertEqual(installed , row['Installed'])
+            self.assertEqual(min_version , row['Version'])
 
 
     @test.attr(type="gate")
@@ -500,7 +509,8 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
            temp_store = sys.stdout
            sys.stdout  = open(output_file, 'w')
            try :
-              cli_exit_value = cli.main(command_arvgs)
+              sys.argv = command_arvgs
+              cli_exit_value = cli.main(sys.argv)
            finally :
               sys.stdout.close() ; sys.stdout = temp_store
            return cli_exit_value ,self._convert_table_output(output_file)
@@ -572,8 +582,9 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
          def my_side_effect(*args, **kwargs):
               is_command_found = False
+              command = args[0]
               for key in dict.keys() :
-                 if args[0] == key:
+                 if command != "" and key in command:
                      # Assgin return value to command
                      client_mock.read.return_value =  dict.get(key)
                      is_command_found = True
