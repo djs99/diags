@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 PROJECT = 'cinderdiags'
 
 # Change docs/sphinx/conf.py too!
@@ -41,7 +40,7 @@ setup(
     scripts=[],
 
     provides=[],
-    install_requires=['cliff', 'hp3parclient', 'paramiko', 'oslo.utils'],
+    install_requires=['cliff', 'hp3parclient', 'paramiko'],
 
     namespace_packages=[],
     packages=find_packages(),
