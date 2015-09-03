@@ -1,5 +1,4 @@
-DIRECTORY = 'config/'
-EXTENSION = '.tmp'
+DIRECTORY = '/tmp/'
 CLI_CONFIG = 'cli.conf'
 NOVA_PACKAGES = [
     ('sysfsutils',  '2.1'),
