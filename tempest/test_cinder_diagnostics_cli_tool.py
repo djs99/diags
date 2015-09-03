@@ -15,6 +15,7 @@
 
 import mock
 import time
+import socket
 import ConfigParser
 import sys , shutil , paramiko , os
 #from tempest.api.volume import base
@@ -40,21 +41,15 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     def setUp(self):
 
         super(CinderDiagnostics3PARCliToolTest, self).setUp()
+
+        self._remove_file(self.cinder_config_file)
+
         self.mock_instances = []
-        constant.CLI_CONFIG = "cli.conf"
-
-
-        #Create test version of the CLI Configuration file for the CLI tool
-        cli_dict = { }
-        section_name, values = self._get_default_cli_conf_section()
-        cli_dict[section_name] = values
-        self._create_config( constant.CLI_CONFIG,  cli_dict)
 
     def tearDown(self):
         # Remove all the packages
         for instance in self.mock_instances :
             instance.stop();
-
 
         self._remove_file(self.cinder_config_file)
 
@@ -351,28 +346,70 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         self.assertEqual(1 , cli_exit_value)
         self.assertEqual( len(output) , 0)
 
+
+    @test.attr(type="gate")
+    def test_diags_cli_tool_with_no_cli_config(self) :
+        #remove cli config
+        store_value = constant.CLI_CONFIG
+        constant.CLI_CONFIG = "fake.conf"
+        # Execute the CLI commnad
+        command_arvgs=['check', 'array', "-test"]
+        cli_exit_value , output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(1, cli_exit_value)
+        self.assertEqual( len(output) , 0)
+        constant.CLI_CONFIG = store_value
+
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_with_wrong_cinder_node_ssh_credentials(self) :
 
-        # Mock permiko ssh client to return cinder file we want
-        self._mock_ssh_connection(paramiko.ssh_exception.AuthenticationException ())
+        # dict is the key value pair of the command and its response response
+        c_mock, aa_mock, client_mock = self._set_ssh_connection_mocks()
+        s_mock = self._patch('time.sleep')
+        c_mock.return_value = client_mock
+        client_mock.connect.side_effect = paramiko.ssh_exception.AuthenticationException ()
 
-        # create cinder config,conf file and add 3par ISCSI section
-        cinder_dict = { }
-        # 3par ISCSI section
-        iscsi_section_name, iscsi_values = self._get_default_3par_iscsi_cinder_conf_section()
-        cinder_dict[iscsi_section_name] = iscsi_values
+        # Execute the CLI commnad
+        command_arvgs=['check', 'software', "-test"]
+        cli_exit_value , output = self._execute_cli_command(command_arvgs)
 
-        # 3par FC section
-        fc_section_name, fc_values = self._get_default_3par_fc_cinder_conf_section()
-        cinder_dict[fc_section_name] = fc_values
+        self.assertEqual(1, cli_exit_value)
+        self.assertEqual( len(output) , 0)
 
-        #Create cinder.conf
-        self._create_config(self.cinder_config_file,  cinder_dict)
+
+    @test.attr(type="gate")
+    def test_diags_cli_tool_with_ssh_connection_fails(self) :
+        #remove cli config
+
+        # dict is the key value pair of the command and its response response
+        c_mock, aa_mock, client_mock = self._set_ssh_connection_mocks()
+        s_mock = self._patch('time.sleep')
+        c_mock.return_value = client_mock
+        client_mock.exec_command.side_effect = paramiko.ssh_exception.SSHException("Failed to execute the command")
 
 
         # Execute the CLI commnad
-        command_arvgs=['check', 'array', "-test"]
+        command_arvgs=['check', 'software', "-test"]
+        cli_exit_value , output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(1, cli_exit_value)
+        self.assertEqual( len(output) , 0)
+
+
+    @test.attr(type="gate")
+    def test_diags_cli_tool_with_ssh_connection_timeout(self) :
+        #remove cli config
+
+        # dict is the key value pair of the command and its response response
+        c_mock, aa_mock, client_mock = self._set_ssh_connection_mocks()
+        #s_mock = self._patch('time.sleep')
+        c_mock.return_value = client_mock
+        def timeout(*args, **kwargs) :
+            time.sleep(21)
+            raise socket.timeout("Socket Connection Time Out")
+        client_mock.exec_command.side_effect = timeout
+        # Execute the CLI commnad
+        command_arvgs=['check', 'software', "-test"]
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
 
         self.assertEqual(1, cli_exit_value)
@@ -580,6 +617,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
                      is_command_found = True
               if not is_command_found :
                    client_mock.read.return_value = 'command not found'
+
               return [[], client_mock]
 
          client_mock.exec_command.side_effect = my_side_effect
