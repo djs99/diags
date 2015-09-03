@@ -23,7 +23,6 @@ class Reader(object):
         self.nova_nodes = []
         self.cinder_files = {}
         self.clients = {}
-
         parser.read(resource_filename('cinderdiags', constant.CLI_CONFIG))
         if self.is_test:
             self.test_parse()
@@ -69,7 +68,7 @@ class Reader(object):
         for node in self.cinder_nodes:
             conf_file = self.clients[node].get_file(parser.get(node,
                                                                'conf_source'),
-                                                    node + constant.EXTENSION)
+                                                    constant.DIRECTORY + node)
             if conf_file:
                 self.cinder_files[node] = conf_file
             else:
