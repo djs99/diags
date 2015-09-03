@@ -52,7 +52,7 @@ def dpkg_check(client, node, pkg_info):
                 pkg['version'] = 'pass'
             else:
                 pkg['version'] = 'fail'
-    elif not response:
+    else:
         pkg = pip_check(client, node, pkg_info)
     return pkg
 
