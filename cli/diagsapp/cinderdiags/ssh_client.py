@@ -20,7 +20,8 @@ class Client(object):
                                 timeout=20)
 
         except socket.error:
-            logger.error('Invalid host_ip %s' % hostName)
+            logger.error('Unable to connect to  %s. Check host_ip in '
+                         'cli.conf' % hostName)
 
         except paramiko.ssh_exception.AuthenticationException:
             logger.error('Invalid ssh credentials for %s in cli.conf' %
@@ -56,7 +57,8 @@ class Client(object):
             try:
                 stdout = self.client.exec_command(command, timeout=20)[1]
                 return stdout.read()
-            except paramiko.ssh_exception.SSHException:
+            except (paramiko.ssh_exception.SSHException, socket.timeout):
                 logger.warning('Cannot check packages. '
                                'Check SSH credentials in cli.conf.')
-                return None
+                return None  # make this real thing
+
