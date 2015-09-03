@@ -406,7 +406,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         # dict is the key value pair of the command and its response response
         c_mock, aa_mock, client_mock = self._set_ssh_connection_mocks()
-        s_mock = self._patch('time.sleep')
+        #s_mock = self._patch('time.sleep')
         c_mock.return_value = client_mock
         client_mock.exec_command.side_effect = paramiko.ssh_exception.SSHException("Failed to execute the command")
 
@@ -425,7 +425,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         # dict is the key value pair of the command and its response response
         c_mock, aa_mock, client_mock = self._set_ssh_connection_mocks()
-        #s_mock = self._patch('time.sleep')
+        s_mock = self._patch('time.sleep')
         c_mock.return_value = client_mock
         def timeout(*args, **kwargs) :
             time.sleep(21)
