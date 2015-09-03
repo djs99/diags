@@ -1,5 +1,5 @@
-import paramiko
 import logging
+import paramiko
 import socket
 
 logger = logging.getLogger(__name__)
@@ -14,8 +14,10 @@ class Client(object):
             # Connect to remote host
             self.client = paramiko.SSHClient()
             self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            self.client.connect(hostName, username=sshUserName,
-                                password=sshPassword, timeout=20)
+            self.client.connect(hostName,
+                                username=sshUserName,
+                                password=sshPassword,
+                                timeout=20)
 
         except socket.error:
             logger.error('Invalid host_ip %s' % hostName)
@@ -39,6 +41,7 @@ class Client(object):
             except (IOError, paramiko.ssh_exception.SSHException):
                 logger.warning('Unable to copy %s. Verify path in cli.conf' %
                                fromLocation)
+                return None
 
     def disconnect(self):
         """ perform copy action to remote machine using SSH
@@ -56,3 +59,4 @@ class Client(object):
             except paramiko.ssh_exception.SSHException:
                 logger.warning('Cannot check packages. '
                                'Check SSH credentials in cli.conf.')
+                return None

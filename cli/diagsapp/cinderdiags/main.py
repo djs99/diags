@@ -5,7 +5,8 @@ from cliff.commandmanager import CommandManager
 
 
 class CinderDiags(App):
-    App.DEFAULT_VERBOSE_LEVEL=0
+    App.DEFAULT_VERBOSE_LEVEL = 0
+
     def __init__(self):
         super(CinderDiags, self).__init__(
             description='cinder diagnostics CLI',

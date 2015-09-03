@@ -6,6 +6,8 @@ Requires the python hp3parclient: sudo pip install hp3parclient
 Assumes the volume_driver is correctly set
 """
 import ConfigParser
+import pkg_checks
+
 from oslo_utils import importutils
 hp3parclient = importutils.try_import("hp3parclient")
 if hp3parclient:
@@ -17,18 +19,18 @@ else:
 
 
 class WSChecker(object):
-    """
-    Tests web service api configurations by section in the cinder.conf file
-    """
-    def __init__(self, conf, node, test=False):
-        """
+
+    def __init__(self, client, conf, node, test=False):
+        """Tests web service api configurations in the cinder.conf file
+
         :param conf: location of cinder.conf
         :param node: cinder node the cinder.conf was copied from
         :param test: use testing client
         """
-        self.is_test = test
         self.conf = conf
+        self.ssh_client = client
         self.node = node
+        self.is_test = test
         self.parser = ConfigParser.SafeConfigParser()
         self.parser.read(self.conf)
         self.hp3pars = []
@@ -38,8 +40,8 @@ class WSChecker(object):
                 self.hp3pars.append(section)
 
     def check_all(self):
-        """
-        tests configuration settings for all 3par arrays
+        """Tests configuration settings for all 3par arrays
+
         :return: a list of dictionaries
         """
         all_tests = []
@@ -48,20 +50,22 @@ class WSChecker(object):
         return all_tests
 
     def check_section(self, section_name):
-        """
-        Runs all WS configuration tests for a section
-        If url/credentials are wrong, no further tests run and values are "unknown"
+        """Runs all WS configuration tests for a section
+
         :param section_name: from cinder.conf as [SECTION_NAME]
         :return: a dictionary - each property is pass/fail/unknown
         """
-        tests = {"name": section_name,
-                 "url": "unknown",
-                 "credentials": "unknown",
-                 "cpg": "unknown",
-                 "iscsi": "unknown",
-                 "node": self.node,
-                 }
+        tests = {
+            "name": section_name,
+            "url": "unknown",
+            "credentials": "unknown",
+            "cpg": "unknown",
+            "iscsi": "unknown",
+            "node": self.node,
+            "driver": "unknown"
+        }
         if section_name in self.hp3pars:
+            tests["driver"] = self.has_driver(section_name)
             client = self.get_client(section_name, self.is_test)
             if client:
                 tests["url"] = "pass"
@@ -72,7 +76,7 @@ class WSChecker(object):
                     else:
                         tests["cpg"] = "fail"
                     if 'iscsi' in self.parser.get(section_name,
-                                             'volume_driver'):
+                                                  'volume_driver'):
                         if self.iscsi_is_valid(section_name, client):
                             tests["iscsi"] = "pass"
                         else:
@@ -92,17 +96,17 @@ class WSChecker(object):
 
 # Config testing methods check if option values are valid
     def get_client(self, section_name, test):
-        """
-        This tries to create a client and verifies the api url
+        """Tries to create a client and verifies the api url
+
         :return: The client if url is valid, None if invalid/missing
         """
         try:
             if test:
                 cl = testclient.HP3ParClient(self.parser.get(section_name,
-                                                         'hp3par_api_url'))
+                                                             'hp3par_api_url'))
             else:
                 cl = hpclient.HP3ParClient(self.parser.get(section_name,
-                                                     'hp3par_api_url'))
+                                                           'hp3par_api_url'))
 
             return cl
         except (hpexceptions.UnsupportedVersion, hpexceptions.HTTPBadRequest,
@@ -110,8 +114,8 @@ class WSChecker(object):
             return None
 
     def cred_is_valid(self, section_name, client):
-        """
-        This tries to login to the client to verify credentials
+        """Tries to login to the client to verify credentials
+
         :return: True if credentials are valid, False if invalid/missing
         """
         try:
@@ -124,8 +128,8 @@ class WSChecker(object):
             return False
 
     def cpg_is_valid(self, section_name, client):
-        """
-        This tests to see if a cpg exists on the 3PAR array to verify cpg name
+        """Tests to see if a cpg exists on the 3PAR array to verify cpg name
+
         :return: True if cpg name is valid, False if invalid/missing
         """
         cpg_list = self.parser.get(section_name, 'hp3par_cpg').split(',')
@@ -137,9 +141,8 @@ class WSChecker(object):
         return True
 
     def iscsi_is_valid(self, section_name, client):
-        """
-        This gets the iSCSI target ports from the client and checks the provided
-        iSCSI IPs.
+        """Gets the iSCSI target ports from the client, checks the iSCSI IPs.
+
         :return: False if any of the provided IPs are wrong
         """
         valid_ips = []
@@ -159,3 +162,13 @@ class WSChecker(object):
                 return False
         return True
 
+    def has_driver(self, section_name):
+        """Checks that the volume_driver is installed
+
+        :return: string
+        """
+        driver = self.parser.get(section_name, 'volume_driver').split('.')[-2]
+        checker = pkg_checks.driver_check(self.ssh_client,
+                                          self.node,
+                                          (driver, None))
+        return checker['installed']
