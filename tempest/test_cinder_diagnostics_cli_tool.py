@@ -399,6 +399,22 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         self.assertEqual(1, cli_exit_value)
         self.assertEqual( len(output) , 0)
 
+    @test.attr(type="gate")
+    def test_diags_cli_ssh_timeout_while_connecting (self) :
+
+        # dict is the key value pair of the command and its response response
+        c_mock, aa_mock, client_mock = self._set_ssh_connection_mocks()
+        s_mock = self._patch('time.sleep')
+        c_mock.return_value = client_mock
+        client_mock.connect.side_effect = socket.timeout("Socket Connection Time Out")
+
+        # Execute the CLI commnad
+        command_arvgs=['check', 'software', "-test"]
+        cli_exit_value , output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(1, cli_exit_value)
+        self.assertEqual( len(output) , 0)
+
 
     @test.attr(type="gate")
     def test_diags_cli_tool_with_ssh_connection_fails(self) :
@@ -406,7 +422,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         # dict is the key value pair of the command and its response response
         c_mock, aa_mock, client_mock = self._set_ssh_connection_mocks()
-        #s_mock = self._patch('time.sleep')
+        s_mock = self._patch('time.sleep')
         c_mock.return_value = client_mock
         client_mock.exec_command.side_effect = paramiko.ssh_exception.SSHException("Failed to execute the command")
 
@@ -420,7 +436,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
 
     @test.attr(type="gate")
-    def test_diags_cli_tool_with_ssh_connection_timeout(self) :
+    def test_diags_cli_tool_with_ssh_timeout_while_executing_command(self) :
         #remove cli config
 
         # dict is the key value pair of the command and its response response
@@ -428,7 +444,6 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         s_mock = self._patch('time.sleep')
         c_mock.return_value = client_mock
         def timeout(*args, **kwargs) :
-            time.sleep(21)
             raise socket.timeout("Socket Connection Time Out")
         client_mock.exec_command.side_effect = timeout
         # Execute the CLI commnad
