@@ -269,7 +269,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         command_arvgs=['check', 'software', '-test']
 
         # Mock permiko ssh client to return cinder file we want
-        self._mock_exec_command({'sysfsutils' : "install ok installed 2.2.0" , 'hp3parclient' : "install ok installed 3.2.0" , 'sg3-utils' : "install ok installed 2.2.0"
+        self._mock_exec_command({'sysfsutils' : "install ok installed 2.2.0" , 'hp3parclient' : "hp3parclient (3.2.2)" , 'sg3-utils' : "install ok installed 2.2.0"
                                  })
         # Execute the CLI commnad
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
@@ -288,25 +288,25 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     @test.attr(type="gate")
     def test_diags_sysfsutils_package_installed_with_supported_version(self) :
         command_arvgs=['check', 'software', '-name' ,"sysfsutils",'--package-min-version','1.3','--service', 'nova','-test']
-        ssh_mocked_response = "install ok installed 2.2.0"
+        ssh_mocked_response = {'sysfsutils' : "install ok installed 2.2.0" }
         self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response)
 
     @test.attr(type="gate")
     def test_diags_sysfsutils_package_installed_with_unsupported_version(self) :
         command_arvgs=['check', 'software', '-name' ,"sysfsutils",'--package-min-version','2.0','--service', 'nova','-test']
-        ssh_mocked_response = "install ok installed 1.0 "
+        ssh_mocked_response = {'sysfsutils' : "install ok installed 1.0 " }
         self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response, "pass", "fail")
 
     @test.attr(type="gate")
     def test_diags_sysfsutils_package_not_installed(self) :
         command_arvgs=['check', 'software', '-name' ,"sysfsutils",'--package-min-version','2.0','--service', 'nova','-test']
-        ssh_mocked_response = 'no packages found matching  sysfsutils'
+        ssh_mocked_response = {'sysfsutils' : 'no packages found matching  sysfsutils' }
         self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response, "fail", "N/A")
 
     @test.attr(type="gate")
     def test_diags_sysfsutils_package_installed_with_no_min_version_check(self) :
         command_arvgs=['check', 'software', '-name' ,"sysfsutils",'--service', 'nova','-test']
-        ssh_mocked_response = "install ok installed 1.0 "
+        ssh_mocked_response = {'sysfsutils' : "install ok installed 1.0 " }
         self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response, "pass", "N/A")
 
 
@@ -314,44 +314,44 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     @test.attr(type="gate")
     def test_diags_sg3_utils_package_installed_with_supported_version(self) :
         command_arvgs=['check', 'software', '-name' ,"sg3-utils",'--package-min-version','1.3','--service', 'nova','-test']
-        ssh_mocked_response = "install ok installed 2.2.0"
+        ssh_mocked_response = {'sg3-utils' : "install ok installed 2.2.0" }
         self._check_software_package('sg3-utils', command_arvgs ,ssh_mocked_response)
 
     @test.attr(type="gate")
     def test_diags_sg3_utils_package_installed_with_unsupported_version(self) :
         command_arvgs=['check', 'software', '-name' ,"sg3-utils",'--package-min-version','2.0','--service', 'nova','-test']
-        ssh_mocked_response = "install ok installed 1.0 "
+        ssh_mocked_response = {'sg3-utils' : "install ok installed 1.0 " }
         self._check_software_package('sg3-utils', command_arvgs ,ssh_mocked_response, "pass", "fail")
 
     @test.attr(type="gate")
     def test_diags_sg3_utils_package_not_installed(self) :
         command_arvgs=['check', 'software', '-name' ,"sg3-utils",'--package-min-version','2.0','--service', 'nova','-test']
-        ssh_mocked_response = 'no packages found matching  sysfsutils'
+        ssh_mocked_response = {'sg3-utils' : 'no packages found matching  sysfsutils' }
         self._check_software_package('sg3-utils', command_arvgs ,ssh_mocked_response, "fail", "N/A")
 
     @test.attr(type="gate")
     def test_diags_sg3_utils_package_installed_with_no_min_version_check(self) :
         command_arvgs=['check', 'software', '-name' ,"sysfsutils",'--service', 'nova','-test']
-        ssh_mocked_response = "install ok installed 1.0 "
+        ssh_mocked_response = {'sysfsutils' : "install ok installed 1.0 " }
         self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response, "pass", "N/A")
 
 
     @test.attr(type="gate")
     def test_diags_hp3parclient_package_installed_with_unsupported_version(self) :
         command_arvgs=['check', 'software', '-name' ,"hp3parclient",'--package-min-version','2.0','--service', 'nova','-test']
-        ssh_mocked_response = "install ok installed 1.0 "
+        ssh_mocked_response = {'hp3parclient' : "install ok installed 1.0 " }
         self._check_software_package('hp3parclient', command_arvgs ,ssh_mocked_response, "pass", "fail")
 
     @test.attr(type="gate")
     def test_diags_hp3parclients_package_not_installed(self) :
         command_arvgs=['check', 'software', '-name' ,"hp3parclient",'--package-min-version','2.0','--service', 'nova','-test']
-        ssh_mocked_response = 'no packages found matching  hp3parclient'
+        ssh_mocked_response = {'hp3parclient' : 'no packages found matching  hp3parclient' }
         self._check_software_package('hp3parclient', command_arvgs ,ssh_mocked_response, "fail", "N/A")
 
     @test.attr(type="gate")
     def test_diags_hp3parclients_package_installed_with_no_min_version_check(self) :
-        command_arvgs=['check', 'software', '-name' ,"hp3parclient",'--service', 'nova','-test']
-        ssh_mocked_response = "install ok installed 1.0 "
+        command_arvgs=['check', 'software', '-name' ,"hp3parclient",'--service', 'cinder','-test']
+        ssh_mocked_response = {'dpkg-query':'no packages found matching  hp3parclient' , 'grep hp3parclient' : "hp3parclient (3.2.2) " }
         self._check_software_package('hp3parclient', command_arvgs ,ssh_mocked_response, "pass", "N/A")
 
     @test.attr(type="gate")
@@ -529,8 +529,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     def _check_software_package(self, package ,command_arvgs, ssh_mocked_response, installed="pass" , min_version="pass") :
 
         # Mock permiko ssh client to return cinder file we want
-        self._mock_exec_command({package : ssh_mocked_response
-                                 })
+        self._mock_exec_command(ssh_mocked_response)
         # Execute the CLI commnad
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
 
