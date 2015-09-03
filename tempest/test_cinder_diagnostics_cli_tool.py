@@ -300,7 +300,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     @test.attr(type="gate")
     def test_diags_sysfsutils_package_not_installed(self) :
         command_arvgs=['check', 'software', '-name' ,"sysfsutils",'--package-min-version','2.0','--service', 'nova','-test']
-        ssh_mocked_response = {'sysfsutils' : 'no packages found matching  sysfsutils' }
+        ssh_mocked_response = {'dpkg-query' : 'no packages found matching  sysfsutils' ,  'grep sysfsutils' : " " }
         self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response, "fail", "N/A")
 
     @test.attr(type="gate")
@@ -326,7 +326,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     @test.attr(type="gate")
     def test_diags_sg3_utils_package_not_installed(self) :
         command_arvgs=['check', 'software', '-name' ,"sg3-utils",'--package-min-version','2.0','--service', 'nova','-test']
-        ssh_mocked_response = {'sg3-utils' : 'no packages found matching  sysfsutils' }
+        ssh_mocked_response = {'dpkg-query' : 'no packages found matching  sysfsutils', 'grep sg3-utils' : "" }
         self._check_software_package('sg3-utils', command_arvgs ,ssh_mocked_response, "fail", "N/A")
 
     @test.attr(type="gate")
@@ -339,13 +339,13 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     @test.attr(type="gate")
     def test_diags_hp3parclient_package_installed_with_unsupported_version(self) :
         command_arvgs=['check', 'software', '-name' ,"hp3parclient",'--package-min-version','2.0','--service', 'nova','-test']
-        ssh_mocked_response = {'hp3parclient' : "install ok installed 1.0 " }
+        ssh_mocked_response = {'dpkg-query':'no packages found matching  hp3parclient' , 'grep hp3parclient' : "hp3parclient (1.2.2) " }
         self._check_software_package('hp3parclient', command_arvgs ,ssh_mocked_response, "pass", "fail")
 
     @test.attr(type="gate")
     def test_diags_hp3parclients_package_not_installed(self) :
         command_arvgs=['check', 'software', '-name' ,"hp3parclient",'--package-min-version','2.0','--service', 'nova','-test']
-        ssh_mocked_response = {'hp3parclient' : 'no packages found matching  hp3parclient' }
+        ssh_mocked_response = {'dpkg-query':'no packages found matching  hp3parclient' , 'grep hp3parclient' : "" }
         self._check_software_package('hp3parclient', command_arvgs ,ssh_mocked_response, "fail", "N/A")
 
     @test.attr(type="gate")
