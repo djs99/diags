@@ -300,7 +300,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     @test.attr(type="gate")
     def test_diags_sysfsutils_package_not_installed(self) :
         command_arvgs=['check', 'software', '-name' ,"sysfsutils",'--package-min-version','2.0','--service', 'nova','-test']
-        ssh_mocked_response = {'dpkg-query' : 'no packages found matching  sysfsutils' ,  'grep sysfsutils' : " " }
+        ssh_mocked_response = {'dpkg-query' : 'no packages found matching  sysfsutils' ,  'grep sysfsutils' : "" }
         self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response, "fail", "N/A")
 
     @test.attr(type="gate")
@@ -326,7 +326,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     @test.attr(type="gate")
     def test_diags_sg3_utils_package_not_installed(self) :
         command_arvgs=['check', 'software', '-name' ,"sg3-utils",'--package-min-version','2.0','--service', 'nova','-test']
-        ssh_mocked_response = {'dpkg-query' : 'no packages found matching  sysfsutils', 'grep sg3-utils' : "" }
+        ssh_mocked_response = {'dpkg-query' : 'no packages found matching  sg3-utils', 'grep sg3-utils' : "" }
         self._check_software_package('sg3-utils', command_arvgs ,ssh_mocked_response, "fail", "N/A")
 
     @test.attr(type="gate")
