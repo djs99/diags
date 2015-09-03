@@ -58,8 +58,8 @@ class CheckArray(Lister):
                 arr['node'],
                 arr['name'],
                 arr['url'],
-                arr['cpg'],
                 arr['credentials'],
+                arr['cpg'],
                 arr['iscsi'],
                 arr['driver'],
             ))
