@@ -269,21 +269,23 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         command_arvgs=['check', 'software', '-test']
 
         # Mock permiko ssh client to return cinder file we want
-        self._mock_exec_command({'sysfsutils' : "install ok installed 2.2.0" , 'hp3parclient' : "hp3parclient (3.2.2)" , 'sg3-utils' : "install ok installed 2.2.0"
-                                 })
+        self._mock_exec_command({'sysfsutils' : "install ok installed 2.2.0" , 'hp3parclient' : "hp3parclient (3.2.2)" , 'sg3-utils' : "install ok installed 2.2.0",
+                                "locate" : ""})
         # Execute the CLI commnad
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
 
         self.assertEqual(0 , cli_exit_value)
-        self.assertEqual(len(output) , 3)
+        self.assertEqual(len(output) , 9)
 
         for row in output :
+           if not "Driver" in row['Software'] :
+              self.assertEqual("pass" , row['Installed'])
+              self.assertEqual("pass" , row['Version'])
+           else :
+              self.assertEqual("fail" , row['Installed'])
+              self.assertEqual("N/A" , row['Version'])
 
-            self.assertEqual("pass" , row['Installed'])
-            self.assertEqual("pass" , row['Version'])
 
-        ssh_mocked_response = "install ok installed 2.2.0"
-        self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response)
 
     @test.attr(type="gate")
     def test_diags_sysfsutils_package_installed_with_supported_version(self) :
