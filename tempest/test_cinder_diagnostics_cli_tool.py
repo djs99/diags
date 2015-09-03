@@ -94,6 +94,52 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
                self.assertEqual('pass' , row['iSCSI IP(s)'])
 
     @test.attr(type="gate")
+    def test_check_array_command_for_specific_array_name(self):
+
+        self._mock_get_file(self.cinder_config_file)
+        cinder_dict = { }
+        # 3par ISCSI section
+        section_name, values = self._get_default_3par_iscsi_cinder_conf_section()
+        cinder_dict[section_name] = values
+
+        # 3par FC section
+        section_name1, valuess = self._get_default_3par_fc_cinder_conf_section()
+        cinder_dict[section_name1] = valuess
+
+        #Create cinder.conf
+        self._create_config(self.cinder_config_file,  cinder_dict)
+
+        command_arvgs=['check', 'array', '-test' ,"-name" ,'3PAR-SLEEPYKITTY-FC']
+        cli_exit_value ,output  = self._execute_cli_command(command_arvgs)
+        self.assertEqual(0, cli_exit_value)
+        self.assertEqual('3PAR-SLEEPYKITTY-FC', output[0]['cinder.conf Section'])
+
+    def test_check_array_command_with_wrong_arrayname(self) :
+
+        self._mock_get_file(self.cinder_config_file)
+        # create cinder config,conf file and add 3par ISCSI section
+        cinder_dict = { }
+        # 3par ISCSI section
+        section_name, values = self._get_default_3par_iscsi_cinder_conf_section()
+        cinder_dict[section_name] = values
+
+        # 3par FC section
+        section_name1, valuess = self._get_default_3par_fc_cinder_conf_section()
+        cinder_dict[section_name1] = valuess
+
+        #Create cinder.conf
+        self._create_config(self.cinder_config_file,  cinder_dict)
+
+
+        # Execute the CLI commnad
+        command_arvgs=['check', 'array', '-test' ,"-name" ,'InvalidArrayName']
+#       command_arvgs=['check', 'array', '-test' ,"-name" ,'3PAR-SLEEPYKITTY-FC']
+        cli_exit_value ,output  = self._execute_cli_command(command_arvgs)
+        self.assertEqual(1, cli_exit_value)
+        self.assertEqual(len(output) , 0)
+
+
+    @test.attr(type="gate")
     def test_diags_cli_check_array_command_for_bad_ws_api(self) :
 
         # Mock permiko ssh client to return cinder file we want
