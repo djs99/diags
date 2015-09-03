@@ -265,6 +265,27 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
               self.assertEqual('N/A' , row['iSCSI IP(s)'])
 
     @test.attr(type="gate")
+    def test_diags_check_all_packages_installed_with_supported_version(self) :
+        command_arvgs=['check', 'software', '-test']
+
+        # Mock permiko ssh client to return cinder file we want
+        self._mock_exec_command({'sysfsutils' : "install ok installed 2.2.0" , 'hp3parclient' : "install ok installed 3.2.0" , 'sg3-utils' : "install ok installed 2.2.0"
+                                 })
+        # Execute the CLI commnad
+        cli_exit_value , output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(len(output) , 3)
+
+        for row in output :
+
+            self.assertEqual("pass" , row['Installed'])
+            self.assertEqual("pass" , row['Version'])
+
+        ssh_mocked_response = "install ok installed 2.2.0"
+        self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response)
+
+    @test.attr(type="gate")
     def test_diags_sysfsutils_package_installed_with_supported_version(self) :
         command_arvgs=['check', 'software', '-name' ,"sysfsutils",'--package-min-version','1.3','--service', 'nova','-test']
         ssh_mocked_response = "install ok installed 2.2.0"
