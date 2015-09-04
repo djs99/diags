@@ -501,6 +501,19 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
 
     @test.attr(type="gate")
+    def test_diags_cli_tool_wrong_command(self) :
+        #remove cli config
+        # Execute the CLI commnad
+       cli_exit_value = -1
+       try :
+        command_arvgs=['check', 'software',"--wrong", "-test"]
+        cli_exit_value , output = self._execute_cli_command(command_arvgs)
+        self.fail()
+       except  :
+         self.assertEqual(-1, cli_exit_value)
+
+
+    @test.attr(type="gate")
     def test_successful_ssh_connection_with_mock(self) :
         """ Test SSH Connection with mock """
 
