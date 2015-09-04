@@ -23,7 +23,7 @@ import json
 from tempest.tests import base
 from tempest import test
 from tempest import config
-from tempest_lib.cli import output_parser
+import tempest_lib.cli.output_parser as table_output_parser
 from cinderdiags.ssh_client import Client
 import cinderdiags.main as cli
 import cinderdiags.pkg_checks as pkg_checks
@@ -81,7 +81,16 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         command_arvgs=['check', 'array', "-test"]
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
 
+
+
         self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(len(output) , 2)
+
+        cli_exit_value , json_cli_output = self._execute_cli_command(command_arvgs, True)
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(output , json_cli_output)
+
+
         self.assertEqual(len(output) , 2)
 
         for row in output :
@@ -633,6 +642,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
             # add command line arugment to get the Json output
             command_arvgs.append('-f')
             command_arvgs.append('json')
+            print command_arvgs
         try :
           # execute the command
            cli_exit_value = -1
@@ -650,7 +660,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
            if isJson :
               return cli_exit_value , json.loads(data)
            else :
-              return cli_exit_value , output_parser.listing(data)
+              return cli_exit_value , table_output_parser.listing(data)
 
         finally :
            self._remove_file(output_file)
@@ -665,12 +675,6 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         # remove the file
         if os.path.isfile(file) is True:
                os.remove(file)
-
-    def _convert_table_output(self, filename):
-
-        data = open(filename).read()
-        return output_parser.listing(data)
-
 
 
     def _set_ssh_connection_mocks(self):
