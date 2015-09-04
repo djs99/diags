@@ -40,7 +40,7 @@ setup(
     scripts=[],
 
     provides=[],
-    install_requires=['cliff', 'hp3parclient', 'paramiko'],
+    install_requires=['cliff', 'cliff-tablib', 'hp3parclient', 'paramiko'],
 
     namespace_packages=[],
     packages=find_packages(),
