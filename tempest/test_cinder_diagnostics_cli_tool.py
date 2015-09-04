@@ -18,6 +18,7 @@ import time
 import socket
 import ConfigParser
 import sys , shutil , paramiko , os
+import json
 #from tempest.api.volume import base
 from tempest.tests import base
 from tempest import test
@@ -619,10 +620,19 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
 
 
-    def _execute_cli_command(self, command_arvgs) :
+    def _execute_cli_command(self, command_arvgs, isJson=False) :
+
+        # command_arvgs :  This includes command arguments
+        # isJson :  If true then execute command to get JSON output from CLI and if false then default table output
+        # To verify the CLI Table output we convert it into JSON using external API and return it
 
         #open a file to capture the CLI output
         output_file  = self._get_file_name()
+
+        if isJson :
+            # add command line arugment to get the Json output
+            command_arvgs.append('-f')
+            command_arvgs.append('json')
         try :
           # execute the command
            cli_exit_value = -1
@@ -636,7 +646,11 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
            finally :
               sys.stdout.close() ; sys.stdout = temp_store
 
-           return cli_exit_value ,self._convert_table_output(output_file)
+           data = open(output_file).read()
+           if isJson :
+              return cli_exit_value , json.loads(data)
+           else :
+              return cli_exit_value , output_parser.listing(data)
 
         finally :
            self._remove_file(output_file)
