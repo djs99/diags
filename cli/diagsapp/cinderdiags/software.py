@@ -7,12 +7,14 @@ from cliff.lister import Lister
 
 class CheckSoftware(Lister):
     """
-    Check for required software and versions on Cinder and Nova nodes.
+    check for required software and versions on Cinder and Nova nodes.
 
-    "Node"      = Section name in cli.conf.  These must be unique.
-    "Software"  = Software package name.
-    "Installed" = Installation status of the package.
-    "Version"   = Software package version meets the minimum requirement.
+    output data:
+        Node        Node names set by user in cli.conf, names must be unique
+                        [example]
+        Software    Software package name.
+        Installed   Installation status of the package.
+        Version     Software package version meets the minimum requirement.
     """
 
     log = logging.getLogger(__name__)
