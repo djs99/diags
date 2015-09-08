@@ -1,4 +1,4 @@
-import ConfigParser
+import ConfigParser  # Python3 uses configparser
 import constant
 import logging
 import os
@@ -55,10 +55,13 @@ class Reader(object):
         """Create SSH client connections for nodes.
         """
         for node in set(self.nova_nodes + self.cinder_nodes):
-            client = ssh_client.Client(parser.get(node, 'host_ip'),
-                                       parser.get(node, 'ssh_user'),
-                                       parser.get(node, 'ssh_password'))
-            self.clients[node] = client
+            try:
+                client = ssh_client.Client(parser.get(node, 'host_ip'),
+                                           parser.get(node, 'ssh_user'),
+                                           parser.get(node, 'ssh_password'))
+                self.clients[node] = client
+            except Exception as e:
+                logger.warning("%s: %s" % (e.message, node))
 
     def copy_files(self):
         """Copy the cinder.conf file of each cinder node to a local directory.
@@ -66,13 +69,13 @@ class Reader(object):
         Location of cinder.conf file is set per node in cli.conf
         """
         for node in self.cinder_nodes:
-            conf_file = self.clients[node].get_file(parser.get(node,
-                                                               'conf_source'),
-                                                    constant.DIRECTORY + node)
-            if conf_file:
+            try:
+                conf_file = self.clients[node].get_file(parser.get(node,
+                                                                   'conf_source'),
+                                                        constant.DIRECTORY + node)
                 self.cinder_files[node] = conf_file
-            else:
-                logger.warning("%s ignored" % node)
+            except Exception as e:
+                logger.warning("%s: %s" % (e.message, node))
 
     def pkg_checks(self, name='default', service='default', version=None):
         """Check nodes for installed software packages

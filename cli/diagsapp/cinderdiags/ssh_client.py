@@ -1,8 +1,5 @@
-import logging
 import paramiko
 import socket
-
-logger = logging.getLogger(__name__)
 
 
 class Client(object):
@@ -20,12 +17,9 @@ class Client(object):
                                 timeout=20)
 
         except socket.error:
-            logger.error('Unable to connect to  %s. Check host_ip in '
-                         'cli.conf' % hostName)
-
+            raise Exception("SSH Error: Unable to connect")
         except paramiko.ssh_exception.AuthenticationException:
-            logger.error('Invalid ssh credentials for %s in cli.conf' %
-                         hostName)
+            raise Exception("SSH Error: Invalid SSH credentials")
 
     def get_file(self, fromLocation, toLocation):
         """ perform copy action to remote machine using SSH
@@ -40,9 +34,7 @@ class Client(object):
                 return toLocation
 
             except (IOError, paramiko.ssh_exception.SSHException):
-                logger.warning('Unable to copy %s. Verify path in cli.conf' %
-                               fromLocation)
-                return None
+                raise Exception("SSH Error: Unable to copy %s" % fromLocation)
 
     def disconnect(self):
         """ perform copy action to remote machine using SSH
@@ -56,9 +48,8 @@ class Client(object):
                 self.client.get_transport().is_authenticated():
             try:
                 stdout = self.client.exec_command(command, timeout=20)[1]
-                return stdout.read()
+                resp = stdout.readlines()
+                return ''.join(resp)
             except (paramiko.ssh_exception.SSHException, socket.timeout):
-                logger.warning('Cannot check packages. '
-                               'Check SSH credentials in cli.conf.')
-                return None  # make this real thing
+                raise Exception("SSH Error: Unable to execute remote command")
 

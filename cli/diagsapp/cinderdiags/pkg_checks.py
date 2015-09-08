@@ -1,5 +1,8 @@
 import constant
+import logging
 import re
+
+logger = logging.getLogger(__name__)
 
 
 def check_all(client, node, pkg_info):
@@ -42,18 +45,29 @@ def dpkg_check(client, node, pkg_info):
         'installed': 'fail',
         'version': 'N/A',
     }
-    response = client.execute("dpkg-query -W -f='${Status} ${Version}' " +
-                              pkg_info[0])
-    if response and 'install ok installed' in response:
-        pkg['installed'] = 'pass'
-        if pkg_info[1]:
-            version = re.search('installed ([\d\.]+)', response)
-            if version.group(1) >= pkg_info[1]:
-                pkg['version'] = 'pass'
-            else:
-                pkg['version'] = 'fail'
-    else:
-        pkg = pip_check(client, node, pkg_info)
+    try:
+        response = client.execute("dpkg-query -W -f='${Status} ${Version}' " +
+                                  pkg_info[0])
+        if not response:
+            pkg = pip_check(client, node, pkg_info)
+        elif 'install ok installed' in response:
+            pkg['installed'] = 'pass'
+            if pkg_info[1]:
+                version = re.search('installed ([\d\.]+)', response)
+                if version.group(1) >= pkg_info[1]:
+                    pkg['version'] = 'pass'
+                else:
+                    pkg['version'] = 'fail'
+        else:
+            pkg['installed'] = 'fail'
+
+    except Exception as e:
+        logger.warning("%s -- Unable to check %s on node %s" % (e,
+                                                              pkg['name'],
+                                                              node))
+        pkg['installed'] = 'ERROR'
+        pkg['version'] = 'ERROR'
+        pass
     return pkg
 
 
@@ -71,17 +85,27 @@ def pip_check(client, node, pkg_info):
         'installed': 'fail',
         'version': 'N/A',
     }
-    response = client.execute("pip list | grep " + pkg_info[0])
-    if response:
-        pkg['installed'] = 'pass'
-        if pkg_info[1]:
-            version = re.search('\(([\d\.]+)\)', response)
-            if version.group(1) >= pkg_info[1]:
-                pkg['version'] = 'pass'
+    try:
+        response = client.execute("pip list | grep " + pkg_info[0])
+        if response:
+            pkg['installed'] = 'pass'
+            if pkg_info[1]:
+                version = re.search('\(([\d\.]+)\)', response)
+                if version.group(1) >= pkg_info[1]:
+                    pkg['version'] = 'pass'
+                else:
+                    pkg['version'] = 'fail'
             else:
-                pkg['version'] = 'fail'
+                    pkg['version'] = 'N/A'
         else:
-            pkg['version'] = 'N/A'
+            logger.warning("Unable to locate %s on node %s" % (pkg['name'],
+                                                               node))
+    except Exception as e:
+        logger.warning("%s -- Unable to check %s on node %s" % (e,
+                                                              pkg['name'],
+                                                              node))
+        pkg['installed'] = 'ERROR'
+        pkg['version'] = 'ERROR'
     return pkg
 
 

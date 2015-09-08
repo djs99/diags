@@ -6,22 +6,25 @@ from cliff.lister import Lister
 
 
 class CheckArray(Lister):
-    """Check 3PAR options in the cinder.conf against 3PAR array
+    """check 3PAR options in the cinder.conf against 3PAR array
 
     output data:
-    Node                Node names set by user in cli.conf, names must be unique
-    Option Group        Section name in cinder.conf on a node. These must be
-    unique.
-    WS API              Web service API for array
-                            (hp3par_api_url)
-    Credentials         Username and password for array
-                            (hp3par_username, hp3par_password)
-    CPG                 CPG to use for volume creation
-                            (hp3par_cpg)
-    iSCSI IP(s)         Array's ISCSI IP addresses to use
-                            (hp3par_iscsi_ips)
-    Driver Installed    Array's volume driver
-                            (volume_driver)
+        Node                node names set by user in cli.conf, names must be
+                            unique
+                                [example]
+        Backend Section     section names set by user in cinder.conf, must be
+                            unique per node
+                                [example]
+        WS API              web service API for array
+                                (hp3par_api_url)
+        Credentials         username and password for array
+                                (hp3par_username, hp3par_password)
+        CPG                 CPG to use for volume creation
+                                (hp3par_cpg)
+        iSCSI IP(s)         array's iSCSI IP addresses to use
+                                (hp3par_iscsi_ips)
+        Driver Installed    array's volume driver
+                                (volume_driver)
     """
 
     log = logging.getLogger(__name__)
@@ -48,7 +51,7 @@ class CheckArray(Lister):
             raise ValueError("%s not found" % parsed_args.name)
         columns = (
             'Node',
-            'Option Group',
+            'Backend Section',
             'WS API',
             'Credentials',
             'CPG',
