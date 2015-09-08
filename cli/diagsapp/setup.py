@@ -54,7 +54,7 @@ setup(
             'cinderdiags = cinderdiags.main:main'
         ],
         'cliff.cinderdiags': [
-            'check array = cinderdiags.array:CheckArray',
+            'check options = cinderdiags.array:CheckArray',
             'check software = cinderdiags.software:CheckSoftware'
         ],
     },
