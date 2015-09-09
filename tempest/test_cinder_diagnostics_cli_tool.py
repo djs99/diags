@@ -715,8 +715,11 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
          client_mock.get.side_effect = my_side_effect
 
     def _mock_exec_command(self, dict):
+         '''
+         :param dict: This include key value pair for the command and respons
+         :return:
+         '''
 
-         # dict is the key value pair of the command and its response response
          c_mock, aa_mock, client_mock = self._set_ssh_connection_mocks()
          s_mock = self._patch('time.sleep')
          c_mock.return_value = client_mock
@@ -740,6 +743,11 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     def _patch(self, target, **kwargs):
 
+        '''
+        :param target: instance that needs to be mocked
+        :param kwargs:
+        :return: Mocked instance
+        '''
         p = mock.patch(target, **kwargs)
         m = p.start()
         self.mock_instances.append(p)
@@ -747,6 +755,11 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
 
     def _get_default_3par_iscsi_cinder_conf_section(self) :
+        '''
+         this is default 3par ISCSI configuration section of cinder config  file .
+         This require to create the test version of cinder config
+        :return:
+        '''
 
         section_name = '3PAR-SLEEPYKITTY'
         dict = {  'volume_driver' : 'cinder.volume.drivers.san.hp.hp_3par_iscsi.HP3PARISCSIDriver',
@@ -766,6 +779,12 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     def _get_default_3par_fc_cinder_conf_section(self) :
 
+        '''
+         this is default 3par FC configuration section of cinder config  file .
+         This require to create the test version of cinder config
+        :return:
+        '''
+
         section_name = '3PAR-SLEEPYKITTY-FC'
         dict = {  'volume_driver' : 'cinder.volume.drivers.san.hp.hp_3par_fc.HP3PARFCDriver',
                   'volume_backend_name' : '3PAR-SLEEPYKITTY-FC',
@@ -783,32 +802,25 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         return section_name , dict
 
 
-    def _get_default_cli_conf_section(self) :
-
-        section_name = 'TEST'
-        dict = {  'service' : 'test',
-                  'host_ip' : '192.168.10.5',
-                  'ssh_user' : 'vagrant',
-                  'ssh_password' : 'vagrant',
-                  'conf_source' : '/etc/cinder/cinder.conf'
-                   }
-
-        return section_name , dict
-
     def _create_config(self, config_filename, dict) :
+        '''
+        :param config_filename: Name of file to create
+        :param dict: This incldue configuration section that will be written in the given file
+        :return:
+        '''
 
-                try :
-                   config = ConfigParser.RawConfigParser(allow_no_value=True)
+        try :
+            config = ConfigParser.RawConfigParser(allow_no_value=True)
 
-                   for section in dict.keys():
+            for section in dict.keys():
                        config.add_section(section)
                        section_attributs = dict.get(section)
                        for key in section_attributs.keys():
                              config.set(section,key,section_attributs.get(key))
-                   with open(config_filename, 'w') as configfile:
+            with open(config_filename, 'w') as configfile:
                        config.write(configfile)
 
-                except Exception as e :
+        except Exception as e :
                     raise e
 
 
