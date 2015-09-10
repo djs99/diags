@@ -78,7 +78,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
 
         # Execute the CLI commnad
-        command_arvgs=['check', 'array', "-test"]
+        command_arvgs=['options-check', "-test"]
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
 
 
@@ -98,7 +98,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
             self.assertEqual('pass' , row['CPG'])
             self.assertEqual('pass' , row['Credentials'])
             self.assertEqual('pass' , row['WS API'])
-            if row['cinder.conf Section'] == '3PAR-SLEEPYKITTY-FC' :
+            if row['Backend Section'] == '3PAR-SLEEPYKITTY-FC' :
                self.assertEqual('N/A' , row['iSCSI IP(s)'])
             else :
                self.assertEqual('pass' , row['iSCSI IP(s)'])
@@ -119,10 +119,10 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         #Create cinder.conf
         self._create_config(self.cinder_config_file,  cinder_dict)
 
-        command_arvgs=['check', 'array', '-test' ,"-name" ,'3PAR-SLEEPYKITTY-FC']
+        command_arvgs=['options-check', '-test' ,"-name" ,'3PAR-SLEEPYKITTY-FC']
         cli_exit_value ,output  = self._execute_cli_command(command_arvgs)
         self.assertEqual(0, cli_exit_value)
-        self.assertEqual('3PAR-SLEEPYKITTY-FC', output[0]['cinder.conf Section'])
+        self.assertEqual('3PAR-SLEEPYKITTY-FC', output[0]['Backend Section'])
 
     def test_check_array_command_with_wrong_arrayname(self) :
 
@@ -142,7 +142,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
 
         # Execute the CLI commnad
-        command_arvgs=['check', 'array', '-test' ,"-name" ,'InvalidArrayName']
+        command_arvgs=['options-check', '-test' ,"-name" ,'InvalidArrayName']
 #       command_arvgs=['check', 'array', '-test' ,"-name" ,'3PAR-SLEEPYKITTY-FC']
         cli_exit_value ,output  = self._execute_cli_command(command_arvgs)
         self.assertEqual(1, cli_exit_value)
@@ -170,14 +170,14 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         self._create_config(self.cinder_config_file,  cinder_dict)
 
         # Execute the CLI commnad
-        command_arvgs=['check', 'array', "-test"]
+        command_arvgs=['options-check', "-test"]
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
 
         self.assertEqual(0 , cli_exit_value)
         self.assertEqual( len(output) , 2)
 
         for row in output :
-           if row['cinder.conf Section'] == iscsi_section_name :
+           if row['Backend Section'] == iscsi_section_name :
               self.assertEqual('TEST' , row['Node'])
               self.assertEqual('unknown' , row['CPG'])
               self.assertEqual('unknown' , row['Credentials'])
@@ -189,6 +189,12 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
               self.assertEqual('pass' , row['Credentials'])
               self.assertEqual('pass' , row['WS API'])
               self.assertEqual('N/A' , row['iSCSI IP(s)'])
+
+
+        cli_exit_value , json_cli_output = self._execute_cli_command(command_arvgs, True)
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(output , json_cli_output)
+
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_for_wrong_credential(self) :
@@ -212,14 +218,14 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
 
         # Execute the CLI commnad
-        command_arvgs=['check', 'array', "-test"]
+        command_arvgs=['options-check', "-test"]
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
 
         self.assertEqual(0 , cli_exit_value)
         self.assertEqual( len(output) , 2)
 
         for row in output :
-           if row['cinder.conf Section'] == iscsi_section_name :
+           if row['Backend Section'] == iscsi_section_name :
               self.assertEqual('TEST' , row['Node'])
               self.assertEqual('pass' , row['CPG'])
               self.assertEqual('pass' , row['Credentials'])
@@ -242,7 +248,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         cinder_dict = { }
         # 3par ISCSI section
         iscsi_section_name, iscsi_values = self._get_default_3par_iscsi_cinder_conf_section()
-        iscsi_values['hp3par_cpg'] = 'badCPG'
+        iscsi_values['options-check'] = 'badCPG'
         cinder_dict[iscsi_section_name] = iscsi_values
 
         # 3par FC section
@@ -256,14 +262,14 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
 
         # Execute the CLI commnad
-        command_arvgs=['check', 'array', "-test"]
+        command_arvgs=['options-check', "-test"]
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
 
         self.assertEqual(0 , cli_exit_value)
         self.assertEqual( len(output) , 2)
 
         for row in output :
-           if row['cinder.conf Section'] == iscsi_section_name :
+           if row['Backend Section'] == iscsi_section_name :
               self.assertEqual('TEST' , row['Node'])
               self.assertEqual('fail' , row['CPG'])
               self.assertEqual('pass' , row['Credentials'])
@@ -300,14 +306,14 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
 
         # Execute the CLI commnad
-        command_arvgs=['check', 'array', "-test"]
+        command_arvgs=['options-check', "-test"]
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
 
         self.assertEqual(0 , cli_exit_value)
         self.assertEqual( len(output) , 2)
 
         for row in output :
-           if row['cinder.conf Section'] == iscsi_section_name :
+           if row['Backend Section'] == iscsi_section_name :
               self.assertEqual('TEST' , row['Node'])
               self.assertEqual('pass' , row['CPG'])
               self.assertEqual('pass' , row['Credentials'])
@@ -322,7 +328,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_check_all_packages_installed_with_supported_version(self) :
-        command_arvgs=['check', 'software', '-test']
+        command_arvgs=['software-check', '-test']
 
         # Mock permiko ssh client to return cinder file we want
         self._mock_exec_command({'sysfsutils' : "install ok installed 2.2.0" , 'hp3parclient' : "hp3parclient (3.2.2)" , 'sg3-utils' : "install ok installed 2.2.0",
@@ -345,25 +351,25 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_sysfsutils_package_installed_with_supported_version(self) :
-        command_arvgs=['check', 'software', '-name' ,"sysfsutils",'--package-min-version','1.3','--service', 'nova','-test']
+        command_arvgs=['software-check', '-name' ,"sysfsutils",'--package-min-version','1.3','--service', 'nova','-test']
         ssh_mocked_response = {'sysfsutils' : "install ok installed 2.2.0" }
         self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response)
 
     @test.attr(type="gate")
     def test_diags_sysfsutils_package_installed_with_unsupported_version(self) :
-        command_arvgs=['check', 'software', '-name' ,"sysfsutils",'--package-min-version','2.0','--service', 'nova','-test']
+        command_arvgs=['software-check', '-name' ,"sysfsutils",'--package-min-version','2.0','--service', 'nova','-test']
         ssh_mocked_response = {'sysfsutils' : "install ok installed 1.0 " }
         self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response, "pass", "fail")
 
     @test.attr(type="gate")
     def test_diags_sysfsutils_package_not_installed(self) :
-        command_arvgs=['check', 'software', '-name' ,"sysfsutils",'--package-min-version','2.0','--service', 'nova','-test']
+        command_arvgs=['software-check', '-name' ,"sysfsutils",'--package-min-version','2.0','--service', 'nova','-test']
         ssh_mocked_response = {'dpkg-query' : 'no packages found matching  sysfsutils' ,  'grep sysfsutils' : "" }
         self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response, "fail", "N/A")
 
     @test.attr(type="gate")
     def test_diags_sysfsutils_package_installed_with_no_min_version_check(self) :
-        command_arvgs=['check', 'software', '-name' ,"sysfsutils",'--service', 'nova','-test']
+        command_arvgs=['software-check', '-name' ,"sysfsutils",'--service', 'nova','-test']
         ssh_mocked_response = {'sysfsutils' : "install ok installed 1.0 " }
         self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response, "pass", "N/A")
 
@@ -371,44 +377,44 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_sg3_utils_package_installed_with_supported_version(self) :
-        command_arvgs=['check', 'software', '-name' ,"sg3-utils",'--package-min-version','1.3','--service', 'nova','-test']
+        command_arvgs=['software-check', '-name' ,"sg3-utils",'--package-min-version','1.3','--service', 'nova','-test']
         ssh_mocked_response = {'sg3-utils' : "install ok installed 2.2.0" }
         self._check_software_package('sg3-utils', command_arvgs ,ssh_mocked_response)
 
     @test.attr(type="gate")
     def test_diags_sg3_utils_package_installed_with_unsupported_version(self) :
-        command_arvgs=['check', 'software', '-name' ,"sg3-utils",'--package-min-version','2.0','--service', 'nova','-test']
+        command_arvgs=['software-check', '-name' ,"sg3-utils",'--package-min-version','2.0','--service', 'nova','-test']
         ssh_mocked_response = {'sg3-utils' : "install ok installed 1.0 " }
         self._check_software_package('sg3-utils', command_arvgs ,ssh_mocked_response, "pass", "fail")
 
     @test.attr(type="gate")
     def test_diags_sg3_utils_package_not_installed(self) :
-        command_arvgs=['check', 'software', '-name' ,"sg3-utils",'--package-min-version','2.0','--service', 'nova','-test']
+        command_arvgs=['software-check', '-name' ,"sg3-utils",'--package-min-version','2.0','--service', 'nova','-test']
         ssh_mocked_response = {'dpkg-query' : 'no packages found matching  sg3-utils', 'grep sg3-utils' : "" }
         self._check_software_package('sg3-utils', command_arvgs ,ssh_mocked_response, "fail", "N/A")
 
     @test.attr(type="gate")
     def test_diags_sg3_utils_package_installed_with_no_min_version_check(self) :
-        command_arvgs=['check', 'software', '-name' ,"sysfsutils",'--service', 'nova','-test']
+        command_arvgs=['software-check', '-name' ,"sysfsutils",'--service', 'nova','-test']
         ssh_mocked_response = {'sysfsutils' : "install ok installed 1.0 " }
         self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response, "pass", "N/A")
 
 
     @test.attr(type="gate")
     def test_diags_hp3parclient_package_installed_with_unsupported_version(self) :
-        command_arvgs=['check', 'software', '-name' ,"hp3parclient",'--package-min-version','2.0','--service', 'nova','-test']
+        command_arvgs=['software-check', '-name' ,"hp3parclient",'--package-min-version','2.0','--service', 'nova','-test']
         ssh_mocked_response = {'dpkg-query':'no packages found matching  hp3parclient' , 'grep hp3parclient' : "hp3parclient (1.2.2) " }
         self._check_software_package('hp3parclient', command_arvgs ,ssh_mocked_response, "pass", "fail")
 
     @test.attr(type="gate")
     def test_diags_hp3parclients_package_not_installed(self) :
-        command_arvgs=['check', 'software', '-name' ,"hp3parclient",'--package-min-version','2.0','--service', 'nova','-test']
+        command_arvgs=['software-check', '-name' ,"hp3parclient",'--package-min-version','2.0','--service', 'nova','-test']
         ssh_mocked_response = {'dpkg-query':'no packages found matching  hp3parclient' , 'grep hp3parclient' : "" }
         self._check_software_package('hp3parclient', command_arvgs ,ssh_mocked_response, "fail", "N/A")
 
     @test.attr(type="gate")
     def test_diags_hp3parclients_package_installed_with_no_min_version_check(self) :
-        command_arvgs=['check', 'software', '-name' ,"hp3parclient",'--service', 'cinder','-test']
+        command_arvgs=['software-check', '-name' ,"hp3parclient",'--service', 'cinder','-test']
         ssh_mocked_response = {'dpkg-query':'no packages found matching  hp3parclient' , 'grep hp3parclient' : "hp3parclient (3.2.2) " }
         self._check_software_package('hp3parclient', command_arvgs ,ssh_mocked_response, "pass", "N/A")
 
@@ -419,7 +425,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         self._mock_get_file(self.cinder_config_file,True)
 
         # Execute the CLI commnad
-        command_arvgs=['check', 'array', "-test"]
+        command_arvgs=['options-check', "-test"]
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
 
         self.assertEqual(1 , cli_exit_value)
@@ -432,7 +438,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         store_value = constant.CLI_CONFIG
         constant.CLI_CONFIG = "fake.conf"
         # Execute the CLI commnad
-        command_arvgs=['check', 'array', "-test"]
+        command_arvgs=['options-check', "-test"]
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
 
         self.assertEqual(1, cli_exit_value)
@@ -449,7 +455,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         client_mock.connect.side_effect = paramiko.ssh_exception.AuthenticationException ()
 
         # Execute the CLI commnad
-        command_arvgs=['check', 'software', "-test"]
+        command_arvgs=['options-check', "-test"]
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
 
         self.assertEqual(1, cli_exit_value)
@@ -465,7 +471,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         client_mock.connect.side_effect = socket.timeout("Socket Connection Time Out")
 
         # Execute the CLI commnad
-        command_arvgs=['check', 'software', "-test"]
+        command_arvgs=['options-check', "-test"]
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
 
         self.assertEqual(1, cli_exit_value)
@@ -484,7 +490,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
 
         # Execute the CLI commnad
-        command_arvgs=['check', 'software', "-test"]
+        command_arvgs=['options-check', "-test"]
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
 
         self.assertEqual(1, cli_exit_value)
@@ -503,7 +509,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
             raise socket.timeout("Socket Connection Time Out")
         client_mock.exec_command.side_effect = timeout
         # Execute the CLI commnad
-        command_arvgs=['check', 'software', "-test"]
+        command_arvgs=['options-check', "-test"]
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
 
         self.assertEqual(1, cli_exit_value)
@@ -516,7 +522,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         # Execute the CLI commnad
        cli_exit_value = -1
        try :
-        command_arvgs=['check', 'software',"--wrong", "-test"]
+        command_arvgs=['options-check',"--wrong", "-test"]
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
         self.fail()
        except  :
@@ -642,7 +648,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
             # add command line arugment to get the Json output
             command_arvgs.append('-f')
             command_arvgs.append('json')
-            print command_arvgs
+
         try :
           # execute the command
            cli_exit_value = -1
@@ -686,7 +692,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
                 self._patch('paramiko.AutoAddPolicy'),
                 client_mock)
 
-    def _mock_ssh_connection(self, config_file, raiseException = 'None'):
+    def _mock_ssh_connection(self, raiseException = 'None'):
          c_mock, aa_mock, client_mock = self._set_ssh_connection_mocks()
          s_mock = self._patch('time.sleep')
          if raiseException == 'None'  :
@@ -730,10 +736,10 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
               for key in dict.keys() :
                  if command != "" and key in command:
                      # Assgin return value to command
-                     client_mock.read.return_value =  dict.get(key)
+                     client_mock.readlines.return_value =  dict.get(key)
                      is_command_found = True
               if not is_command_found :
-                   client_mock.read.return_value = 'command not found'
+                   client_mock.readlines.return_value = 'command not found'
 
               return [[], client_mock]
 
