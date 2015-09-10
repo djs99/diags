@@ -248,7 +248,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         cinder_dict = { }
         # 3par ISCSI section
         iscsi_section_name, iscsi_values = self._get_default_3par_iscsi_cinder_conf_section()
-        iscsi_values['options-check'] = 'badCPG'
+        iscsi_values['hp3par_cpg'] = 'badCPG'
         cinder_dict[iscsi_section_name] = iscsi_values
 
         # 3par FC section
