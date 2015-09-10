@@ -1,7 +1,8 @@
+from __future__ import absolute_import
 import argparse
-import conf_reader
 import logging
 
+from . import conf_reader
 from cliff.lister import Lister
 
 
@@ -11,10 +12,10 @@ class CheckArray(Lister):
     output data:
         Node                node names set by user in cli.conf, names must be
                             unique
-                                [example]
-        Backend Section     section names set by user in cinder.conf, must be
-                            unique per node
-                                [example]
+                                [NODE-NAME]
+        Backend Section     backend section names set by user in cinder.conf,
+                            must be unique per node
+                                [BACKEND-SECTION-NAME]
         WS API              web service API for array
                                 (hp3par_api_url)
         Credentials         username and password for array

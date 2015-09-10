@@ -1,20 +1,25 @@
+from __future__ import absolute_import
 import argparse
-import conf_reader
 import logging
 
+from . import conf_reader
 from cliff.lister import Lister
 
 
 class CheckSoftware(Lister):
-    """
-    check for required software and versions on Cinder and Nova nodes.
+    """check for required software and versions on Cinder and Nova nodes
 
     output data:
-        Node        Node names set by user in cli.conf, names must be unique
-                        [example]
-        Software    Software package name.
-        Installed   Installation status of the package.
-        Version     Software package version meets the minimum requirement.
+        Node                node names set by user in cli.conf, names must be
+                            unique
+                                [NODE-NAME]
+        Software            software package name
+                                defaults: hp3parclient, sysfsutils, sg3-utils
+        Installed           installation status of the software package
+                                (pass, fail)
+        Version             software package version meets the minimum
+                            requirement
+                                (pass, fail, N/A)
     """
 
     log = logging.getLogger(__name__)

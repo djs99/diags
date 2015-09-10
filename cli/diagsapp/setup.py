@@ -1,10 +1,10 @@
 #!/usr/bin/env python
+from setuptools import setup, find_packages
+
 PROJECT = 'cinderdiags'
 
 # Change docs/sphinx/conf.py too!
 VERSION = '0.1'
-
-from setuptools import setup, find_packages
 
 try:
     long_description = open('README.rst', 'rt').read()
@@ -40,7 +40,9 @@ setup(
     scripts=[],
 
     provides=[],
-    install_requires=['cliff', 'cliff-tablib', 'hp3parclient', 'paramiko'],
+    install_requires=[
+        'cliff', 'cliff-tablib', 'hp3parclient', 'oslo.utils', 'paramiko'
+    ],
 
     namespace_packages=[],
     packages=find_packages(),
@@ -54,8 +56,8 @@ setup(
             'cinderdiags = cinderdiags.main:main'
         ],
         'cliff.cinderdiags': [
-            'check options = cinderdiags.array:CheckArray',
-            'check software = cinderdiags.software:CheckSoftware'
+            'options-check = cinderdiags.array:CheckArray',
+            'software-check = cinderdiags.software:CheckSoftware'
         ],
     },
 
