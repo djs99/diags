@@ -326,6 +326,55 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
               self.assertEqual('pass' , row['WS API'])
               self.assertEqual('N/A' , row['iSCSI IP(s)'])
 
+
+    @test.attr(type="gate")
+    def test_diags_cli_check_array_command_for_wrong_hp3pardriver(self) :
+
+        # Mock permiko ssh client to return cinder file we want
+        self._mock_get_file(self.cinder_config_file)
+
+        self._mock_exec_command({'locate' :None})
+
+        # create cinder config,conf file and add 3par ISCSI section
+        cinder_dict = { }
+        # 3par ISCSI section
+        iscsi_section_name, iscsi_values = self._get_default_3par_iscsi_cinder_conf_section()
+
+        iscsi_values['volume_driver'] = 'cinder.volume.drivers.san.hp.hp_3par_iscsi.HP3PARWrongDriver'
+        cinder_dict[iscsi_section_name] = iscsi_values
+
+        # 3par FC section
+        fc_section_name, fc_values = self._get_default_3par_fc_cinder_conf_section()
+        fc_values['volume_driver'] = 'cinder.volume.drivers.san.hp.hp_3par_fc.HP3PARWrongDriver'
+        cinder_dict[fc_section_name] = fc_values
+
+        #Create cinder.conf
+        self._create_config(self.cinder_config_file,  cinder_dict)
+
+
+        # Execute the CLI commnad
+        command_arvgs=['options-check', "-test"]
+        cli_exit_value , output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual( len(output) , 2)
+
+        for row in output :
+           if row['Backend Section'] == iscsi_section_name :
+              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('pass' , row['CPG'])
+              self.assertEqual('pass' , row['Credentials'])
+              self.assertEqual('pass' , row['WS API'])
+              self.assertEqual('pass' , row['iSCSI IP(s)'])
+              self.assertEqual('fail' , row['Driver Installed'])
+           else :
+              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('fail' , row['CPG'])
+              self.assertEqual('pass' , row['Credentials'])
+              self.assertEqual('pass' , row['WS API'])
+              self.assertEqual('N/A' , row['iSCSI IP(s)'])
+              self.assertEqual('fail' , row['Driver Installed'])
+
     @test.attr(type="gate")
     def test_diags_check_all_packages_installed_with_supported_version(self) :
         command_arvgs=['software-check', '-test']
