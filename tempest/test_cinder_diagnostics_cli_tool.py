@@ -339,10 +339,9 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     def test_diags_cli_check_array_command_for_wrong_hp3pardriver(self) :
         ''' Test cinder diagnostic cli tool check array command when the volume driver value of 3par array in cinder.conf is wrong '''
 
-        # Mock paramiko ssh client to return cinder file we want
-        self._mock_get_file(self.cinder_config_file)
-
         self._mock_exec_command({'locate' :None})
+          # Mock paramiko ssh client to return cinder file we want
+        self._mock_get_file(self.cinder_config_file)
 
         # create cinder config,conf file and add 3par ISCSI section
         cinder_dict = { }
@@ -378,11 +377,55 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
               self.assertEqual('fail' , row['Driver Installed'])
            else :
               self.assertEqual('TEST' , row['Node'])
-              self.assertEqual('fail' , row['CPG'])
+              self.assertEqual('pass' , row['CPG'])
               self.assertEqual('pass' , row['Credentials'])
               self.assertEqual('pass' , row['WS API'])
               self.assertEqual('N/A' , row['iSCSI IP(s)'])
               self.assertEqual('fail' , row['Driver Installed'])
+
+    @test.attr(type="gate")
+    def test_diags_cli_check_array_command_for_wrong_hp3pardriver(self) :
+        ''' Test cinder diagnostic cli tool check array command when the volume driver value of 3par array in cinder.conf is correct '''
+
+        self._mock_exec_command({'locate hp_3par_iscsi' :'/opt/stack/cinder/cinder/volume/drivers/san/hp/hp_3par_iscsi.py' ,
+                                 'locate hp_3par_fc' :'/opt/stack/cinder/cinder/volume/drivers/san/hp/hp_3par_fc.py'} , self.cinder_config_file)
+
+        # create cinder config,conf file and add 3par ISCSI section
+        cinder_dict = { }
+        # 3par ISCSI section
+        iscsi_section_name, iscsi_values = self._get_default_3par_iscsi_cinder_conf_section()
+        cinder_dict[iscsi_section_name] = iscsi_values
+
+        # 3par FC section
+        fc_section_name, fc_values = self._get_default_3par_fc_cinder_conf_section()
+        cinder_dict[fc_section_name] = fc_values
+
+        #Create cinder.conf
+        self._create_config(self.cinder_config_file,  cinder_dict)
+
+
+        # Execute the CLI commnad
+        command_arvgs=['options-check', "-test"]
+        cli_exit_value , output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual( len(output) , 2)
+
+        for row in output :
+           if row['Backend Section'] == iscsi_section_name :
+              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('pass' , row['CPG'])
+              self.assertEqual('pass' , row['Credentials'])
+              self.assertEqual('pass' , row['WS API'])
+              self.assertEqual('pass' , row['iSCSI IP(s)'])
+              self.assertEqual('pass' , row['Driver Installed'])
+           else :
+              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('pass' , row['CPG'])
+              self.assertEqual('pass' , row['Credentials'])
+              self.assertEqual('pass' , row['WS API'])
+              self.assertEqual('N/A' , row['iSCSI IP(s)'])
+              self.assertEqual('pass' , row['Driver Installed'])
 
     @test.attr(type="gate")
     def test_diags_check_all_packages_installed_with_supported_version(self) :
@@ -828,34 +871,46 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
          :param config_file: Name of the cinder configuration file that needs to be copied
          :param raiseException: If true raises exception for not finding the cinder configuration file
          :return:
-         '''  
+         '''
+
          c_mock, aa_mock, client_mock = self._set_ssh_connection_mocks()
          s_mock = self._patch('time.sleep')
          c_mock.return_value = client_mock
+         self._mock_get_config_file(config_file, client_mock , raiseException)
+
+
+    def _mock_get_config_file(self, config_file, client_mock, raiseException = False):
+         '''
+         :param config_file: onfig_file: Name of the cinder configuration file that needs to be copied
+         :param client_mock: This client mocked object
+         :param raiseException: If true raises exception for not finding the cinder configuration file
+         :return:
+         '''
 
          client_mock.open_sftp.return_value = client_mock
 
          def my_side_effect(*args, **kwargs):
                  #fromLocation =  args[0]
-
                  if raiseException :
                      raise Exception()
-
                  toLocation  =  args[1]
                  shutil.copy(config_file ,toLocation)
 
-
          client_mock.get.side_effect = my_side_effect
 
-    def _mock_exec_command(self, dict):
+    def _mock_exec_command(self, dict , config_file=None):
          '''
          :param dict: This include key value pair for the command and respons
+         :param config_file : If config_file is not None then mock get file functions too
          :return:
          '''
 
          c_mock, aa_mock, client_mock = self._set_ssh_connection_mocks()
          s_mock = self._patch('time.sleep')
          c_mock.return_value = client_mock
+
+         if config_file is not None :
+              self._mock_get_config_file(config_file, client_mock)
 
          def my_side_effect(*args, **kwargs):
               is_command_found = False
@@ -869,7 +924,6 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
                    client_mock.readlines.return_value = 'command not found'
 
               return [[], client_mock]
-
          client_mock.exec_command.side_effect = my_side_effect
 
 
@@ -944,6 +998,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         try :
             config = ConfigParser.RawConfigParser(allow_no_value=True)
+            config.read("dffff")
 
             for section in dict.keys():
                        config.add_section(section)
