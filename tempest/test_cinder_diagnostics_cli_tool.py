@@ -31,7 +31,7 @@ import cinderdiags.constant as constant
 
 class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
-    """Test case class for all 3PAR cinder Diagnostics CLI Tool """
+    ''' Test case class for all 3PAR cinder Diagnostics CLI Tool '''
 
     cinder_config_file = "cinder.conf"
 
@@ -58,8 +58,9 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command(self) :
+        ''' Test cinder diagnostic cli tool check array command when all the configuration values of 3par array are correct in cinde.conf '''
 
-        # Mock permiko ssh client to return cinder file we want
+        # Mock paramiko ssh client to return cinder file we want
         self._mock_get_file(self.cinder_config_file)
 
 
@@ -105,6 +106,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_check_array_command_for_specific_array_name(self):
+        ''' Test cinder diagnostic cli tool check array command for specific array name '''
 
         self._mock_get_file(self.cinder_config_file)
         cinder_dict = { }
@@ -125,6 +127,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         self.assertEqual('3PAR-SLEEPYKITTY-FC', output[0]['Backend Section'])
 
     def test_check_array_command_with_wrong_arrayname(self) :
+        ''' Test cinder diagnostic cli tool check array command when wrong array name is given in the command '''
 
         self._mock_get_file(self.cinder_config_file)
         # create cinder config,conf file and add 3par ISCSI section
@@ -151,8 +154,9 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_for_bad_ws_api(self) :
+        ''' Test cinder diagnostic cli tool check array command when the ws api value of 3par array in cinder.conf is wrong '''
 
-        # Mock permiko ssh client to return cinder file we want
+        # Mock paramiko ssh client to return cinder file we want
         self._mock_get_file(self.cinder_config_file)
 
         # create cinder config,conf file and add 3par ISCSI section
@@ -198,7 +202,9 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_for_wrong_credential(self) :
-        # Mock permiko ssh client to return cinder file we want
+        ''' Test cinder diagnostic cli tool check array command when the credentials of 3par array in cinder.conf is wrong '''
+
+        # Mock paramiko ssh client to return cinder file we want
         self._mock_get_file(self.cinder_config_file)
 
         # create cinder config,conf file and add 3par ISCSI section
@@ -240,8 +246,9 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_for_bad_CPG(self) :
+        ''' Test cinder diagnostic cli tool check array command when the cpg value of 3par array in cinder.conf is wrong '''
 
-       # Mock permiko ssh client to return cinder file we want
+        # Mock paramiko ssh client to return cinder file we want
         self._mock_get_file(self.cinder_config_file)
 
         # create cinder config,conf file and add 3par ISCSI section
@@ -284,8 +291,9 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_for_wrong_iscsi_IP(self) :
+        ''' Test cinder diagnostic cli tool check array command when the ISCSI IP of 3par array in cinder.conf is wrong '''
 
-        # Mock permiko ssh client to return cinder file we want
+        # Mock paramiko ssh client to return cinder file we want
         self._mock_get_file(self.cinder_config_file)
 
         # create cinder config,conf file and add 3par ISCSI section
@@ -329,8 +337,9 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_for_wrong_hp3pardriver(self) :
+        ''' Test cinder diagnostic cli tool check array command when the volume driver value of 3par array in cinder.conf is wrong '''
 
-        # Mock permiko ssh client to return cinder file we want
+        # Mock paramiko ssh client to return cinder file we want
         self._mock_get_file(self.cinder_config_file)
 
         self._mock_exec_command({'locate' :None})
@@ -377,9 +386,11 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_check_all_packages_installed_with_supported_version(self) :
+        ''' Test cinder diagnostic cli tool check software command for all the packages with supported version '''
+
         command_arvgs=['software-check', '-test']
 
-        # Mock permiko ssh client to return cinder file we want
+        # Mock paramiko ssh client to return cinder file we want
         self._mock_exec_command({'sysfsutils' : "install ok installed 2.2.0" , 'hp3parclient' : "hp3parclient (3.2.2)" , 'sg3-utils' : "install ok installed 2.2.0",
                                 "locate" : ""})
         # Execute the CLI commnad
@@ -400,75 +411,109 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_sysfsutils_package_installed_with_supported_version(self) :
+        ''' Test cinder diagnostic cli tool check software command for sysfsutils package with supported version '''
+
         command_arvgs=['software-check', '-name' ,"sysfsutils",'--package-min-version','1.3','--service', 'nova','-test']
         ssh_mocked_response = {'sysfsutils' : "install ok installed 2.2.0" }
+        # Excecutes the check software command that needs to be tested and evaluates the output
         self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response)
 
     @test.attr(type="gate")
     def test_diags_sysfsutils_package_installed_with_unsupported_version(self) :
+        ''' Test cinder diagnostic cli tool check software command for sysfsutils package with unsupported version '''
+
         command_arvgs=['software-check', '-name' ,"sysfsutils",'--package-min-version','2.0','--service', 'nova','-test']
         ssh_mocked_response = {'sysfsutils' : "install ok installed 1.0 " }
+        # Excecutes the check software command that needs to be tested and evaluates the output
         self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response, "pass", "fail")
 
     @test.attr(type="gate")
     def test_diags_sysfsutils_package_not_installed(self) :
+        ''' Test cinder diagnostic cli tool check software command for non-existent sysfsutils package '''
+
         command_arvgs=['software-check', '-name' ,"sysfsutils",'--package-min-version','2.0','--service', 'nova','-test']
         ssh_mocked_response = {'dpkg-query' : 'no packages found matching  sysfsutils' ,  'grep sysfsutils' : "" }
+        # Excecutes the check software command that needs to be tested and evaluates the output
         self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response, "fail", "N/A")
 
     @test.attr(type="gate")
     def test_diags_sysfsutils_package_installed_with_no_min_version_check(self) :
+        ''' Test cinder diagnostic cli tool check software command for sysfsutils package with no defined value for its version '''
+
         command_arvgs=['software-check', '-name' ,"sysfsutils",'--service', 'nova','-test']
         ssh_mocked_response = {'sysfsutils' : "install ok installed 1.0 " }
+        # Excecutes the check software command that needs to be tested and evaluates the output
         self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response, "pass", "N/A")
 
 
 
     @test.attr(type="gate")
     def test_diags_sg3_utils_package_installed_with_supported_version(self) :
+        ''' Test cinder diagnostic cli tool check software command for sg3utils package with supported version '''
+
         command_arvgs=['software-check', '-name' ,"sg3-utils",'--package-min-version','1.3','--service', 'nova','-test']
         ssh_mocked_response = {'sg3-utils' : "install ok installed 2.2.0" }
+        # Excecutes the check software command that needs to be tested and evaluates the output
         self._check_software_package('sg3-utils', command_arvgs ,ssh_mocked_response)
 
     @test.attr(type="gate")
     def test_diags_sg3_utils_package_installed_with_unsupported_version(self) :
+        ''' Test cinder diagnostic cli tool check software command for sg3sutils package with unsupported version '''
+
         command_arvgs=['software-check', '-name' ,"sg3-utils",'--package-min-version','2.0','--service', 'nova','-test']
         ssh_mocked_response = {'sg3-utils' : "install ok installed 1.0 " }
+        # Excecutes the check software command that needs to be tested and evaluates the output
         self._check_software_package('sg3-utils', command_arvgs ,ssh_mocked_response, "pass", "fail")
 
     @test.attr(type="gate")
     def test_diags_sg3_utils_package_not_installed(self) :
+        ''' Test cinder diagnostic cli tool check software command for non-existent sg3utils package '''
+
         command_arvgs=['software-check', '-name' ,"sg3-utils",'--package-min-version','2.0','--service', 'nova','-test']
         ssh_mocked_response = {'dpkg-query' : 'no packages found matching  sg3-utils', 'grep sg3-utils' : "" }
+        # Excecutes the check software command that needs to be tested and evaluates the output
         self._check_software_package('sg3-utils', command_arvgs ,ssh_mocked_response, "fail", "N/A")
 
     @test.attr(type="gate")
     def test_diags_sg3_utils_package_installed_with_no_min_version_check(self) :
+        ''' Test cinder diagnostic cli tool check software command for sg3utils with no defined value for its version '''
+
         command_arvgs=['software-check', '-name' ,"sysfsutils",'--service', 'nova','-test']
         ssh_mocked_response = {'sysfsutils' : "install ok installed 1.0 " }
+        # Excecutes the check software command that needs to be tested and evaluates the output
         self._check_software_package('sysfsutils', command_arvgs ,ssh_mocked_response, "pass", "N/A")
 
 
     @test.attr(type="gate")
     def test_diags_hp3parclient_package_installed_with_unsupported_version(self) :
+        ''' Test cinder diagnostic cli tool check software command for hp3parclient package with unsupported version '''
+
         command_arvgs=['software-check', '-name' ,"hp3parclient",'--package-min-version','2.0','--service', 'nova','-test']
         ssh_mocked_response = {'dpkg-query':'no packages found matching  hp3parclient' , 'grep hp3parclient' : "hp3parclient (1.2.2) " }
+        # Excecutes the check software command that needs to be tested and evaluates the output
         self._check_software_package('hp3parclient', command_arvgs ,ssh_mocked_response, "pass", "fail")
 
     @test.attr(type="gate")
     def test_diags_hp3parclients_package_not_installed(self) :
+        ''' Test cinder diagnostic cli tool check software command for non-existent hp3parclient package '''
+
         command_arvgs=['software-check', '-name' ,"hp3parclient",'--package-min-version','2.0','--service', 'nova','-test']
         ssh_mocked_response = {'dpkg-query':'no packages found matching  hp3parclient' , 'grep hp3parclient' : "" }
+        # Excecutes the check software command that needs to be tested and evaluates the output
         self._check_software_package('hp3parclient', command_arvgs ,ssh_mocked_response, "fail", "N/A")
 
     @test.attr(type="gate")
     def test_diags_hp3parclients_package_installed_with_no_min_version_check(self) :
+        ''' Test cinder diagnostic cli tool check software command for hp3parclient package with no defined value for its version '''
+
         command_arvgs=['software-check', '-name' ,"hp3parclient",'--service', 'cinder','-test']
         ssh_mocked_response = {'dpkg-query':'no packages found matching  hp3parclient' , 'grep hp3parclient' : "hp3parclient (3.2.2) " }
+        # Excecutes the check software command that needs to be tested and evaluates the output
         self._check_software_package('hp3parclient', command_arvgs ,ssh_mocked_response, "pass", "N/A")
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_with_cinder_file_not_found(self) :
+        ''' Test cinder diagnostic cli tool check array command for non-existent cinder.conf file '''
 
         # Mock permiko ssh client to return cinder file we want
         self._mock_get_file(self.cinder_config_file,True)
@@ -483,6 +528,8 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_cli_tool_with_no_cli_config(self) :
+        ''' Test cinder diagnostic cli tool command execution with non-existent cli.conf file '''
+
         #remove cli config
         store_value = constant.CLI_CONFIG
         constant.CLI_CONFIG = "fake.conf"
@@ -496,6 +543,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_with_wrong_cinder_node_ssh_credentials(self) :
+        ''' Test cinder diagnostic cli tool check array command when wrong SSH credentials are given for cinder node '''
 
         # dict is the key value pair of the command and its response response
         c_mock, aa_mock, client_mock = self._set_ssh_connection_mocks()
@@ -512,6 +560,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_cli_ssh_timeout_while_connecting (self) :
+        ''' Test cinder diagnostic cli tool for SSH connection timeout with hp3parclient '''
 
         # dict is the key value pair of the command and its response response
         c_mock, aa_mock, client_mock = self._set_ssh_connection_mocks()
@@ -529,6 +578,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_cli_tool_with_ssh_connection_fails(self) :
+        ''' Test cinder diagnostic cli tool for unsuccessful SSH connection with hp3parclient '''
         #remove cli config
 
         # dict is the key value pair of the command and its response response
@@ -548,6 +598,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_cli_tool_with_ssh_timeout_while_executing_command(self) :
+        ''' Test ssh connection timeout for the execution of cinder diagnostic cli tool command '''
         #remove cli config
 
         # dict is the key value pair of the command and its response response
@@ -567,8 +618,9 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_cli_tool_wrong_command(self) :
-        #remove cli config
-        # Execute the CLI commnad
+       ''' Test wrong command execution for cinder diagnostic cli tool '''
+       #remove cli config
+       # Execute the CLI commnad
        cli_exit_value = -1
        try :
         command_arvgs=['options-check',"--wrong", "-test"]
@@ -580,7 +632,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_successful_ssh_connection_with_mock(self) :
-        """ Test SSH Connection with mock """
+        ''' Test SSH Connection with mock '''
 
         command = 'echo hello'
         response = 'hello'
@@ -600,7 +652,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_failed_ssh_connection_with_mock(self) :
-        """ Test SSH Connection with mock """
+        ''' Test SSH Connection with mock '''
 
         command = 'echo hello'
         response = Exception("Connection unSuccessful")
@@ -668,8 +720,16 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     '''
     def _check_software_package(self, package ,command_arvgs, ssh_mocked_response, installed="pass" , min_version="pass") :
+        '''
+        :param package: Name of the package that needs to be checked in the command
+        :param command_arvgs: This includes command arguments
+        :param ssh_mocked_response: This is a dictionary which includes its value as mocked response of the cli command to be executed
+        :param installed: This includes the expected output value of the cli command for the row "Installed"
+        :param  min_version: This includes the expected output value of the cli command for the row "Version"
+        :return:
+        '''
 
-        # Mock permiko ssh client to return cinder file we want
+        # Mock paramiko ssh client to return cinder file we want
         self._mock_exec_command(ssh_mocked_response)
         # Execute the CLI commnad
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
@@ -685,9 +745,11 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
 
     def _execute_cli_command(self, command_arvgs, isJson=False) :
-
-        # command_arvgs :  This includes command arguments
-        # isJson :  If true then execute command to get JSON output from CLI and if false then default table output
+        '''
+        :param command_arvgs:  This includes command arguments
+        :param isJson:  If true then execute command to get JSON output from CLI and if false then default table output
+        :return: cli command exit value and command output
+        '''
         # To verify the CLI Table output we convert it into JSON using external API and return it
 
         #open a file to capture the CLI output
@@ -722,17 +784,28 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
 
     def _get_file_name(self):
+        '''
+        This generates the name starting with output
+        :return: Generated name starting with output
+        '''
         return "output.%.7f.txt" % time.time()
 
 
     def _remove_file(self, file):
-
+        '''
+        :param file: Name of the file that needs to be removed
+        :return:
+        ''' 
         # remove the file
         if os.path.isfile(file) is True:
                os.remove(file)
 
 
     def _set_ssh_connection_mocks(self):
+        '''
+        This creates magic mock object and mock the paramiko sshclient and autoaddpolicy
+        :return: Mocked instance of paramiko sshclient, Mocked instance of paramiko autoaddpolicy and magic mock object
+        '''
 
         client_mock = mock.MagicMock()
         client_mock.connect.return_value = True
@@ -751,6 +824,11 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
 
     def _mock_get_file(self, config_file, raiseException = False):
+         '''
+         :param config_file: Name of the cinder configuration file that needs to be copied
+         :param raiseException: If true raises exception for not finding the cinder configuration file
+         :return:
+         '''  
          c_mock, aa_mock, client_mock = self._set_ssh_connection_mocks()
          s_mock = self._patch('time.sleep')
          c_mock.return_value = client_mock
