@@ -43,7 +43,7 @@ class Client(object):
 
     def execute(self, command):
         # Run the transmitted script remotely without args and show its output.
-        # SSHClient.exec_command() returns the tuple (stdin,stdout,stderr)
+        # SSHClient.exec_command() returns the tuple (stdin, stdout, stderr)
         if self.client.get_transport() and \
                 self.client.get_transport().is_authenticated():
             try:

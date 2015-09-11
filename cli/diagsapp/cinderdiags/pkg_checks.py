@@ -15,14 +15,29 @@ def check_all(client, node, pkg_info):
     :param pkg_info: tuple of ('package name', 'minimum version')
     :return: list of dictionaries
     """
+
+    os_names = {
+        "debian": dpkg_check,
+        "rhel fedora": yum_check,
+        # "suse":, zypper_check),
+    }
+
     default_nova = constant.NOVA_PACKAGES
     default_cinder = constant.CINDER_PACKAGES
 
+    check_type = None
     checked = []
+    # Determine Linux flavor to determine package check command
+    response = client.execute('cat /etc/*release | grep ^ID_LIKE')
+    for os, check in os_names.items():
+        if re.compile(os).search(response):
+            check_type = check
+    if check_type is None:
+        raise Exception("Unable to determine operating system")
 
     if pkg_info[0] in ['nova', 'test']:
         for pkg in default_nova:
-            checked.append(dpkg_check(client, node, pkg))
+            checked.append(check_type(client, node, pkg))
 
     if pkg_info[0] in ['cinder', 'test']:
         for pkg in default_cinder:
@@ -59,6 +74,56 @@ def dpkg_check(client, node, pkg_info):
                     pkg['version'] = 'fail'
         else:
             pkg = pip_check(client, node, pkg_info)
+
+    except Exception as e:
+        logger.warning("%s -- Unable to check %s on node %s" % (e,
+                                                              pkg['name'],
+                                                              node))
+        pkg['installed'] = 'ERROR'
+        pkg['version'] = 'ERROR'
+        pass
+    return pkg
+
+
+def yum_check(client, node, pkg_info):
+    """Check for packages installed via yum (RedHat Linux)
+
+    :param client: ssh client
+    :param node: node being checked
+    :param pkg_info: (name, version)
+    :return: dictionary
+    """
+    pkg = {
+        'node': node,
+        'name': pkg_info[0],
+        'installed': 'unknown',
+        'version': 'N/A',
+    }
+
+    try:
+        response = client.execute("yum list installed " +
+                                  pkg['name'])
+        if 'Installed Packages' in response:
+            pkg['installed'] = 'pass'
+        elif 'Available Packages' in response:
+            pkg['installed'] = 'fail'
+
+        elif 'No matching Packages' in response:
+            pkg = pip_check(client, node, pkg_info)
+
+        elif re.search(pkg['name']+'\.', response):
+            pkg['installed'] = 'pass'
+            if pkg_info[1]:
+                version = re.search('([\d\.]+)-', response)
+                if version is None:
+                    pkg['version'] = 'unknown'
+                elif version.group(1) >= pkg_info[1]:
+                    pkg['version'] = 'pass'
+                else:
+                    pkg['version'] = 'fail'
+        else:
+            logger.warning("Unable to check %s on node %s" % (pkg['name'],
+                                                              node))
 
     except Exception as e:
         logger.warning("%s -- Unable to check %s on node %s" % (e,

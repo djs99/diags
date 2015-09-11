@@ -10,17 +10,10 @@ from . import wsapi_conf
 from pkg_resources import resource_filename
 from six.moves import configparser
 
-# ConfigParser.SafeConfigParser() became configparser.ConfigParser()
-# if sys.version_info < (3, 2):
-#     import ConfigParser
-#     parser = ConfigParser.SafeConfigParser()
-# else:
-#     import configparser
-#     parser = configparser.ConfigParser()
-
 
 logger = logging.getLogger(__name__)
 parser = configparser.ConfigParser()
+
 
 class Reader(object):
 
@@ -99,14 +92,17 @@ class Reader(object):
             checklist = set(self.nova_nodes + self.cinder_nodes)
         checks = []
         for node in checklist:
-            if name == 'default':
-                checks += pkg_checks.check_all(self.clients[node], node,
-                                               (parser.get(node,
-                                                           'service').lower(
-                                               ), 'default'))
-            else:
-                checks.append(pkg_checks.dpkg_check(self.clients[node],
-                                                    node, (name, version)))
+            try:
+                if name == 'default':
+                    checks += pkg_checks.check_all(self.clients[node], node,
+                                                   (parser.get(node,
+                                                               'service').lower(
+                                                   ), 'default'))
+                else:
+                    checks.append(pkg_checks.dpkg_check(self.clients[node],
+                                                        node, (name, version)))
+            except Exception as e:
+                logger.warning("%s: %s" % (e, node))
         return checks
 
     def ws_checks(self, section_name='arrays'):
