@@ -1,19 +1,26 @@
-import ConfigParser  # Python3 uses configparser
-import constant
+from __future__ import absolute_import
 import logging
 import os
-import pkg_checks
-import ssh_client
-import wsapi_conf
+
+from . import constant
+from . import pkg_checks
+from . import ssh_client
+from . import wsapi_conf
 
 from pkg_resources import resource_filename
+from six.moves import configparser
+
+# ConfigParser.SafeConfigParser() became configparser.ConfigParser()
+# if sys.version_info < (3, 2):
+#     import ConfigParser
+#     parser = ConfigParser.SafeConfigParser()
+# else:
+#     import configparser
+#     parser = configparser.ConfigParser()
 
 
 logger = logging.getLogger(__name__)
-
-
-parser = ConfigParser.SafeConfigParser()
-
+parser = configparser.ConfigParser()
 
 class Reader(object):
 
@@ -61,7 +68,7 @@ class Reader(object):
                                            parser.get(node, 'ssh_password'))
                 self.clients[node] = client
             except Exception as e:
-                logger.warning("%s: %s" % (e.message, node))
+                logger.warning("%s: %s" % (e, node))
 
     def copy_files(self):
         """Copy the cinder.conf file of each cinder node to a local directory.
@@ -70,12 +77,11 @@ class Reader(object):
         """
         for node in self.cinder_nodes:
             try:
-                conf_file = self.clients[node].get_file(parser.get(node,
-                                                                   'conf_source'),
-                                                        constant.DIRECTORY + node)
+                conf_file = self.clients[node].get_file(parser.get(
+                    node, 'conf_source'), constant.DIRECTORY + node)
                 self.cinder_files[node] = conf_file
             except Exception as e:
-                logger.warning("%s: %s" % (e.message, node))
+                logger.warning("%s: %s" % (e, node))
 
     def pkg_checks(self, name='default', service='default', version=None):
         """Check nodes for installed software packages

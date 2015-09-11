@@ -47,9 +47,11 @@ class Client(object):
         if self.client.get_transport() and \
                 self.client.get_transport().is_authenticated():
             try:
-                stdout = self.client.exec_command(command, timeout=20)[1]
-                resp = stdout.readlines()
-                return ''.join(resp)
+                resp = self.client.exec_command(command, timeout=20)
+                stdout = resp[1].readlines()
+                stderr = resp[2].readlines()
+                return ''.join(stdout) + ''.join(stderr)
+
             except (paramiko.ssh_exception.SSHException, socket.timeout):
                 raise Exception("SSH Error: Unable to execute remote command")
 

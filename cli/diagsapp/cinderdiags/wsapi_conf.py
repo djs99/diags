@@ -5,17 +5,26 @@ arrays.
 Requires the python hp3parclient: sudo pip install hp3parclient
 Assumes the volume_driver is correctly set
 """
-import ConfigParser
-import pkg_checks
+from __future__ import absolute_import
+import sys
 
 from oslo_utils import importutils
+from six.moves import configparser
 hp3parclient = importutils.try_import("hp3parclient")
 if hp3parclient:
     from hp3parclient import client as hpclient
     from hp3parclient import exceptions as hpexceptions
-    import testclient
+    from . import testclient
 else:
     raise ImportError('hp3parclient package is not installed')
+
+# # ConfigParser.SafeConfigParser() became configparser.ConfigParser()
+# if sys.version_info < (3, 2):
+#     import ConfigParser
+#     configparser = ConfigParser
+# else:
+#     import configparser
+#     configparser = configparser
 
 
 class WSChecker(object):
@@ -31,7 +40,7 @@ class WSChecker(object):
         self.ssh_client = client
         self.node = node
         self.is_test = test
-        self.parser = ConfigParser.SafeConfigParser()
+        self.parser = configparser.ConfigParser()
         self.parser.read(self.conf)
         self.hp3pars = []
         for section in self.parser.sections():
@@ -65,7 +74,10 @@ class WSChecker(object):
             "driver": "unknown"
         }
         if section_name in self.hp3pars:
-            tests["driver"] = self.has_driver(section_name)
+            if self.has_driver(section_name):
+                tests["driver"] = "pass"
+            else:
+                tests["driver"] = "fail"
             client = self.get_client(section_name, self.is_test)
             if client:
                 tests["url"] = "pass"
@@ -110,7 +122,7 @@ class WSChecker(object):
 
             return cl
         except (hpexceptions.UnsupportedVersion, hpexceptions.HTTPBadRequest,
-                ConfigParser.NoOptionError, TypeError):
+                configparser.NoOptionError, TypeError):
             return None
 
     def cred_is_valid(self, section_name, client):
@@ -124,7 +136,7 @@ class WSChecker(object):
             return True
         except (hpexceptions.HTTPForbidden,
                 hpexceptions.HTTPUnauthorized,
-                ConfigParser.NoOptionError):
+                configparser.NoOptionError):
             return False
 
     def cpg_is_valid(self, section_name, client):
@@ -136,7 +148,7 @@ class WSChecker(object):
         for cpg in cpg_list:
             try:
                 client.getCPG(cpg.strip())
-            except (hpexceptions.HTTPNotFound, ConfigParser.NoOptionError):
+            except (hpexceptions.HTTPNotFound, configparser.NoOptionError):
                 return False
         return True
 
@@ -149,7 +161,7 @@ class WSChecker(object):
         try:
             ip_list = self.parser.get(section_name, 'hp3par_iscsi_ips').split(
                 ",")
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             return False
         for port in client.getPorts()['members']:
             if (port['mode'] == client.PORT_MODE_TARGET and
@@ -167,8 +179,9 @@ class WSChecker(object):
 
         :return: string
         """
-        driver = self.parser.get(section_name, 'volume_driver').split('.')[-2]
-        checker = pkg_checks.driver_check(self.ssh_client,
-                                          self.node,
-                                          (driver, None))
-        return checker['installed']
+        path = self.parser.get(section_name, 'volume_driver').split(
+            '.')[-2]
+        if self.ssh_client.execute('locate ' + path):
+            return True
+        else:
+            return False
