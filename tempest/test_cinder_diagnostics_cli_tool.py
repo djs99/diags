@@ -434,13 +434,13 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         command_arvgs=['software-check', '-test']
 
         # Mock paramiko ssh client to return cinder file we want
-        self._mock_exec_command({'sysfsutils' : "install ok installed 2.2.0" , 'hp3parclient' : "hp3parclient (3.2.2)" , 'sg3-utils' : "install ok installed 2.2.0",
-                                "locate" : ""})
+        self._mock_exec_command({'cat /etc/*release':'ID_LIKE=debian' , 'sysfsutils' : "install ok installed 2.2.0" , 'hp3parclient' : "hp3parclient (3.2.2)" , 'sg3-utils' : "install ok installed 2.2.0",
+                              })
         # Execute the CLI commnad
         cli_exit_value , output = self._execute_cli_command(command_arvgs)
 
         self.assertEqual(0 , cli_exit_value)
-        self.assertEqual(len(output) , 9)
+        self.assertEqual(len(output) , 3)
 
         for row in output :
            if not "Driver" in row['Software'] :
@@ -570,7 +570,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
 
     @test.attr(type="gate")
-    def test_diags_cli_tool_with_no_cli_config(self) :
+    def test_aaa_diags_cli_tool_with_no_cli_config(self) :
         ''' Test cinder diagnostic cli tool command execution with non-existent cli.conf file '''
 
         #remove cli config
@@ -908,6 +908,9 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
          c_mock, aa_mock, client_mock = self._set_ssh_connection_mocks()
          s_mock = self._patch('time.sleep')
          c_mock.return_value = client_mock
+         error_mock = mock.MagicMock()
+         stdout_mock = mock.MagicMock()
+         stdin_mock = mock.MagicMock()
 
          if config_file is not None :
               self._mock_get_config_file(config_file, client_mock)
@@ -915,6 +918,8 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
          def my_side_effect(*args, **kwargs):
               is_command_found = False
               command = args[0]
+
+              error_mock.return_value = ""
               for key in dict.keys() :
                  if command != "" and key in command:
                      # Assgin return value to command
@@ -923,7 +928,9 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
               if not is_command_found :
                    client_mock.readlines.return_value = 'command not found'
 
-              return [[], client_mock]
+
+
+              return [stdin_mock, client_mock,error_mock]
          client_mock.exec_command.side_effect = my_side_effect
 
 
@@ -998,7 +1005,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         try :
             config = ConfigParser.RawConfigParser(allow_no_value=True)
-            config.read("dffff")
+
 
             for section in dict.keys():
                        config.add_section(section)
