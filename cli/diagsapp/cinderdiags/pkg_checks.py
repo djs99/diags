@@ -28,7 +28,8 @@ def check_all(client, node, pkg_info):
     check_type = None
     checked = []
     # Determine Linux flavor to determine package check command
-    response = client.execute('cat /etc/*release | grep ^ID_LIKE')
+    response = client.execute('cat /etc/*release | grep ^ID_LIKE') # can
+    # this be done by sys call?
     for os, check in os_names.items():
         if re.compile(os).search(response):
             check_type = check
@@ -65,13 +66,8 @@ def dpkg_check(client, node, pkg_info):
         if 'install ok installed' in response:
             pkg['installed'] = 'pass'
             if pkg_info[1]:
-                version = re.search('installed ([\d\.]+)', response)
-                if version is None:
-                    pkg['version'] = 'unknown'
-                elif version.group(1) >= pkg_info[1]:
-                    pkg['version'] = 'pass'
-                else:
-                    pkg['version'] = 'fail'
+                pattern = re.compile('installed ([\d\.]+)')
+                pkg['version'] = version_check(response, pattern, pkg_info[1])
         else:
             pkg = pip_check(client, node, pkg_info)
 
@@ -103,24 +99,17 @@ def yum_check(client, node, pkg_info):
     try:
         response = client.execute("yum list installed " +
                                   pkg['name'])
-        if 'Installed Packages' in response:
-            pkg['installed'] = 'pass'
-        elif 'Available Packages' in response:
+        if 'Available Packages' in response:
             pkg['installed'] = 'fail'
 
         elif 'No matching Packages' in response:
             pkg = pip_check(client, node, pkg_info)
 
-        elif re.search(pkg['name']+'\.', response):
+        elif 'Installed Packages' in response:
             pkg['installed'] = 'pass'
             if pkg_info[1]:
-                version = re.search('([\d\.]+)-', response)
-                if version is None:
-                    pkg['version'] = 'unknown'
-                elif version.group(1) >= pkg_info[1]:
-                    pkg['version'] = 'pass'
-                else:
-                    pkg['version'] = 'fail'
+                pattern = re.compile(pkg_info[0]+'\.[\w_]+\s+([\d\.]+)-')
+                pkg['version'] = version_check(response, pattern, pkg_info[1])
         else:
             logger.warning("Unable to check %s on node %s" % (pkg['name'],
                                                               node))
@@ -154,15 +143,8 @@ def pip_check(client, node, pkg_info):
         if response and re.match(pkg['name']+'\s', response):
             pkg['installed'] = 'pass'
             if pkg_info[1]:
-                version = re.search('\(([\d\.]+)\)', response)
-                if version is None:
-                    pkg['version'] = 'unknown'
-                elif version.group(1) >= pkg_info[1]:
-                    pkg['version'] = 'pass'
-                else:
-                    pkg['version'] = 'fail'
-            else:
-                    pkg['version'] = 'N/A'
+                pattern = re.compile('\(([\d\.]+)\)')
+                pkg['version'] = version_check(response, pattern, pkg_info[1])
         else:
             pkg['installed'] = "fail"
     except Exception as e:
@@ -172,3 +154,13 @@ def pip_check(client, node, pkg_info):
         pkg['installed'] = 'ERROR'
         pkg['version'] = 'ERROR'
     return pkg
+
+
+def version_check(response, pattern, min_v):
+    version = pattern.search(response)
+    if version is None:
+        return 'unknown'
+    elif version.group(1) >= min_v:
+        return 'pass'
+    else:
+        return 'fail'
