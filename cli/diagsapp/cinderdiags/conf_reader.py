@@ -23,26 +23,24 @@ class Reader(object):
         self.nova_nodes = []
         self.cinder_files = {}
         self.clients = {}
-        parser.read(resource_filename('cinderdiags', constant.CLI_CONFIG))
+
         if self.is_test:
-            self.test_parse()
+            path = constant.TEST_CLI_CONFIG
         else:
-            self.real_parse()
-        self.get_clients()
-        if len(self.cinder_nodes) < 1:
-            logger.warning("No Cinder nodes are configured in cli.conf")
-        if len(self.nova_nodes) < 1:
-            logger.warning("No Nova nodes are configured in cli.conf")
+            path = resource_filename('cinderdiags', constant.CLI_CONFIG)
+        if os.path.isfile(path):
+            parser.read(path)
+            self.get_nodes()
+            self.get_clients()
+            if len(self.cinder_nodes) < 1:
+                logger.warning("No Cinder nodes are configured in cli.conf")
+            if len(self.nova_nodes) < 1:
+                logger.warning("No Nova nodes are configured in cli.conf")
+        else:
+            raise IOError("cli.conf not found. (Run 'setup.py install' after "
+                          "editing cli.conf)")
 
-    def test_parse(self):
-        """Only parse sections with 'service=test' add to cinder and nova lists
-        """
-        for section_name in list(parser.sections()):
-            if parser.get(section_name, 'service').lower() == 'test':
-                self.cinder_nodes.append(section_name)
-                self.nova_nodes.append(section_name)
-
-    def real_parse(self):
+    def get_nodes(self):
         """Create lists of cinder and nova nodes
         """
         for section_name in list(parser.sections()):
@@ -94,10 +92,12 @@ class Reader(object):
         for node in checklist:
             try:
                 if name == 'default':
-                    checks += pkg_checks.check_all(self.clients[node], node,
-                                                   (parser.get(node,
-                                                               'service').lower(
-                                                   ), 'default'))
+                    checks += pkg_checks.check_all(self.clients[node],
+                                                   node,
+                                                   (parser.get(
+                                                       node,
+                                                       'service').lower(),
+                                                    'default'))
                 else:
                     checks.append(pkg_checks.dpkg_check(self.clients[node],
                                                         node, (name, version)))
