@@ -54,4 +54,3 @@ class Client(object):
 
             except (paramiko.ssh_exception.SSHException, socket.timeout):
                 raise Exception("SSH Error: Unable to execute remote command")
-
