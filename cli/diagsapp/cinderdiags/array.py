@@ -24,7 +24,7 @@ class CheckArray(Lister):
                                 (hp3par_cpg)
         iSCSI IP(s)         array's iSCSI IP addresses to use
                                 (hp3par_iscsi_ips)
-        Driver Installed    array's volume driver
+        Driver              array's volume driver
                                 (volume_driver)
     """
 
@@ -57,7 +57,7 @@ class CheckArray(Lister):
             'Credentials',
             'CPG',
             'iSCSI IP(s)',
-            'Driver Installed',
+            'Driver',
         )
 
         data = []

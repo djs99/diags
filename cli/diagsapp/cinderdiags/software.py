@@ -16,10 +16,8 @@ class CheckSoftware(Lister):
         Software            software package name
                                 defaults: hp3parclient, sysfsutils, sg3-utils
         Installed           installation status of the software package
-                                (pass, fail)
         Version             software package version meets the minimum
                             requirement
-                                (pass, fail, N/A)
     """
 
     log = logging.getLogger(__name__)

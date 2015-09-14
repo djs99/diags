@@ -1,0 +1,12 @@
+[EXAMPLE-CINDER-NODE]
+service=cinder
+host_ip=74.125.224.72
+ssh_user=admin
+ssh_password=admin
+conf_source=/etc/cinder/cinder.conf
+
+[EXAMPLE-NOVA-NODE]
+service=nova
+host_ip=74.125.224.72
+ssh_user=admin
+ssh_password=admin

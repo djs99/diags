@@ -19,7 +19,7 @@ def check_all(client, node, pkg_info):
     os_names = {
         "debian": dpkg_check,
         "rhel fedora": yum_check,
-        # "suse":, zypper_check),
+        "suse": zypper_check,
     }
 
     default_nova = constant.NOVA_PACKAGES
@@ -32,6 +32,7 @@ def check_all(client, node, pkg_info):
     for os, check in os_names.items():
         if re.compile(os).search(response):
             check_type = check
+            logger.info("Detected %s operating system on node %s" % (os, node))
     if check_type is None:
         raise Exception("Unable to determine operating system")
 
@@ -59,19 +60,17 @@ def dpkg_check(client, node, pkg_info):
         'installed': 'unknown',
         'version': 'N/A',
     }
+
+    logger.info("Checking for software package %s on node %s using "
+                "dpkg-query" % (pkg['name'], node))
     try:
         response = client.execute("dpkg-query -W -f='${Status} ${Version}' " +
                                   pkg['name'])
         if 'install ok installed' in response:
             pkg['installed'] = 'pass'
             if pkg_info[1]:
-                version = re.search('installed ([\d\.]+)', response)
-                if version is None:
-                    pkg['version'] = 'unknown'
-                elif version.group(1) >= pkg_info[1]:
-                    pkg['version'] = 'pass'
-                else:
-                    pkg['version'] = 'fail'
+                pattern = re.compile('installed ([\d\.]+)')
+                pkg['version'] = version_check(response, pattern, pkg_info[1])
         else:
             pkg = pip_check(client, node, pkg_info)
 
@@ -100,30 +99,63 @@ def yum_check(client, node, pkg_info):
         'version': 'N/A',
     }
 
+    logger.info("Checking for software package %s on node %s using "
+                "yum" % (pkg['name'], node))
+
     try:
         response = client.execute("yum list installed " +
                                   pkg['name'])
-        if 'Installed Packages' in response:
-            pkg['installed'] = 'pass'
-        elif 'Available Packages' in response:
+        if 'Available Packages' in response:
             pkg['installed'] = 'fail'
-
-        elif 'No matching Packages' in response:
-            pkg = pip_check(client, node, pkg_info)
-
-        elif re.search(pkg['name']+'\.', response):
+        elif 'Installed Packages' in response:
             pkg['installed'] = 'pass'
             if pkg_info[1]:
-                version = re.search('([\d\.]+)-', response)
-                if version is None:
-                    pkg['version'] = 'unknown'
-                elif version.group(1) >= pkg_info[1]:
-                    pkg['version'] = 'pass'
-                else:
-                    pkg['version'] = 'fail'
+                pattern = re.compile(pkg_info[0]+'\.[\w_]+\s+([\d\.]+)-')
+                pkg['version'] = version_check(response, pattern, pkg_info[1])
         else:
-            logger.warning("Unable to check %s on node %s" % (pkg['name'],
+            pkg = pip_check(client, node, pkg_info)
+
+    except Exception as e:
+        logger.warning("%s -- Unable to check %s on node %s" % (e,
+                                                              pkg['name'],
                                                               node))
+        pkg['installed'] = 'ERROR'
+        pkg['version'] = 'ERROR'
+        pass
+    return pkg
+
+
+def zypper_check(client, node, pkg_info):
+    """Check for packages installed via zypper (SUSE Linux)
+
+    :param client: ssh client
+    :param node: node being checked
+    :param pkg_info: (name, version)
+    :return: dictionary
+    """
+    pkg = {
+        'node': node,
+        'name': pkg_info[0],
+        'installed': 'unknown',
+        'version': 'N/A',
+    }
+
+    logger.info("Checking for software package %s on node %s using "
+                "zypper" % (pkg['name'], node))
+
+    try:
+        response = client.execute("zypper info " +
+                                  pkg['name'])
+        if 'Installed: No' in response:
+            pkg['installed'] = 'fail'
+
+        elif 'Installed: Yes' in response:
+            pkg['installed'] = 'pass'
+            if pkg_info[1]:
+                pattern = re.compile('Version: ([\d\.]+)-')
+                pkg['version'] = version_check(response, pattern, pkg_info[1])
+        else:
+            pkg = pip_check(client, node, pkg_info)
 
     except Exception as e:
         logger.warning("%s -- Unable to check %s on node %s" % (e,
@@ -149,20 +181,17 @@ def pip_check(client, node, pkg_info):
         'installed': 'unknown',
         'version': 'N/A',
     }
+
+    logger.info("Checking for software package %s on node %s using "
+                "pip" % (pkg['name'], node))
+
     try:
         response = client.execute("pip list | grep " + pkg['name'])
         if response and re.match(pkg['name']+'\s', response):
             pkg['installed'] = 'pass'
             if pkg_info[1]:
-                version = re.search('\(([\d\.]+)\)', response)
-                if version is None:
-                    pkg['version'] = 'unknown'
-                elif version.group(1) >= pkg_info[1]:
-                    pkg['version'] = 'pass'
-                else:
-                    pkg['version'] = 'fail'
-            else:
-                    pkg['version'] = 'N/A'
+                pattern = re.compile('\(([\d\.]+)\)')
+                pkg['version'] = version_check(response, pattern, pkg_info[1])
         else:
             pkg['installed'] = "fail"
     except Exception as e:
@@ -172,3 +201,13 @@ def pip_check(client, node, pkg_info):
         pkg['installed'] = 'ERROR'
         pkg['version'] = 'ERROR'
     return pkg
+
+
+def version_check(response, pattern, min_v):
+    version = pattern.search(response)
+    if version is None:
+        return 'unknown'
+    elif version.group(1) >= min_v:
+        return 'pass'
+    else:
+        return 'fail'

@@ -1,4 +1,5 @@
 DIRECTORY = '/tmp/'
+TEST_CLI_CONFIG = '/tmp/cli.conf'
 CLI_CONFIG = 'cli.conf'
 NOVA_PACKAGES = [
     ('sysfsutils',  '2.1'),

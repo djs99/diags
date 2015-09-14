@@ -6,8 +6,8 @@ Requires the python hp3parclient: sudo pip install hp3parclient
 Assumes the volume_driver is correctly set
 """
 from __future__ import absolute_import
-import sys
 
+import logging
 from oslo_utils import importutils
 from six.moves import configparser
 hp3parclient = importutils.try_import("hp3parclient")
@@ -18,13 +18,7 @@ if hp3parclient:
 else:
     raise ImportError('hp3parclient package is not installed')
 
-# # ConfigParser.SafeConfigParser() became configparser.ConfigParser()
-# if sys.version_info < (3, 2):
-#     import ConfigParser
-#     configparser = ConfigParser
-# else:
-#     import configparser
-#     configparser = configparser
+logger = logging.getLogger(__name__)
 
 
 class WSChecker(object):
@@ -74,25 +68,17 @@ class WSChecker(object):
             "driver": "unknown"
         }
         if section_name in self.hp3pars:
-            if self.has_driver(section_name):
-                tests["driver"] = "pass"
-            else:
-                tests["driver"] = "fail"
+            tests["driver"] = self.has_driver(section_name)
             client = self.get_client(section_name, self.is_test)
             if client:
                 tests["url"] = "pass"
                 if self.cred_is_valid(section_name, client):
                     tests["credentials"] = "pass"
-                    if self.cpg_is_valid(section_name, client):
-                        tests["cpg"] = "pass"
-                    else:
-                        tests["cpg"] = "fail"
+                    tests["cpg"] = self.cpg_is_valid(section_name, client)
                     if 'iscsi' in self.parser.get(section_name,
                                                   'volume_driver'):
-                        if self.iscsi_is_valid(section_name, client):
-                            tests["iscsi"] = "pass"
-                        else:
-                            tests["iscsi"] = "fail"
+                        tests["iscsi"] = self.iscsi_is_valid(section_name,
+                                                            client)
                     client.logout()
                 else:
                     tests["credentials"] = "fail"
@@ -142,27 +128,27 @@ class WSChecker(object):
     def cpg_is_valid(self, section_name, client):
         """Tests to see if a cpg exists on the 3PAR array to verify cpg name
 
-        :return: True if cpg name is valid, False if invalid/missing
+        :return: string
         """
         cpg_list = self.parser.get(section_name, 'hp3par_cpg').split(',')
         for cpg in cpg_list:
             try:
                 client.getCPG(cpg.strip())
             except (hpexceptions.HTTPNotFound, configparser.NoOptionError):
-                return False
-        return True
+                return "fail"
+        return "pass"
 
     def iscsi_is_valid(self, section_name, client):
         """Gets the iSCSI target ports from the client, checks the iSCSI IPs.
 
-        :return: False if any of the provided IPs are wrong
+        :return: string
         """
         valid_ips = []
         try:
             ip_list = self.parser.get(section_name, 'hp3par_iscsi_ips').split(
                 ",")
         except configparser.NoOptionError:
-            return False
+            return "fail"
         for port in client.getPorts()['members']:
             if (port['mode'] == client.PORT_MODE_TARGET and
                     port['linkState'] == client.PORT_STATE_READY and
@@ -171,8 +157,8 @@ class WSChecker(object):
         for ip_addr in ip_list:
             ip = ip_addr.strip().split(':')
             if ip[0] not in valid_ips:
-                return False
-        return True
+                return "fail"
+        return "pass"
 
     def has_driver(self, section_name):
         """Checks that the volume_driver is installed
@@ -181,7 +167,13 @@ class WSChecker(object):
         """
         path = self.parser.get(section_name, 'volume_driver').split(
             '.')[-2]
-        if self.ssh_client.execute('locate ' + path):
-            return True
+        response = self.ssh_client.execute('locate ' + path)
+        if path in response:
+            return "pass"
+        elif 'command not found' or 'command-not-found' in response:
+            logger.warning("Could not check %s driver on node %s. Make sure "
+                           "that 'mlocate' is installed on the node." %
+                           (section_name, self.node))
+            return "unknown"
         else:
-            return False
+            return "fail"
