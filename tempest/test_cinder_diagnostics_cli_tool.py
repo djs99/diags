@@ -89,7 +89,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         cli_exit_value , json_cli_output = self._execute_cli_command(command_arvgs, True)
         self.assertEqual(0 , cli_exit_value)
-        self.assertEqual(output , json_cli_output)
+        self.assertEqual(output, json_cli_output)
 
 
         self.assertEqual(len(output) , 2)
@@ -817,6 +817,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
               sys.stdout.close() ; sys.stdout = temp_store
 
            data = open(output_file).read()
+        
            if isJson :
               return cli_exit_value , json.loads(data)
            else :
