@@ -45,6 +45,15 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         self._remove_file(self.cinder_config_file)
 
+        # 3par FC section
+        cli_dict = {}
+        cli_dict["CINDER_TEST_NODE"] = self._get_default_cli_conf_section("cinder")
+        cli_dict["NOVA_TEST_NODE"] = self._get_default_cli_conf_section("nova")
+
+
+        #Create cinder.conf
+        self._create_config(constant.TEST_CLI_CONFIG,  cli_dict)
+
         self.mock_instances = []
 
     def tearDown(self):
@@ -53,6 +62,8 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
             instance.stop();
 
         self._remove_file(self.cinder_config_file)
+
+        self._remove_file(constant.TEST_CLI_CONFIG)
 
         super(CinderDiagnostics3PARCliToolTest, self).tearDown()
 
@@ -95,7 +106,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         self.assertEqual(len(output) , 2)
 
         for row in output :
-            self.assertEqual('TEST' , row['Node'])
+            self.assertEqual('CINDER_TEST_NODE' , row['Node'])
             self.assertEqual('pass' , row['CPG'])
             self.assertEqual('pass' , row['Credentials'])
             self.assertEqual('pass' , row['WS API'])
@@ -182,13 +193,13 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         for row in output :
            if row['Backend Section'] == iscsi_section_name :
-              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('CINDER_TEST_NODE' , row['Node'])
               self.assertEqual('unknown' , row['CPG'])
               self.assertEqual('unknown' , row['Credentials'])
               self.assertEqual('fail' , row['WS API'])
               self.assertEqual('unknown' , row['iSCSI IP(s)'])
            else :
-              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('CINDER_TEST_NODE' , row['Node'])
               self.assertEqual('pass' , row['CPG'])
               self.assertEqual('pass' , row['Credentials'])
               self.assertEqual('pass' , row['WS API'])
@@ -232,13 +243,13 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         for row in output :
            if row['Backend Section'] == iscsi_section_name :
-              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('CINDER_TEST_NODE' , row['Node'])
               self.assertEqual('pass' , row['CPG'])
               self.assertEqual('pass' , row['Credentials'])
               self.assertEqual('pass' , row['WS API'])
               self.assertEqual('pass' , row['iSCSI IP(s)'])
            else :
-              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('CINDER_TEST_NODE' , row['Node'])
               self.assertEqual('unknown' , row['CPG'])
               self.assertEqual('fail' , row['Credentials'])
               self.assertEqual('pass' , row['WS API'])
@@ -277,13 +288,13 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         for row in output :
            if row['Backend Section'] == iscsi_section_name :
-              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('CINDER_TEST_NODE' , row['Node'])
               self.assertEqual('fail' , row['CPG'])
               self.assertEqual('pass' , row['Credentials'])
               self.assertEqual('pass' , row['WS API'])
               self.assertEqual('pass' , row['iSCSI IP(s)'])
            else :
-              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('CINDER_TEST_NODE' , row['Node'])
               self.assertEqual('unknown' , row['CPG'])
               self.assertEqual('fail' , row['Credentials'])
               self.assertEqual('pass' , row['WS API'])
@@ -322,13 +333,13 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         for row in output :
            if row['Backend Section'] == iscsi_section_name :
-              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('CINDER_TEST_NODE' , row['Node'])
               self.assertEqual('pass' , row['CPG'])
               self.assertEqual('pass' , row['Credentials'])
               self.assertEqual('pass' , row['WS API'])
               self.assertEqual('fail' , row['iSCSI IP(s)'])
            else :
-              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('CINDER_TEST_NODE' , row['Node'])
               self.assertEqual('fail' , row['CPG'])
               self.assertEqual('pass' , row['Credentials'])
               self.assertEqual('pass' , row['WS API'])
@@ -369,19 +380,19 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         for row in output :
            if row['Backend Section'] == iscsi_section_name :
-              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('CINDER_TEST_NODE' , row['Node'])
               self.assertEqual('pass' , row['CPG'])
               self.assertEqual('pass' , row['Credentials'])
               self.assertEqual('pass' , row['WS API'])
               self.assertEqual('pass' , row['iSCSI IP(s)'])
-              self.assertEqual('fail' , row['Driver Installed'])
+              self.assertEqual('fail' , row['Driver'])
            else :
-              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('CINDER_TEST_NODE' , row['Node'])
               self.assertEqual('pass' , row['CPG'])
               self.assertEqual('pass' , row['Credentials'])
               self.assertEqual('pass' , row['WS API'])
               self.assertEqual('N/A' , row['iSCSI IP(s)'])
-              self.assertEqual('fail' , row['Driver Installed'])
+              self.assertEqual('fail' , row['Driver'])
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_for_wrong_hp3pardriver(self) :
@@ -413,19 +424,19 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         for row in output :
            if row['Backend Section'] == iscsi_section_name :
-              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('CINDER_TEST_NODE' , row['Node'])
               self.assertEqual('pass' , row['CPG'])
               self.assertEqual('pass' , row['Credentials'])
               self.assertEqual('pass' , row['WS API'])
               self.assertEqual('pass' , row['iSCSI IP(s)'])
-              self.assertEqual('pass' , row['Driver Installed'])
+              self.assertEqual('pass' , row['Driver'])
            else :
-              self.assertEqual('TEST' , row['Node'])
+              self.assertEqual('CINDER_TEST_NODE' , row['Node'])
               self.assertEqual('pass' , row['CPG'])
               self.assertEqual('pass' , row['Credentials'])
               self.assertEqual('pass' , row['WS API'])
               self.assertEqual('N/A' , row['iSCSI IP(s)'])
-              self.assertEqual('pass' , row['Driver Installed'])
+              self.assertEqual('pass' , row['Driver'])
 
     @test.attr(type="gate")
     def test_diags_check_all_packages_installed_with_supported_version(self) :
@@ -995,6 +1006,24 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
 
         return section_name , dict
+
+
+    def _get_default_cli_conf_section(self, node_name) :
+
+        '''
+         This is the default configuration for test version of cli.conf
+        :return:
+        '''
+
+        dict = {  'service' : node_name,
+                  'host_ip' : '192.168.10.5',
+                  'ssh_user' : 'fake',
+                  'ssh_password' : 'fake',
+                  'conf_source' : '/etc/cinder/cinder.conf'
+                   }
+
+        return  dict
+
 
 
     def _create_config(self, config_filename, dict) :
