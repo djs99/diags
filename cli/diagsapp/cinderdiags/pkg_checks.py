@@ -29,7 +29,7 @@ def check_all(client, node, pkg_info):
     checked = []
     # Determine Linux flavor to determine package check command
     response = client.execute('cat /etc/*release | grep ^ID_LIKE')
-    for os, check in os_names.items():
+    for os, check in list(os_names.items()):
         if re.compile(os).search(response):
             check_type = check
             logger.info("Detected %s operating system on node %s" % (os, node))
@@ -76,8 +76,8 @@ def dpkg_check(client, node, pkg_info):
 
     except Exception as e:
         logger.warning("%s -- Unable to check %s on node %s" % (e,
-                                                              pkg['name'],
-                                                              node))
+                                                                pkg['name'],
+                                                                node))
         pkg['installed'] = 'ERROR'
         pkg['version'] = 'ERROR'
         pass
@@ -117,8 +117,8 @@ def yum_check(client, node, pkg_info):
 
     except Exception as e:
         logger.warning("%s -- Unable to check %s on node %s" % (e,
-                                                              pkg['name'],
-                                                              node))
+                                                                pkg['name'],
+                                                                node))
         pkg['installed'] = 'ERROR'
         pkg['version'] = 'ERROR'
         pass
@@ -159,8 +159,8 @@ def zypper_check(client, node, pkg_info):
 
     except Exception as e:
         logger.warning("%s -- Unable to check %s on node %s" % (e,
-                                                              pkg['name'],
-                                                              node))
+                                                                pkg['name'],
+                                                                node))
         pkg['installed'] = 'ERROR'
         pkg['version'] = 'ERROR'
         pass
@@ -196,8 +196,8 @@ def pip_check(client, node, pkg_info):
             pkg['installed'] = "fail"
     except Exception as e:
         logger.warning("%s -- Unable to check %s on node %s" % (e,
-                                                              pkg['name'],
-                                                              node))
+                                                                pkg['name'],
+                                                                node))
         pkg['installed'] = 'ERROR'
         pkg['version'] = 'ERROR'
     return pkg

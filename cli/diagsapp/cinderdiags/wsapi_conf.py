@@ -78,7 +78,7 @@ class WSChecker(object):
                     if 'iscsi' in self.parser.get(section_name,
                                                   'volume_driver'):
                         tests["iscsi"] = self.iscsi_is_valid(section_name,
-                                                            client)
+                                                             client)
                     client.logout()
                 else:
                     tests["credentials"] = "fail"
