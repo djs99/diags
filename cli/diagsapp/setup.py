@@ -41,7 +41,7 @@ setup(
 
     provides=[],
     install_requires=[
-        'cliff', 'cliff-tablib', 'hp3parclient', 'oslo.utils', 'paramiko'
+        'cliff', 'cliff-tablib', 'hp3parclient', 'paramiko'
     ],
 
     namespace_packages=[],
