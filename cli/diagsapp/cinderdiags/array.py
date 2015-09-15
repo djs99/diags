@@ -46,7 +46,7 @@ class CheckArray(Lister):
     def take_action(self, parsed_args):
         reader = conf_reader.Reader(parsed_args.test)
         reader.copy_files()
-        result = reader.ws_checks(parsed_args.name)
+        result = reader.options_check(parsed_args.name)
         reader.cleanup()
         if len(result) < 1:
             raise ValueError("%s not found" % parsed_args.name)

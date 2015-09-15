@@ -5,7 +5,7 @@ import os
 from . import constant
 from . import pkg_checks
 from . import ssh_client
-from . import wsapi_conf
+from . import hp3par_wsapi_checks as wsapi_checks
 
 from pkg_resources import resource_filename
 from six.moves import configparser
@@ -74,7 +74,7 @@ class Reader(object):
             except Exception as e:
                 logger.warning("%s: %s" % (e, node))
 
-    def pkg_checks(self, name='default', service='default', version=None):
+    def software_check(self, name='default', service='default', version=None):
         """Check nodes for installed software packages
 
         :param name: Name of a software package to check for
@@ -103,7 +103,7 @@ class Reader(object):
                 logger.warning("%s: %s" % (e, node))
         return checks
 
-    def ws_checks(self, section_name='arrays'):
+    def options_check(self, section_name='arrays'):
         """Check WS API options in each cinder.conf file
 
         :param section_name: section name in the cinder.conf file.  Checks
@@ -112,7 +112,7 @@ class Reader(object):
         """
         checks = []
         for node in self.cinder_files:
-            checker = wsapi_conf.WSChecker(self.clients[node],
+            checker = wsapi_checks.WSChecker(self.clients[node],
                                            self.cinder_files[node],
                                            node,
                                            self.is_test)

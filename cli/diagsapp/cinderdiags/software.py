@@ -52,11 +52,11 @@ class CheckSoftware(Lister):
     def take_action(self, parsed_args):
         reader = conf_reader.Reader(parsed_args.test)
         if parsed_args.name:
-            result = reader.pkg_checks(parsed_args.name,
+            result = reader.software_check(parsed_args.name,
                                        parsed_args.serv,
                                        parsed_args.version)
         else:
-            result = reader.pkg_checks()
+            result = reader.software_check()
 
         reader.cleanup()
         columns = ('Node', 'Software', 'Installed', 'Version')
