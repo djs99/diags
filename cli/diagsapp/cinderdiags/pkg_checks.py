@@ -7,43 +7,53 @@ from . import constant
 logger = logging.getLogger(__name__)
 
 
-def check_all(client, node, pkg_info):
-    """Check for installed packages on the nova node
+def check_all(client, node, service):
+    """Check for default packages on cinder or nova node
 
     :param client: ssh client
     :param node: node being checked
     :param pkg_info: tuple of ('package name', 'minimum version')
     :return: list of dictionaries
     """
-
-    os_names = {
-        "debian": dpkg_check,
-        "rhel fedora": yum_check,
-        "suse": zypper_check,
+    defaults = {
+        'cinder': constant.CINDER_PACKAGES,
+        'nova': constant.NOVA_PACKAGES,
     }
 
-    default_nova = constant.NOVA_PACKAGES
-    default_cinder = constant.CINDER_PACKAGES
-
-    check_type = None
     checked = []
-    # Determine Linux flavor to determine package check command
-    response = client.execute('cat /etc/*release | grep ^ID_LIKE')
-    for os, check in list(os_names.items()):
-        if re.compile(os).search(response):
-            check_type = check
-            logger.info("Detected %s operating system on node %s" % (os, node))
-    if check_type is None:
-        raise Exception("Unable to determine operating system")
-
-    if pkg_info[0] in ['nova', 'test']:
-        for pkg in default_nova:
-            checked.append(check_type(client, node, pkg))
-
-    if pkg_info[0] in ['cinder', 'test']:
-        for pkg in default_cinder:
-            checked.append(pip_check(client, node, pkg))
+    checker = get_check_type(client, node)
+    if checker is not None:
+        for pkg in defaults[service]:
+            checked.append(checker(client, node, pkg))
+    else:
+        checked.append({
+            'node': node,
+            'name': 'ERROR',
+            'installed': 'ERROR',
+            'version': 'ERROR',
+        })
     return checked
+
+
+def check_one(client, node, pkg_info):
+    """Check for a single package on a single node
+
+    :param client: ssh client
+    :param node: node being checked
+    :param pkg_info: tuple of ('package name', 'minimum version')
+    :return: dictionary
+    """
+
+    checker = get_check_type(client, node)
+    if checker is not None:
+        return checker(client, node, pkg_info)
+    else:
+        return {
+            'node': node,
+            'name': pkg_info[0],
+            'installed': 'ERROR',
+            'version': 'ERROR',
+        }
 
 
 def dpkg_check(client, node, pkg_info):
@@ -211,3 +221,26 @@ def version_check(response, pattern, min_v):
         return 'pass'
     else:
         return 'fail'
+
+
+def get_check_type(client, node):
+    """Checks the Linux OS flavor and returns the correct check type
+
+    :param client: ssh client
+    :param node: node being checked
+    :return: function that expects parameters (client, node, pkg_info)
+    """
+    os_names = {
+        "debian": dpkg_check,
+        "rhel fedora": yum_check,
+        "suse": zypper_check,
+    }
+    check_type = None
+    response = client.execute('cat /etc/*release | grep ^ID_LIKE')
+    for os, check in list(os_names.items()):
+        if re.compile(os).search(response):
+            logger.info("Detected %s operating system on node %s" % (os, node))
+            check_type = check
+    if check_type is None:
+        logger.error("Unable to determine operating system on %s" % node)
+    return check_type

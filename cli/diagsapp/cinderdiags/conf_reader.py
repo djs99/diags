@@ -94,13 +94,11 @@ class Reader(object):
                 if name == 'default':
                     checks += pkg_checks.check_all(self.clients[node],
                                                    node,
-                                                   (parser.get(
-                                                       node,
-                                                       'service').lower(),
-                                                    'default'))
+                                                   parser.get(node, 'service'))
                 else:
-                    checks.append(pkg_checks.dpkg_check(self.clients[node],
-                                                        node, (name, version)))
+                    checks.append(pkg_checks.check_one(self.clients[node],
+                                                       node,
+                                                       (name, version)))
             except Exception as e:
                 logger.warning("%s: %s" % (e, node))
         return checks
