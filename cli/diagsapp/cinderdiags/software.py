@@ -21,12 +21,12 @@ from cliff.lister import Lister
 
 
 class CheckSoftware(Lister):
-    """check for required software and versions on Cinder and Nova nodes
+    """check for required software (and versions) on Cinder and Nova nodes
 
     output data:
         Node                node names set by user in cli.conf, names must be
                             unique
-                                [NODE-NAME]
+                                example: [NODE-NAME]
         Software            software package name
                                 defaults: hp3parclient, sysfsutils, sg3-utils
         Installed           installation status of the software package
@@ -39,38 +39,38 @@ class CheckSoftware(Lister):
     def get_parser(self, prog_name):
         parser = super(CheckSoftware, self).get_parser(prog_name)
         parser.formatter_class = argparse.RawTextHelpFormatter
-        parser.add_argument('-name',
+        parser.add_argument('-software',
                             dest='name',
                             nargs='?',
                             metavar='PACKAGE-NAME',
-                            help='Requires --service SERVICE-TYPE (cinder or '
-                                 'nova) \nOptional --package-min-version '
-                                 'MINIMUM-VERSION')
-
-        args, checktype = parser.parse_known_args()
-        if args.name:
-            parser.add_argument('--service',
-                                dest='serv',
-                                required=True,
-                                choices=['cinder', 'nova'])
-            parser.add_argument('--package-min-version',
-                                dest='version',
-                                nargs='?')
+                            default='default',
+                            help='may also provide "--package-min-version '
+                                 'MINIMUM-VERSION"')
+        parser.add_argument('-service',
+                            dest='serv',
+                            default='default',
+                            choices=['cinder', 'nova'],
+                            help='check for installed software on only '
+                                 'cinder or nova nodes, defaults to checking '
+                                 'all nodes')
 
         parser.add_argument('-test',
                             dest='test',
                             action='store_true',
                             help=argparse.SUPPRESS)
+
+        args, unknown = parser.parse_known_args()
+        if args.name:
+            parser.add_argument('--package-min-version',
+                                dest='version',
+                                nargs='?')
         return parser
 
     def take_action(self, parsed_args):
         reader = conf_reader.Reader(parsed_args.test)
-        if parsed_args.name:
-            result = reader.software_check(parsed_args.name,
+        result = reader.software_check(parsed_args.name,
                                        parsed_args.serv,
                                        parsed_args.version)
-        else:
-            result = reader.software_check()
 
         reader.cleanup()
         columns = ('Node', 'Software', 'Installed', 'Version')
