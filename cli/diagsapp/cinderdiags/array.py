@@ -21,25 +21,24 @@ from cliff.lister import Lister
 
 
 class CheckArray(Lister):
-    """check 3PAR options in the cinder.conf against 3PAR array
+    """check 3PAR options in cinder.conf against 3PAR array(s)
 
     output data:
-        Node                node names set by user in cli.conf, names must be
-                            unique
-                                [NODE-NAME]
+        Node                node names set by user in cli.conf, must be unique
+                                example: [NODE-NAME]
         Backend Section     backend section names set by user in cinder.conf,
                             must be unique per node
-                                [BACKEND-SECTION-NAME]
-        WS API              web service API for array
-                                (hp3par_api_url)
+                                example: [BACKEND-SECTION-NAME]
+        WS API              web service API url for array
+                                option: hp3par_api_url
         Credentials         username and password for array
-                                (hp3par_username, hp3par_password)
-        CPG                 CPG to use for volume creation
-                                (hp3par_cpg)
+                                option: hp3par_username, hp3par_password
+        CPG(s)              CPGs to use for volume creation
+                                option: hp3par_cpg
         iSCSI IP(s)         array's iSCSI IP addresses to use
-                                (hp3par_iscsi_ips)
+                                option: hp3par_iscsi_ips
         Driver              array's volume driver
-                                (volume_driver)
+                                option: volume_driver
     """
 
     log = logging.getLogger(__name__)
@@ -51,10 +50,11 @@ class CheckArray(Lister):
                             dest='test',
                             action='store_true',
                             help=argparse.SUPPRESS)
-        parser.add_argument('-name',
+        parser.add_argument('-backend-section',
+                            dest='name',
                             nargs='?',
                             default='arrays',
-                            help='defaults to checking array configurations')
+                            help='defaults to checking all backend sections')
         return parser
 
     def take_action(self, parsed_args):
