@@ -1,9 +1,0 @@
-init_config:
-    key1: value1
-    key2: value2
-
-instances:
-    - name: bluesteel
-      url: 192.168.10.5
-      port: 5205 
-
