@@ -50,9 +50,7 @@ class CheckSoftware(Lister):
                             dest='serv',
                             default='default',
                             choices=['cinder', 'nova'],
-                            help='check for installed software on only '
-                                 'cinder or nova nodes, defaults to checking '
-                                 'all nodes')
+                            help='defaults to checking all nodes')
 
         parser.add_argument('-test',
                             dest='test',
