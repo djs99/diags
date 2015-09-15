@@ -8,17 +8,25 @@ Assumes the volume_driver is correctly set
 from __future__ import absolute_import
 
 import logging
-from oslo_utils import importutils
+# from oslo_utils import importutils
 from six.moves import configparser
-hp3parclient = importutils.try_import("hp3parclient")
-if hp3parclient:
-    from hp3parclient import client as hpclient
-    from hp3parclient import exceptions as hpexceptions
-    from . import hp3par_testclient as testclient
-else:
-    raise ImportError('hp3parclient package is not installed')
+from . import hp3par_testclient as testclient
 
 logger = logging.getLogger(__name__)
+
+try:
+    from hp3parclient import client as hpclient
+    from hp3parclient import exceptions as hpexceptions
+except ImportError:
+    logger.error('hp3parclient package not found (pip install hp3parclient)')
+# hp3parclient = importutils.try_import("hp3parclient")
+# if hp3parclient:
+#     from hp3parclient import client as hpclient
+#     from hp3parclient import exceptions as hpexceptions
+#     from . import hp3par_testclient as testclient
+# else:
+#     raise ImportError('hp3parclient package is not installed')
+
 
 
 class WSChecker(object):
