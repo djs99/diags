@@ -7,7 +7,6 @@ from . import pkg_checks
 from . import ssh_client
 from . import hp3par_wsapi_checks as wsapi_checks
 
-from pkg_resources import resource_filename
 from six.moves import configparser
 
 
@@ -27,7 +26,7 @@ class Reader(object):
         if self.is_test:
             path = constant.TEST_CLI_CONFIG
         else:
-            path = resource_filename('cinderdiags', constant.CLI_CONFIG)
+            path = constant.CLI_CONFIG
         if os.path.isfile(path):
             parser.read(path)
             self.get_nodes()
