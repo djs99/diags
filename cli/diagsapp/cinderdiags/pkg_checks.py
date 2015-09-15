@@ -93,7 +93,7 @@ def dpkg_check(client, node, pkg_info):
         if 'install ok installed' in response:
             pkg['installed'] = 'pass'
             if pkg_info[1]:
-                pattern = re.compile('installed ([\d\.]+)')
+                pattern = re.compile('\D([\d\.]+\d)\D')
                 pkg['version'] = version_check(response, pattern, pkg_info[1])
         else:
             pkg = pip_check(client, node, pkg_info)
@@ -134,7 +134,7 @@ def yum_check(client, node, pkg_info):
         elif 'Installed Packages' in response:
             pkg['installed'] = 'pass'
             if pkg_info[1]:
-                pattern = re.compile(pkg_info[0]+'\.[\w_]+\s+([\d\.]+)-')
+                pattern = re.compile(pkg_info[0]+'\.[\w+]+\D*([\d\.]+\d)\D')
                 pkg['version'] = version_check(response, pattern, pkg_info[1])
         else:
             pkg = pip_check(client, node, pkg_info)
@@ -176,7 +176,7 @@ def zypper_check(client, node, pkg_info):
         elif 'Installed: Yes' in response:
             pkg['installed'] = 'pass'
             if pkg_info[1]:
-                pattern = re.compile('Version: ([\d\.]+)-')
+                pattern = re.compile('Version: \D*([\d\.]+\d)\D')
                 pkg['version'] = version_check(response, pattern, pkg_info[1])
         else:
             pkg = pip_check(client, node, pkg_info)
