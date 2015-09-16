@@ -344,6 +344,9 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
                 self.assertEqual('fail', row['Credentials'])
                 self.assertEqual('pass', row['WS API'])
                 self.assertEqual('N/A', row['iSCSI IP(s)'])
+
+
+
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_for_wrong_iscsi_IP(self):
         ''' Test cinder diagnostic cli tool check array command when the ISCSI IP of 3par array in cinder.conf is wrong '''
@@ -484,8 +487,8 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
                 self.assertEqual('pass', row['Driver'])
 
     @test.attr(type="gate")
-    def test_diags_check_all_packages_installed_with_supported_version(self):
-        ''' Test cinder diagnostic cli tool check software command for all the packages with supported version '''
+    def test_diags_check_all_packages_installed_with_supported_version_on_ubuntu(self):
+        ''' Test cinder diagnostic cli tool check software command for all the packages with supported version on ubuntu operating system'''
 
         command_arvgs = ['software-check', '-test']
 
@@ -494,6 +497,62 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
             {
                 'cat /etc/*release': 'ID_LIKE=debian',
                 'sysfsutils': "install ok installed 2.2.0",
+                'hp3parclient': "hp3parclient (3.2.2)",
+                'sg3-utils': "install ok installed 2.2.0",
+            })
+        # Execute the CLI commnad
+        cli_exit_value, output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(0, cli_exit_value)
+        self.assertEqual(len(output), 3)
+
+        for row in output:
+            if not "Driver" in row['Software']:
+                self.assertEqual("pass", row['Installed'])
+                self.assertEqual("pass", row['Version'])
+            else:
+                self.assertEqual("fail", row['Installed'])
+                self.assertEqual("N/A", row['Version'])
+
+    @test.attr(type="gate")
+    def test_diags_check_all_packages_installed_with_supported_version_on_suse(self):
+        ''' Test cinder diagnostic cli tool check software command for all the packages with supported version SUSE operating system'''
+
+        command_arvgs = ['software-check', '-test']
+
+        # Mock paramiko ssh client to return cinder file we want
+        self._mock_exec_command(
+            {
+                'cat /etc/*release': 'ID_LIKE=suse',
+                'sysfsutils': "Installed : Yes, Version : 2.2.0",
+                'hp3parclient': "hp3parclient (3.2.2)",
+                'sg3-utils': "Installed : Yes, Version : 2.2.0",
+            })
+        # Execute the CLI commnad
+        cli_exit_value, output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(0, cli_exit_value)
+        self.assertEqual(len(output), 3)
+
+        for row in output:
+            if not "Driver" in row['Software']:
+                self.assertEqual("pass", row['Installed'])
+                self.assertEqual("pass", row['Version'])
+            else:
+                self.assertEqual("fail", row['Installed'])
+                self.assertEqual("N/A", row['Version'])
+
+    @test.attr(type="gate")
+    def test_diags_check_all_packages_installed_with_supported_version_on_centos(self):
+        ''' Test cinder diagnostic cli tool check software command for all the packages with supported version centos operating system '''
+
+        command_arvgs = ['software-check', '-test']
+
+        # Mock paramiko ssh client to return cinder file we want
+        self._mock_exec_command(
+            {
+                'cat /etc/*release': 'ID_LIKE=rhel fedora',
+                'sysfsutils': "Installed: Yes 2.2.0",
                 'hp3parclient': "hp3parclient (3.2.2)",
                 'sg3-utils': "install ok installed 2.2.0",
             })
