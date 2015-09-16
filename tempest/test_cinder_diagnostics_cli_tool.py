@@ -135,7 +135,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         command_arvgs = [
             'options-check',
             '-test',
-            "-name",
+            "-backend-section",
             '3PAR-SLEEPYKITTY-FC']
         cli_exit_value, output = self._execute_cli_command(command_arvgs)
         self.assertEqual(0, cli_exit_value)
@@ -159,8 +159,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         self._create_config(self.cinder_config_file, cinder_dict)
 
         # Execute the CLI commnad
-        command_arvgs = ['options-check', '-test', "-name", 'InvalidArrayName']
-#       command_arvgs=['check', 'array', '-test' ,"-name" ,'3PAR-SLEEPYKITTY-FC']
+        command_arvgs = ['options-check', '-test', "-backend-section", 'InvalidArrayName']
         cli_exit_value, output = self._execute_cli_command(command_arvgs)
         self.assertEqual(1, cli_exit_value)
         self.assertEqual(len(output), 0)
@@ -299,6 +298,52 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
                 self.assertEqual('pass', row['WS API'])
                 self.assertEqual('N/A', row['iSCSI IP(s)'])
 
+    @test.attr(type="gate")
+    def test_diags_cli_check_array_command_for_one_bad_CPG(self):
+        """Test cinder diagnostic cli tool check array command when the cpg
+        value of 3par array in cinder.conf is wrong."""
+
+        # Mock paramiko ssh client to return cinder file we want
+        self._mock_get_file(self.cinder_config_file)
+
+        # create cinder config,conf file and add 3par ISCSI section
+        cinder_dict = {}
+        # 3par ISCSI section
+        iscsi_section_name, iscsi_values = \
+            self._get_default_3par_iscsi_cinder_conf_section()
+        iscsi_values['hp3par_cpg'] = 'testCPG,badCPG'
+        cinder_dict[iscsi_section_name] = iscsi_values
+
+        # 3par FC section
+        fc_section_name, fc_values = \
+            self._get_default_3par_fc_cinder_conf_section()
+        fc_values['hp3par_username'] = 'baduser'
+        fc_values['hp3par_password'] = 'testpass'
+        cinder_dict[fc_section_name] = fc_values
+
+        # Create cinder.conf
+        self._create_config(self.cinder_config_file, cinder_dict)
+
+        # Execute the CLI commnad
+        command_arvgs = ['options-check', "-test"]
+        cli_exit_value, output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(0, cli_exit_value)
+        self.assertEqual(len(output), 2)
+
+        for row in output:
+            if row['Backend Section'] == iscsi_section_name:
+                self.assertEqual('CINDER_TEST_NODE', row['Node'])
+                self.assertEqual('fail', row['CPG'])
+                self.assertEqual('pass', row['Credentials'])
+                self.assertEqual('pass', row['WS API'])
+                self.assertEqual('pass', row['iSCSI IP(s)'])
+            else:
+                self.assertEqual('CINDER_TEST_NODE', row['Node'])
+                self.assertEqual('unknown', row['CPG'])
+                self.assertEqual('fail', row['Credentials'])
+                self.assertEqual('pass', row['WS API'])
+                self.assertEqual('N/A', row['iSCSI IP(s)'])
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_for_wrong_iscsi_IP(self):
         ''' Test cinder diagnostic cli tool check array command when the ISCSI IP of 3par array in cinder.conf is wrong '''
@@ -472,14 +517,14 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         command_arvgs = [
             'software-check',
-            '-name',
+            '-software',
             "sysfsutils",
             '--package-min-version',
             '1.3',
-            '--service',
+            '-service',
             'nova',
             '-test']
-        ssh_mocked_response = {'sysfsutils': "install ok installed 2.2.0"}
+        ssh_mocked_response = {'cat /etc/*release': 'ID_LIKE=debian','sysfsutils': "install ok installed 2.2.0"}
         # Excecutes the check software command that needs to be tested and
         # evaluates the output
         self._check_software_package(
@@ -491,14 +536,14 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         command_arvgs = [
             'software-check',
-            '-name',
+            '-software',
             "sysfsutils",
             '--package-min-version',
             '2.0',
-            '--service',
+            '-service',
             'nova',
             '-test']
-        ssh_mocked_response = {'sysfsutils': "install ok installed 1.0 "}
+        ssh_mocked_response = {'cat /etc/*release': 'ID_LIKE=debian','sysfsutils': "install ok installed 1.0 "}
         # Excecutes the check software command that needs to be tested and
         # evaluates the output
         self._check_software_package(
@@ -514,14 +559,15 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         command_arvgs = [
             'software-check',
-            '-name',
+            '-software',
             "sysfsutils",
             '--package-min-version',
             '2.0',
-            '--service',
+            '-service',
             'nova',
             '-test']
         ssh_mocked_response = {
+            'cat /etc/*release': 'ID_LIKE=debian',
             'dpkg-query': 'no packages found matching  sysfsutils',
             'grep sysfsutils': ""}
         # Excecutes the check software command that needs to be tested and
@@ -540,12 +586,12 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         command_arvgs = [
             'software-check',
-            '-name',
+            '-software',
             "sysfsutils",
-            '--service',
+            '-service',
             'nova',
             '-test']
-        ssh_mocked_response = {'sysfsutils': "install ok installed 1.0 "}
+        ssh_mocked_response = {'cat /etc/*release': 'ID_LIKE=debian','sysfsutils': "install ok installed 1.0 "}
         # Excecutes the check software command that needs to be tested and
         # evaluates the output
         self._check_software_package(
@@ -561,14 +607,14 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         command_arvgs = [
             'software-check',
-            '-name',
+            '-software',
             "sg3-utils",
             '--package-min-version',
             '1.3',
-            '--service',
+            '-service',
             'nova',
             '-test']
-        ssh_mocked_response = {'sg3-utils': "install ok installed 2.2.0"}
+        ssh_mocked_response = {'cat /etc/*release': 'ID_LIKE=debian','sg3-utils': "install ok installed 2.2.0"}
         # Excecutes the check software command that needs to be tested and
         # evaluates the output
         self._check_software_package(
@@ -580,14 +626,14 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         command_arvgs = [
             'software-check',
-            '-name',
+            '-software',
             "sg3-utils",
             '--package-min-version',
             '2.0',
-            '--service',
+            '-service',
             'nova',
             '-test']
-        ssh_mocked_response = {'sg3-utils': "install ok installed 1.0 "}
+        ssh_mocked_response = {'cat /etc/*release': 'ID_LIKE=debian','sg3-utils': "install ok installed 1.0 "}
         # Excecutes the check software command that needs to be tested and
         # evaluates the output
         self._check_software_package(
@@ -603,14 +649,15 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         command_arvgs = [
             'software-check',
-            '-name',
+            '-software',
             "sg3-utils",
             '--package-min-version',
             '2.0',
-            '--service',
+            '-service',
             'nova',
             '-test']
         ssh_mocked_response = {
+            'cat /etc/*release': 'ID_LIKE=debian',
             'dpkg-query': 'no packages found matching  sg3-utils',
             'grep sg3-utils': ""}
         # Excecutes the check software command that needs to be tested and
@@ -628,12 +675,12 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         command_arvgs = [
             'software-check',
-            '-name',
+            '-software',
             "sysfsutils",
-            '--service',
+            '-service',
             'nova',
             '-test']
-        ssh_mocked_response = {'sysfsutils': "install ok installed 1.0 "}
+        ssh_mocked_response = {'cat /etc/*release': 'ID_LIKE=debian','sysfsutils': "install ok installed 1.0 "}
         # Excecutes the check software command that needs to be tested and
         # evaluates the output
         self._check_software_package(
@@ -650,14 +697,15 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         command_arvgs = [
             'software-check',
-            '-name',
+            '-software',
             "hp3parclient",
             '--package-min-version',
             '2.0',
-            '--service',
+            '-service',
             'nova',
             '-test']
         ssh_mocked_response = {
+            'cat /etc/*release': 'ID_LIKE=debian',
             'dpkg-query': 'no packages found matching  hp3parclient',
             'grep hp3parclient': "hp3parclient (1.2.2) "}
         # Excecutes the check software command that needs to be tested and
@@ -675,14 +723,15 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         command_arvgs = [
             'software-check',
-            '-name',
+            '-software',
             "hp3parclient",
             '--package-min-version',
             '2.0',
-            '--service',
+            '-service',
             'nova',
             '-test']
         ssh_mocked_response = {
+            'cat /etc/*release': 'ID_LIKE=debian',
             'dpkg-query': 'no packages found matching  hp3parclient',
             'grep hp3parclient': ""}
         # Excecutes the check software command that needs to be tested and
@@ -703,12 +752,13 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         command_arvgs = [
             'software-check',
-            '-name',
+            '-software',
             "hp3parclient",
-            '--service',
+            '-service',
             'cinder',
             '-test']
         ssh_mocked_response = {
+            'cat /etc/*release': 'ID_LIKE=debian',
             'dpkg-query': 'no packages found matching  hp3parclient',
             'grep hp3parclient': "hp3parclient (3.2.2) "}
         # Excecutes the check software command that needs to be tested and
