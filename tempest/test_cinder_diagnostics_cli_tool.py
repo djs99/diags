@@ -16,13 +16,13 @@
 import mock
 import time
 import socket
-import ConfigParser
 import sys
 import shutil
 import paramiko
 import os
 import json
 #from tempest.api.volume import base
+from six.moves import configparser
 from tempest.tests import base
 from tempest import test
 from tempest import config
@@ -1291,7 +1291,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         '''
 
         try:
-            config = ConfigParser.RawConfigParser(allow_no_value=True)
+            config = parser = configparser.ConfigParser()
 
             for section in dict.keys():
                 config.add_section(section)
