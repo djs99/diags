@@ -230,7 +230,7 @@ def pip_check(client, node, pkg_info):
             logger.info("Checking for software package '%s' on node %s using "
                         "pip" % (name, node))
             response = client.execute("pip list | grep " + name)
-            if response and re.match(pkg['name']+'\s', response):
+            if response and re.match(name + '\s', response):
                 pkg['installed'] = 'pass'
                 pkg['name'] = name
                 if pkg_info[1]:
