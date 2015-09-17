@@ -60,9 +60,6 @@ setup(
 
     namespace_packages=[],
     packages=find_packages(),
-    # package_data={
-    #     '': ['config/*.conf']
-    # },
     data_files=[('config', ['config/cli.conf'])],
     include_package_data=True,
 
