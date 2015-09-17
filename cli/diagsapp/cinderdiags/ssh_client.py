@@ -67,4 +67,5 @@ class Client(object):
                 return ''.join(stdout) + ''.join(stderr)
 
             except (paramiko.ssh_exception.SSHException, socket.timeout):
-                raise Exception("SSH Error: Unable to execute remote command")
+                raise Exception("SSH Error: Unable to execute remote command "
+                                "(%s)" % command)

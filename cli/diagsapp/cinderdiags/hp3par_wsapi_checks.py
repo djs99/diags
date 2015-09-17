@@ -42,7 +42,6 @@ except ImportError:
 #     raise ImportError('hp3parclient package is not installed')
 
 
-
 class WSChecker(object):
 
     def __init__(self, client, conf, node, test=False):

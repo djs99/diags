@@ -38,7 +38,10 @@ def check_all(client, node, service):
     checker = get_check_type(client, node)
     if checker is not None:
         for pkg in defaults[service]:
-            checked.append(checker(client, node, pkg))
+            check = checker(client, node, pkg)
+            if check['installed'] == 'unknown':
+                check = pip_check(client, node, pkg)
+            checked.append(check)
     else:
         checked.append({
             'node': node,
@@ -60,14 +63,17 @@ def check_one(client, node, pkg_info):
 
     checker = get_check_type(client, node)
     if checker is not None:
-        return checker(client, node, pkg_info)
+        check = checker(client, node, pkg_info)
+        if check['installed'] == 'unknown':
+            check = pip_check(client, node, pkg_info)
     else:
-        return {
+        check = {
             'node': node,
             'name': pkg_info[0],
             'installed': 'ERROR',
             'version': 'ERROR',
         }
+    return check
 
 
 def dpkg_check(client, node, pkg_info):
@@ -85,18 +91,22 @@ def dpkg_check(client, node, pkg_info):
         'version': 'N/A',
     }
 
-    logger.info("Checking for software package %s on node %s using "
-                "dpkg-query" % (pkg['name'], node))
+    names = [x.strip() for x in pkg_info[0].split('||')]
     try:
-        response = client.execute("dpkg-query -W -f='${Status} ${Version}' " +
-                                  pkg['name'])
-        if 'install ok installed' in response:
-            pkg['installed'] = 'pass'
-            if pkg_info[1]:
-                pattern = re.compile('\D([\d\.]+\d)\D')
-                pkg['version'] = version_check(response, pattern, pkg_info[1])
-        else:
-            pkg = pip_check(client, node, pkg_info)
+        for name in names:
+            logger.info("Checking for software package '%s' on node %s using "
+                        "dpkg-query" % (name, node))
+            response = client.execute("dpkg-query -W -f='${Status}"
+                                      "${Version}' " + name)
+            if 'install ok installed' in response:
+                pkg['installed'] = 'pass'
+                pkg['name'] = name
+                if pkg_info[1]:
+                    pattern = re.compile('\D([\d\.]+\d)\D')
+                    pkg['version'] = version_check(response,
+                                                   pattern,
+                                                   pkg_info[1])
+                break
 
     except Exception as e:
         logger.warning("%s -- Unable to check %s on node %s" % (e,
@@ -123,21 +133,25 @@ def yum_check(client, node, pkg_info):
         'version': 'N/A',
     }
 
-    logger.info("Checking for software package %s on node %s using "
-                "yum" % (pkg['name'], node))
-
+    names = [x.strip() for x in pkg_info[0].split('||')]
     try:
-        response = client.execute("yum list installed " +
-                                  pkg['name'])
-        if 'Available Packages' in response:
-            pkg['installed'] = 'fail'
-        elif 'Installed Packages' in response:
-            pkg['installed'] = 'pass'
-            if pkg_info[1]:
-                pattern = re.compile(pkg_info[0]+'\.[\w+]+\D*([\d\.]+\d)\D')
-                pkg['version'] = version_check(response, pattern, pkg_info[1])
-        else:
-            pkg = pip_check(client, node, pkg_info)
+        for name in names:
+            logger.info("Checking for software package '%s' on node %s using "
+                        "yum" % (name, node))
+            response = client.execute("yum list installed " +
+                                      name)
+            if 'Available Packages' in response:
+                pkg['installed'] = 'fail'
+                pkg['name'] = name
+            elif 'Installed Packages' in response:
+                pkg['installed'] = 'pass'
+                pkg['name'] = name
+                if pkg_info[1]:
+                    pattern = re.compile(name + '\.[\w+]+\D*([\d\.]+\d)\D')
+                    pkg['version'] = version_check(response,
+                                                   pattern,
+                                                   pkg_info[1])
+                break
 
     except Exception as e:
         logger.warning("%s -- Unable to check %s on node %s" % (e,
@@ -164,22 +178,26 @@ def zypper_check(client, node, pkg_info):
         'version': 'N/A',
     }
 
-    logger.info("Checking for software package %s on node %s using "
-                "zypper" % (pkg['name'], node))
+    names = [x.strip() for x in pkg_info[0].split('||')]
 
     try:
-        response = client.execute("zypper info " +
-                                  pkg['name'])
-        if 'Installed: No' in response:
-            pkg['installed'] = 'fail'
-
-        elif 'Installed: Yes' in response:
-            pkg['installed'] = 'pass'
-            if pkg_info[1]:
-                pattern = re.compile('Version: \D*([\d\.]+\d)\D')
-                pkg['version'] = version_check(response, pattern, pkg_info[1])
-        else:
-            pkg = pip_check(client, node, pkg_info)
+        for name in names:
+            logger.info("Checking for software package '%s' on node %s using "
+                        "zypper" % (name, node))
+            response = client.execute("zypper info " +
+                                      name)
+            if 'Installed: No' in response:
+                pkg['installed'] = 'fail'
+                pkg['name'] = name
+            elif 'Installed: Yes' in response:
+                pkg['installed'] = 'pass'
+                pkg['name'] = name
+                if pkg_info[1]:
+                    pattern = re.compile('Version: \D*([\d\.]+\d)\D')
+                    pkg['version'] = version_check(response,
+                                                   pattern,
+                                                   pkg_info[1])
+                break
 
     except Exception as e:
         logger.warning("%s -- Unable to check %s on node %s" % (e,
@@ -206,17 +224,22 @@ def pip_check(client, node, pkg_info):
         'version': 'N/A',
     }
 
-    logger.info("Checking for software package %s on node %s using "
-                "pip" % (pkg['name'], node))
-
+    names = [x.strip() for x in pkg_info[0].split('||')]
     try:
-        response = client.execute("pip list | grep " + pkg['name'])
-        if response and re.match(pkg['name']+'\s', response):
-            pkg['installed'] = 'pass'
-            if pkg_info[1]:
-                pattern = re.compile('\(([\d\.]+)\)')
-                pkg['version'] = version_check(response, pattern, pkg_info[1])
-        else:
+        for name in names:
+            logger.info("Checking for software package '%s' on node %s using "
+                        "pip" % (name, node))
+            response = client.execute("pip list | grep " + name)
+            if response and re.match(pkg['name']+'\s', response):
+                pkg['installed'] = 'pass'
+                pkg['name'] = name
+                if pkg_info[1]:
+                    pattern = re.compile('\(([\d\.]+)\)')
+                    pkg['version'] = version_check(response,
+                                                   pattern,
+                                                   pkg_info[1])
+                break
+        if pkg['installed'] == 'unknown':
             pkg['installed'] = "fail"
     except Exception as e:
         logger.warning("%s -- Unable to check %s on node %s" % (e,
@@ -246,7 +269,7 @@ def get_check_type(client, node):
     """
     os_names = {
         "debian": dpkg_check,
-        "rhel fedora": yum_check,
+        "fedora": yum_check,
         "suse": zypper_check,
     }
     check_type = None

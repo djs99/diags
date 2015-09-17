@@ -11,7 +11,6 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
 from __future__ import absolute_import
 import logging
 import os
@@ -44,7 +43,6 @@ class Reader(object):
         if os.path.isfile(path):
             parser.read(path)
             self.get_nodes()
-            self.get_clients()
             if len(self.cinder_nodes) < 1:
                 logger.warning("No Cinder nodes are configured in cli.conf")
             if len(self.nova_nodes) < 1:
@@ -62,10 +60,10 @@ class Reader(object):
             elif parser.get(section_name, 'service').lower() == 'nova':
                 self.nova_nodes.append(section_name)
 
-    def get_clients(self):
+    def get_clients(self, nodes):
         """Create SSH client connections for nodes.
         """
-        for node in set(self.nova_nodes + self.cinder_nodes):
+        for node in nodes:
             try:
                 client = ssh_client.Client(parser.get(node, 'host_ip'),
                                            parser.get(node, 'ssh_user'),
@@ -73,6 +71,7 @@ class Reader(object):
                 self.clients[node] = client
             except Exception as e:
                 logger.warning("%s: %s" % (e, node))
+                pass
 
     def copy_files(self):
         """Copy the cinder.conf file of each cinder node to a local directory.
@@ -101,6 +100,8 @@ class Reader(object):
             checklist = self.cinder_nodes
         else:
             checklist = set(self.nova_nodes + self.cinder_nodes)
+        self.get_clients(checklist)
+
         checks = []
         for node in checklist:
             try:
@@ -123,12 +124,15 @@ class Reader(object):
         all by default
         :return: list of dictionaries
         """
+
+        self.get_clients(self.cinder_nodes)
+        self.copy_files()
         checks = []
         for node in self.cinder_files:
             checker = wsapi_checks.WSChecker(self.clients[node],
-                                           self.cinder_files[node],
-                                           node,
-                                           self.is_test)
+                                             self.cinder_files[node],
+                                             node,
+                                             self.is_test)
             if section_name == 'arrays':
                 checks += checker.check_all()
             else:
