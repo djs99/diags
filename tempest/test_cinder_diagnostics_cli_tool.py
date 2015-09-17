@@ -507,12 +507,9 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         self.assertEqual(len(output), 3)
 
         for row in output:
-            if not "Driver" in row['Software']:
                 self.assertEqual("pass", row['Installed'])
                 self.assertEqual("pass", row['Version'])
-            else:
-                self.assertEqual("fail", row['Installed'])
-                self.assertEqual("N/A", row['Version'])
+
 
     @test.attr(type="gate")
     def test_diags_check_all_packages_installed_with_supported_version_on_suse(self):
@@ -524,9 +521,9 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         self._mock_exec_command(
             {
                 'cat /etc/*release': 'ID_LIKE=suse',
-                'sysfsutils': "Installed : Yes, Version : 2.2.0",
-                'hp3parclient': "hp3parclient (3.2.2)",
-                'sg3-utils': "Installed : Yes, Version : 2.2.0",
+                'sysfsutils': "Installed: Yes  Version: 2.2.0",
+                'hp3parclient':"hp3parclient (3.2.2)",
+                'sg3-utils': "Installed: Yes  Version: 2.2.0",
             })
         # Execute the CLI commnad
         cli_exit_value, output = self._execute_cli_command(command_arvgs)
@@ -535,12 +532,61 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         self.assertEqual(len(output), 3)
 
         for row in output:
-            if not "Driver" in row['Software']:
                 self.assertEqual("pass", row['Installed'])
                 self.assertEqual("pass", row['Version'])
-            else:
+
+
+
+    @test.attr(type="gate")
+    def test_diags_check_all_packages_not_installed_with_supported_version_on_suse(self):
+        ''' Test cinder diagnostic cli tool check software command for all the packages with supported version SUSE operating system'''
+
+        command_arvgs = ['software-check', '-test']
+
+        # Mock paramiko ssh client to return cinder file we want
+        self._mock_exec_command(
+            {
+                'cat /etc/*release': 'ID_LIKE=suse',
+                'sysfsutils': "package 'sysfsutils' not found",
+                'hp3parclient':"",
+                'sg3-utils': "package 'sg3-utils' not found",
+            })
+        # Execute the CLI commnad
+        cli_exit_value, output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(0, cli_exit_value)
+        self.assertEqual(len(output), 3)
+
+        for row in output:
                 self.assertEqual("fail", row['Installed'])
                 self.assertEqual("N/A", row['Version'])
+
+
+
+    @test.attr(type="gate")
+    def test_diags_check_all_packages_installed_with_not_supported_version_on_suse(self):
+        ''' Test cinder diagnostic cli tool check software command for all the packages with supported version SUSE operating system'''
+
+        command_arvgs = ['software-check', '-test']
+
+        # Mock paramiko ssh client to return cinder file we want
+        self._mock_exec_command(
+            {
+                'cat /etc/*release': 'ID_LIKE=suse',
+                'sysfsutils': "Installed: Yes  Version: 1.2.0",
+                'hp3parclient':"hp3parclient (1.2.2)",
+                'sg3-utils': "Installed: Yes  Version: 1.2.0",
+            })
+        # Execute the CLI commnad
+        cli_exit_value, output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(0, cli_exit_value)
+        self.assertEqual(len(output), 3)
+
+        for row in output:
+                self.assertEqual("pass", row['Installed'])
+                self.assertEqual("fail", row['Version'])
+
 
     @test.attr(type="gate")
     def test_diags_check_all_packages_installed_with_supported_version_on_centos(self):
@@ -552,9 +598,9 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         self._mock_exec_command(
             {
                 'cat /etc/*release': 'ID_LIKE=rhel fedora',
-                'sysfsutils': "Installed: Yes 2.2.0",
+                'sysfsutils': "Installed Packages sysfsutils.x86_64  2.2.2",
                 'hp3parclient': "hp3parclient (3.2.2)",
-                'sg3-utils': "install ok installed 2.2.0",
+                'sg3-utils': "Installed Packages sg3-utils.x86_64  2.2.2",
             })
         # Execute the CLI commnad
         cli_exit_value, output = self._execute_cli_command(command_arvgs)
@@ -563,12 +609,60 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         self.assertEqual(len(output), 3)
 
         for row in output:
-            if not "Driver" in row['Software']:
                 self.assertEqual("pass", row['Installed'])
                 self.assertEqual("pass", row['Version'])
-            else:
+
+
+    @test.attr(type="gate")
+    def test_diags_check_all_packages_not_installed_with_supported_version_on_centos(self):
+        ''' Test cinder diagnostic cli tool check software command for all the packages with supported version centos operating system '''
+
+        command_arvgs = ['software-check', '-test']
+
+        # Mock paramiko ssh client to return cinder file we want
+        self._mock_exec_command(
+            {
+                'cat /etc/*release': 'ID_LIKE=rhel fedora',
+                'sysfsutils': "Error: No matching Packages to list",
+                'hp3parclient': "",
+                'sg3-utils': "Error: No matching Packages to list",
+            })
+        # Execute the CLI commnad
+        cli_exit_value, output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(0, cli_exit_value)
+        self.assertEqual(len(output), 3)
+
+        for row in output:
                 self.assertEqual("fail", row['Installed'])
                 self.assertEqual("N/A", row['Version'])
+
+    @test.attr(type="gate")
+    def test_diags_check_all_packages_installed_with_unsupported_version_on_centos(self):
+        ''' Test cinder diagnostic cli tool check software command for all the packages with supported version centos operating system '''
+
+        command_arvgs = ['software-check', '-test']
+
+        # Mock paramiko ssh client to return cinder file we want
+        self._mock_exec_command(
+            {
+                'cat /etc/*release': 'ID_LIKE=rhel fedora',
+                'sysfsutils': "Installed Packages sysfsutils.x86_64  1.2.2",
+                'hp3parclient': "hp3parclient (1.2.2)",
+                'sg3-utils': "Installed Packages sg3-utils.x86_64  1.2.2",
+            })
+        # Execute the CLI commnad
+        cli_exit_value, output = self._execute_cli_command(command_arvgs)
+
+        self.assertEqual(0, cli_exit_value)
+        self.assertEqual(len(output), 3)
+
+        for row in output:
+                self.assertEqual("pass", row['Installed'])
+                self.assertEqual("fail", row['Version'])
+
+
+
 
     @test.attr(type="gate")
     def test_diags_sysfsutils_package_installed_with_supported_version(self):
