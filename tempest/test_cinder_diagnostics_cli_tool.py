@@ -936,6 +936,43 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
             "N/A")
 
     @test.attr(type="gate")
+    def test_diags_check_error_with_specific_package_and_missing_service(self):
+        """Test cinder diagnostic cli tool check software command for
+           specific package and missing service"""
+
+        command = 'cinderdiags software-check -name vim'
+        output, return_code = self._exec_shell_command(command)
+        output_len = len(output)
+        self.assertEqual('cinderdiags software-check: error: unrecognized\
+ arguments: -name vim', output[output_len-1].strip())
+        self.assertEqual(2, return_code)
+
+    @test.attr(type="gate")
+    def test_diags_check_error_with_specific_service_and_missing_pacakage(
+            self):
+        """Test cinder diagnostic cli tool check software command for
+           specific service and missing pacakage"""
+
+        command = 'cinderdiags software-check --service nova'
+        output, return_code = self._exec_shell_command(command)
+        output_len = len(output)
+        self.assertEqual('cinderdiags software-check: error: unrecognized\
+ arguments: --service nova', output[output_len-1].strip())
+        self.assertEqual(2, return_code)
+
+    @test.attr(type="gate")
+    def test_diags_check_error_with_missing_pacakage_and_service(self):
+        """Test cinder diagnostic cli tool check software command for
+           specific minimum version and missing pacakage and service"""
+
+        command = 'cinderdiags software-check -package-min-version 0'
+        output, return_code = self._exec_shell_command(command)
+        output_len = len(output)
+        self.assertEqual('cinderdiags software-check: error: unrecognized\
+ arguments: -package-min-version 0', output[output_len-1].strip())
+        self.assertEqual(2, return_code)
+
+    @test.attr(type="gate")
     def test_diags_cli_check_array_command_with_cinder_file_not_found(self):
         ''' Test cinder diagnostic cli tool check array command for non-existent cinder.conf file '''
 
@@ -1211,6 +1248,29 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         finally:
             self._remove_file(output_file)
+    
+    def _exec_shell_command(self, cmd):
+        """
+        :param cmd: This includes command as an argument and execute it on the
+        terminal
+        :return: Error message and error code after executing a command on the
+        terminal
+        """
+        try:
+            proc = subprocess.Popen(cmd, stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE, shell=True)
+            proc.wait()
+        except Exception:
+            pass
+        finally:
+            return_code = proc.returncode
+            output = proc.stdout.readlines()
+            if output != []:
+                line = output
+            else:
+                line = proc.stderr.readlines()
+        return line, return_code
 
     def _get_file_name(self):
         '''
