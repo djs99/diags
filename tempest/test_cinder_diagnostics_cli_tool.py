@@ -15,6 +15,7 @@
 
 import mock
 import time
+import subprocess
 import socket
 import sys
 import shutil
