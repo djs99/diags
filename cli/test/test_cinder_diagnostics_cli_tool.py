@@ -14,7 +14,7 @@
 #    under the License.
 
 
-from  base import BaseCinderDiagnosticsCliToolTest
+from base import BaseCinderDiagnosticsCliToolTest
 from cinderdiags.ssh_client import Client
 import cinderdiags.pkg_checks as pkg_checks
 import cinderdiags.constant as constant
@@ -56,7 +56,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         self._remove_file(constant.TEST_CLI_CONFIG)
 
         super(CinderDiagnostics3PARCliToolTest, self).tearDown()
-
 
     def test_diags_cli_check_array_command(self):
         ''' Test cinder diagnostic cli tool check array command when all the configuration values of 3par array are correct in cinde.conf '''
@@ -100,7 +99,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
                 self.assertEqual('N/A', row['iSCSI IP(s)'])
             else:
                 self.assertEqual('pass', row['iSCSI IP(s)'])
-
 
     def test_check_array_command_for_specific_array_name(self):
         ''' Test cinder diagnostic cli tool check array command for specific array name '''
@@ -154,7 +152,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         self.assertEqual(1, cli_exit_value)
         self.assertEqual(len(output), 0)
 
-
     def test_diags_cli_check_array_command_for_bad_ws_api(self):
         ''' Test cinder diagnostic cli tool check array command when the ws api value of 3par array in cinder.conf is wrong '''
 
@@ -201,7 +198,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         self.assertEqual(0, cli_exit_value)
         self.assertEqual(output, json_cli_output)
 
-
     def test_diags_cli_check_array_command_for_wrong_credential(self):
         ''' Test cinder diagnostic cli tool check array command when the credentials of 3par array in cinder.conf is wrong '''
 
@@ -243,7 +239,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
                 self.assertEqual('fail', row['Credentials'])
                 self.assertEqual('pass', row['WS API'])
                 self.assertEqual('N/A', row['iSCSI IP(s)'])
-
 
     def test_diags_cli_check_array_command_for_bad_CPG(self):
         ''' Test cinder diagnostic cli tool check array command when the cpg value of 3par array in cinder.conf is wrong '''
@@ -287,7 +282,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
                 self.assertEqual('fail', row['Credentials'])
                 self.assertEqual('pass', row['WS API'])
                 self.assertEqual('N/A', row['iSCSI IP(s)'])
-
 
     def test_diags_cli_check_array_command_for_one_bad_CPG(self):
         """Test cinder diagnostic cli tool check array command when the cpg
@@ -335,7 +329,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
                 self.assertEqual('pass', row['WS API'])
                 self.assertEqual('N/A', row['iSCSI IP(s)'])
 
-
     def test_diags_cli_check_array_command_for_wrong_iscsi_IP(self):
         ''' Test cinder diagnostic cli tool check array command when the ISCSI IP of 3par array in cinder.conf is wrong '''
 
@@ -378,7 +371,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
                 self.assertEqual('pass', row['Credentials'])
                 self.assertEqual('pass', row['WS API'])
                 self.assertEqual('N/A', row['iSCSI IP(s)'])
-
 
     def test_diags_cli_check_array_command_for_wrong_hp3pardriver(self):
         ''' Test cinder diagnostic cli tool check array command when the volume driver value of 3par array in cinder.conf is wrong '''
@@ -428,7 +420,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
                 self.assertEqual('N/A', row['iSCSI IP(s)'])
                 self.assertEqual('fail', row['Driver'])
 
-
     def test_diags_cli_check_array_command_for_wrong_hp3pardriver(self):
         ''' Test cinder diagnostic cli tool check array command when the volume driver value of 3par array in cinder.conf is correct '''
 
@@ -474,7 +465,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
                 self.assertEqual('N/A', row['iSCSI IP(s)'])
                 self.assertEqual('pass', row['Driver'])
 
-
     def test_diags_check_all_packages_installed_with_supported_version_on_ubuntu(
             self):
         ''' Test cinder diagnostic cli tool check software command for all the packages with supported version on ubuntu operating system'''
@@ -498,7 +488,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         for row in output:
             self.assertEqual("pass", row['Installed'])
             self.assertEqual("pass", row['Version'])
-
 
     def test_diags_check_all_packages_installed_with_supported_version_on_suse(
             self):
@@ -524,7 +513,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             self.assertEqual("pass", row['Installed'])
             self.assertEqual("pass", row['Version'])
 
-
     def test_diags_check_all_packages_not_installed_with_supported_version_on_suse(
             self):
         ''' Test cinder diagnostic cli tool check software command for all the packages with supported version SUSE operating system'''
@@ -548,7 +536,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         for row in output:
             self.assertEqual("fail", row['Installed'])
             self.assertEqual("N/A", row['Version'])
-
 
     def test_diags_check_all_packages_installed_with_not_supported_version_on_suse(
             self):
@@ -574,7 +561,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             self.assertEqual("pass", row['Installed'])
             self.assertEqual("fail", row['Version'])
 
-
     def test_diags_check_all_packages_installed_with_supported_version_on_centos(
             self):
         ''' Test cinder diagnostic cli tool check software command for all the packages with supported version centos operating system '''
@@ -598,7 +584,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         for row in output:
             self.assertEqual("pass", row['Installed'])
             self.assertEqual("pass", row['Version'])
-
 
     def test_diags_check_all_packages_not_installed_with_supported_version_on_centos(
             self):
@@ -625,7 +610,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             self.assertEqual("fail", row['Installed'])
             self.assertEqual("N/A", row['Version'])
 
-
     def test_diags_check_all_packages_installed_with_unsupported_version_on_centos(
             self):
         ''' Test cinder diagnostic cli tool check software command for all the packages with supported version centos operating system '''
@@ -650,7 +634,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             self.assertEqual("pass", row['Installed'])
             self.assertEqual("fail", row['Version'])
 
-
     def test_diags_sysfsutils_package_installed_with_supported_version(self):
         ''' Test cinder diagnostic cli tool check software command for sysfsutils package with supported version '''
 
@@ -670,7 +653,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         # evaluates the output
         self._check_software_package(
             'sysfsutils', command_arvgs, ssh_mocked_response)
-
 
     def test_diags_sysfsutils_package_installed_with_unsupported_version(self):
         ''' Test cinder diagnostic cli tool check software command for sysfsutils package with unsupported version '''
@@ -695,7 +677,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             ssh_mocked_response,
             "pass",
             "fail")
-
 
     def test_diags_sysfsutils_package_not_installed(self):
         ''' Test cinder diagnostic cli tool check software command for non-existent sysfsutils package '''
@@ -722,7 +703,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             "fail",
             "N/A")
 
-
     def test_diags_sysfsutils_package_installed_with_no_min_version_check(
             self):
         ''' Test cinder diagnostic cli tool check software command for sysfsutils package with no defined value for its version '''
@@ -746,7 +726,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             "pass",
             "N/A")
 
-
     def test_diags_sg3_utils_package_installed_with_supported_version(self):
         ''' Test cinder diagnostic cli tool check software command for sg3utils package with supported version '''
 
@@ -766,7 +745,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         # evaluates the output
         self._check_software_package(
             'sg3-utils', command_arvgs, ssh_mocked_response)
-
 
     def test_diags_sg3_utils_package_installed_with_unsupported_version(self):
         ''' Test cinder diagnostic cli tool check software command for sg3sutils package with unsupported version '''
@@ -791,7 +769,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             ssh_mocked_response,
             "pass",
             "fail")
-
 
     def test_diags_sg3_utils_package_not_installed(self):
         ''' Test cinder diagnostic cli tool check software command for non-existent sg3utils package '''
@@ -818,7 +795,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             "fail",
             "N/A")
 
-
     def test_diags_sg3_utils_package_installed_with_no_min_version_check(self):
         ''' Test cinder diagnostic cli tool check software command for sg3utils with no defined value for its version '''
 
@@ -840,7 +816,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             ssh_mocked_response,
             "pass",
             "N/A")
-
 
     def test_diags_hp3parclient_package_installed_with_unsupported_version(
             self):
@@ -868,7 +843,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             "pass",
             "fail")
 
-
     def test_diags_hp3parclients_package_not_installed(self):
         ''' Test cinder diagnostic cli tool check software command for non-existent hp3parclient package '''
 
@@ -893,7 +867,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             ssh_mocked_response,
             "fail",
             "N/A")
-
 
     def test_diags_hp3parclients_package_installed_with_no_min_version_check(
             self):
@@ -921,7 +894,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             "pass",
             "N/A")
 
-
     def test_diags_check_error_with_specific_package_and_missing_service(self):
         """Test cinder diagnostic cli tool check software command for
            specific package and missing service"""
@@ -930,9 +902,8 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         output, return_code = self._exec_shell_command(command)
         output_len = len(output)
         self.assertEqual('cinderdiags software-check: error: unrecognized\
- arguments: -name vim', output[output_len-1].strip())
+ arguments: -name vim', output[output_len - 1].strip())
         self.assertEqual(2, return_code)
-
 
     def test_diags_check_error_with_specific_service_and_missing_pacakage(
             self):
@@ -943,9 +914,8 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         output, return_code = self._exec_shell_command(command)
         output_len = len(output)
         self.assertEqual('cinderdiags software-check: error: unrecognized\
- arguments: --service nova', output[output_len-1].strip())
+ arguments: --service nova', output[output_len - 1].strip())
         self.assertEqual(2, return_code)
-
 
     def test_diags_check_error_with_missing_pacakage_and_service(self):
         """Test cinder diagnostic cli tool check software command for
@@ -955,9 +925,8 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         output, return_code = self._exec_shell_command(command)
         output_len = len(output)
         self.assertEqual('cinderdiags software-check: error: unrecognized\
- arguments: -package-min-version 0', output[output_len-1].strip())
+ arguments: -package-min-version 0', output[output_len - 1].strip())
         self.assertEqual(2, return_code)
-
 
     def test_diags_cli_check_array_command_with_cinder_file_not_found(self):
         ''' Test cinder diagnostic cli tool check array command for non-existent cinder.conf file '''
@@ -972,7 +941,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         self.assertEqual(1, cli_exit_value)
         self.assertEqual(len(output), 0)
 
-
     def test_aaa_diags_cli_tool_with_no_cli_config(self):
         ''' Test cinder diagnostic cli tool command execution with non-existent cli.conf file '''
 
@@ -986,7 +954,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         self.assertEqual(1, cli_exit_value)
         self.assertEqual(len(output), 0)
         constant.CLI_CONFIG = store_value
-
 
     def test_diags_cli_check_array_command_with_wrong_cinder_node_ssh_credentials(
             self):
@@ -1005,7 +972,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         self.assertEqual(1, cli_exit_value)
         self.assertEqual(len(output), 0)
 
-
     def test_diags_cli_ssh_timeout_while_connecting(self):
         ''' Test cinder diagnostic cli tool for SSH connection timeout with hp3parclient '''
 
@@ -1022,7 +988,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
 
         self.assertEqual(1, cli_exit_value)
         self.assertEqual(len(output), 0)
-
 
     def test_diags_cli_tool_with_ssh_connection_fails(self):
         ''' Test cinder diagnostic cli tool for unsuccessful SSH connection with hp3parclient '''
@@ -1041,7 +1006,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
 
         self.assertEqual(1, cli_exit_value)
         self.assertEqual(len(output), 0)
-
 
     def test_diags_cli_tool_with_ssh_timeout_while_executing_command(self):
         ''' Test ssh connection timeout for the execution of cinder diagnostic cli tool command '''
@@ -1062,7 +1026,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         self.assertEqual(1, cli_exit_value)
         self.assertEqual(len(output), 0)
 
-
     def test_diags_cli_tool_wrong_command(self):
         ''' Test wrong command execution for cinder diagnostic cli tool '''
         # remove cli config
@@ -1074,7 +1037,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             self.fail()
         except:
             self.assertEqual(-1, cli_exit_value)
-
 
     def test_successful_ssh_connection_with_mock(self):
         ''' Test SSH Connection with mock '''
@@ -1095,7 +1057,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             if client is not None:
                 client.disconnect()
 
-
     def test_failed_ssh_connection_with_mock(self):
         ''' Test SSH Connection with mock '''
 
@@ -1115,5 +1076,6 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             if client is not None:
                 client.disconnect()
 
-suite = unittest.TestLoader().loadTestsFromTestCase(CinderDiagnostics3PARCliToolTest)
+suite = unittest.TestLoader().loadTestsFromTestCase(
+    CinderDiagnostics3PARCliToolTest)
 unittest.TextTestRunner(verbosity=2).run(suite)

@@ -945,7 +945,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         output, return_code = self._exec_shell_command(command)
         output_len = len(output)
         self.assertEqual('cinderdiags software-check: error: unrecognized\
- arguments: -name vim', output[output_len-1].strip())
+ arguments: -name vim', output[output_len - 1].strip())
         self.assertEqual(2, return_code)
 
     @test.attr(type="gate")
@@ -958,7 +958,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         output, return_code = self._exec_shell_command(command)
         output_len = len(output)
         self.assertEqual('cinderdiags software-check: error: unrecognized\
- arguments: --service nova', output[output_len-1].strip())
+ arguments: --service nova', output[output_len - 1].strip())
         self.assertEqual(2, return_code)
 
     @test.attr(type="gate")
@@ -970,7 +970,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         output, return_code = self._exec_shell_command(command)
         output_len = len(output)
         self.assertEqual('cinderdiags software-check: error: unrecognized\
- arguments: -package-min-version 0', output[output_len-1].strip())
+ arguments: -package-min-version 0', output[output_len - 1].strip())
         self.assertEqual(2, return_code)
 
     @test.attr(type="gate")
@@ -1249,7 +1249,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         finally:
             self._remove_file(output_file)
-    
+
     def _exec_shell_command(self, cmd):
         """
         :param cmd: This includes command as an argument and execute it on the
