@@ -941,19 +941,17 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         self.assertEqual(1, cli_exit_value)
         self.assertEqual(len(output), 0)
 
-    def test_aaa_diags_cli_tool_with_no_cli_config(self):
+    def test_diags_cli_tool_with_no_cli_config(self):
         ''' Test cinder diagnostic cli tool command execution with non-existent cli.conf file '''
 
         # remove cli config
-        store_value = constant.CLI_CONFIG
-        constant.CLI_CONFIG = "fake.conf"
+        self._remove_file(constant.CLI_CONFIG)
         # Execute the CLI commnad
         command_arvgs = ['options-check', "-test"]
         cli_exit_value, output = self._execute_cli_command(command_arvgs)
 
         self.assertEqual(1, cli_exit_value)
         self.assertEqual(len(output), 0)
-        constant.CLI_CONFIG = store_value
 
     def test_diags_cli_check_array_command_with_wrong_cinder_node_ssh_credentials(
             self):
