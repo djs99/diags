@@ -18,6 +18,7 @@ from  base import BaseCinderDiagnosticsCliToolTest
 from cinderdiags.ssh_client import Client
 import cinderdiags.pkg_checks as pkg_checks
 import cinderdiags.constant as constant
+import unittest
 import socket
 import paramiko
 
@@ -1114,3 +1115,5 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             if client is not None:
                 client.disconnect()
 
+suite = unittest.TestLoader().loadTestsFromTestCase(CinderDiagnostics3PARCliToolTest)
+unittest.TextTestRunner(verbosity=2).run(suite)

@@ -17,10 +17,8 @@ import unittest
 import mock
 import time
 import subprocess
-import socket
 import sys
 import shutil
-import paramiko
 import re
 import os
 import json
