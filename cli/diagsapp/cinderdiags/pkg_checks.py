@@ -12,10 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from __future__ import absolute_import
 import logging
 import re
-from . import constant
+from cinderdiags import constant
 
 
 logger = logging.getLogger(__name__)

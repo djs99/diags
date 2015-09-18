@@ -12,11 +12,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from __future__ import absolute_import
 import argparse
 import logging
 
-from . import conf_reader
+from cinderdiags import conf_reader
 from cliff.lister import Lister
 
 
@@ -70,7 +69,6 @@ class CheckSoftware(Lister):
                                        parsed_args.serv,
                                        parsed_args.version)
 
-        reader.cleanup()
         columns = ('Node', 'Software', 'Installed', 'Version')
         data = []
         for pkg in result:

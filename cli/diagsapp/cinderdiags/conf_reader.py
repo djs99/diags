@@ -11,14 +11,13 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from __future__ import absolute_import
 import logging
 import os
 
-from . import constant
-from . import pkg_checks
-from . import ssh_client
-from . import hp3par_wsapi_checks as wsapi_checks
+from cinderdiags import constant
+from cinderdiags import pkg_checks
+from cinderdiags import ssh_client
+from cinderdiags import hp3par_wsapi_checks as wsapi_checks
 
 from six.moves import configparser
 
@@ -115,6 +114,7 @@ class Reader(object):
                                                        (name, version)))
             except Exception as e:
                 logger.warning("%s: %s" % (e, node))
+        self.cleanup()
         return checks
 
     def options_check(self, section_name='arrays'):
@@ -139,6 +139,7 @@ class Reader(object):
                 found = checker.check_section(section_name)
                 if found:
                     checks.append(found)
+        self.cleanup()
         return checks
 
     def cleanup(self):
@@ -146,5 +147,7 @@ class Reader(object):
         """
         for node in self.cinder_files:
             os.remove(self.cinder_files[node])
+            self.cinder_files = {}
         for node in self.clients:
             self.clients[node].disconnect()
+            self.clients = {}

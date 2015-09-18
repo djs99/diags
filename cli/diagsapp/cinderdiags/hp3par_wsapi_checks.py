@@ -19,12 +19,11 @@ arrays.
 Requires the python hp3parclient: sudo pip install hp3parclient
 Assumes the volume_driver is correctly set
 """
-from __future__ import absolute_import
+# from __future__ import absolute_import
 
 import logging
-# from oslo_utils import importutils
 from six.moves import configparser
-from . import hp3par_testclient as testclient
+from cinderdiags import hp3par_testclient as testclient
 
 logger = logging.getLogger(__name__)
 
@@ -33,13 +32,6 @@ try:
     from hp3parclient import exceptions as hpexceptions
 except ImportError:
     logger.error('hp3parclient package not found (pip install hp3parclient)')
-# hp3parclient = importutils.try_import("hp3parclient")
-# if hp3parclient:
-#     from hp3parclient import client as hpclient
-#     from hp3parclient import exceptions as hpexceptions
-#     from . import hp3par_testclient as testclient
-# else:
-#     raise ImportError('hp3parclient package is not installed')
 
 
 class WSChecker(object):
@@ -89,6 +81,8 @@ class WSChecker(object):
             "driver": "unknown"
         }
         if section_name in self.hp3pars:
+            logger.debug("Checking 3PAR options for backend section %s" %
+                         section_name)
             tests["driver"] = self.has_driver(section_name)
             client = self.get_client(section_name, self.is_test)
             if client:
@@ -103,7 +97,6 @@ class WSChecker(object):
                     client.logout()
                 else:
                     tests["credentials"] = "fail"
-
             else:
                 tests["url"] = "fail"
             if 'hp_3par_fc' in self.parser.get(section_name, 'volume_driver'):
@@ -112,7 +105,6 @@ class WSChecker(object):
         else:
             return None
 
-
 # Config testing methods check if option values are valid
     def get_client(self, section_name, test):
         """Tries to create a client and verifies the api url
@@ -120,16 +112,21 @@ class WSChecker(object):
         :return: The client if url is valid, None if invalid/missing
         """
         try:
+            url = self.parser.get(section_name, 'hp3par_api_url')
+            logger.debug("Attempting to connect to %s..." % url)
             if test:
-                cl = testclient.HP3ParClient(self.parser.get(section_name,
-                                                             'hp3par_api_url'))
+                cl = testclient.HP3ParClient(url)
             else:
-                cl = hpclient.HP3ParClient(self.parser.get(section_name,
-                                                           'hp3par_api_url'))
-
+                cl = hpclient.HP3ParClient(url)
             return cl
         except (hpexceptions.UnsupportedVersion, hpexceptions.HTTPBadRequest,
-                configparser.NoOptionError, TypeError):
+                TypeError) as e:
+            logger.info("Failed to connect to hp3par_api_url for backend "
+                        "section '%s' --- %s" % (section_name, e))
+            return None
+        except configparser.NoOptionError:
+            logger.info("No hp3par_api_url provided for backend section "
+                        "'%s'" % section_name)
             return None
 
     def cred_is_valid(self, section_name, client):
@@ -142,8 +139,13 @@ class WSChecker(object):
                          self.parser.get(section_name, 'hp3par_password'))
             return True
         except (hpexceptions.HTTPForbidden,
-                hpexceptions.HTTPUnauthorized,
-                configparser.NoOptionError):
+                hpexceptions.HTTPUnauthorized):
+            logger.info("Incorrect hp3par_username or hp3par_password "
+                        "provided for backend section '%s'" % section_name)
+            return False
+        except configparser.NoOptionError:
+            logger.info("No hp3par_username or hp3par_password provided for "
+                        "backend section '%s'" % section_name)
             return False
 
     def cpg_is_valid(self, section_name, client):
@@ -151,13 +153,24 @@ class WSChecker(object):
 
         :return: string
         """
-        cpg_list = self.parser.get(section_name, 'hp3par_cpg').split(',')
-        for cpg in cpg_list:
-            try:
-                client.getCPG(cpg.strip())
-            except (hpexceptions.HTTPNotFound, configparser.NoOptionError):
-                return "fail"
-        return "pass"
+        result = "pass"
+        try:
+            cpg_list = [x.strip() for x in
+                        self.parser.get(section_name, 'hp3par_cpg').split(',')]
+            logger.debug("Checking hp3par_cpg option for backend section "
+                         "'%s'" % section_name)
+            for cpg in cpg_list:
+                try:
+                    client.getCPG(cpg)
+                except hpexceptions.HTTPNotFound:
+                    logger.info("Backend section '%s' hp3par_cpg contains an "
+                                "invalid CPG name: '%s'" % (section_name, cpg))
+                    result = "fail"
+        except configparser.NoOptionError:
+            logger.info("No hp3par_cpg provided for backend section '%s'" %
+                        section_name)
+            result = "fail"
+        return result
 
     def iscsi_is_valid(self, section_name, client):
         """Gets the iSCSI target ports from the client, checks the iSCSI IPs.
@@ -165,36 +178,50 @@ class WSChecker(object):
         :return: string
         """
         valid_ips = []
+        result = "pass"
         try:
-            ip_list = self.parser.get(section_name, 'hp3par_iscsi_ips').split(
-                ",")
+            ip_list = [x.strip() for x in
+                       self.parser.get(section_name,
+                                       'hp3par_iscsi_ips').split(',')]
+            logger.debug("Checking iSCSI IP addresses for backend section "
+                         "'%s'" % section_name)
+            for port in client.getPorts()['members']:
+                if (port['mode'] == client.PORT_MODE_TARGET and
+                        port['linkState'] == client.PORT_STATE_READY and
+                        port['protocol'] == client.PORT_PROTO_ISCSI):
+                    valid_ips.append(port['IPAddr'])
+            for ip_addr in ip_list:
+                ip = ip_addr.split(':')
+                if ip[0] not in valid_ips:
+                    logger.info("Backend section '%s' hp3par_iscsi_ips "
+                                "contains an invalid iSCSI IP '%s'" %
+                                (section_name, ip))
+                    result = "fail"
         except configparser.NoOptionError:
-            return "fail"
-        for port in client.getPorts()['members']:
-            if (port['mode'] == client.PORT_MODE_TARGET and
-                    port['linkState'] == client.PORT_STATE_READY and
-                    port['protocol'] == client.PORT_PROTO_ISCSI):
-                valid_ips.append(port['IPAddr'])
-        for ip_addr in ip_list:
-            ip = ip_addr.strip().split(':')
-            if ip[0] not in valid_ips:
-                return "fail"
-        return "pass"
+            logger.info("No hp3par_iscsi_ips provided for backend section "
+                        "'%s" % section_name)
+            result = "fail"
+        return result
 
     def has_driver(self, section_name):
         """Checks that the volume_driver is installed
 
         :return: string
         """
-        path = self.parser.get(section_name, 'volume_driver').split(
-            '.')[-2]
-        response = self.ssh_client.execute('locate ' + path)
-        if path in response:
-            return "pass"
-        elif 'command not found' or 'command-not-found' in response:
-            logger.warning("Could not check %s driver on node %s. Make sure "
-                           "that 'mlocate' is installed on the node." %
-                           (section_name, self.node))
-            return "unknown"
-        else:
-            return "fail"
+        result = "fail"
+        try:
+            path = self.parser.get(section_name, 'volume_driver').split(
+                '.')[-2]
+            response = self.ssh_client.execute('locate ' + path)
+            if path in response:
+                result = "pass"
+            elif 'command not found' or 'command-not-found' in response:
+                logger.warning("Could not check '%s' driver on node'%s'. "
+                               "Make sure that 'mlocate' is installed on the "
+                               "node." % (section_name, self.node))
+                result = "unknown"
+
+        except configparser.NoOptionError:
+            logger.info("No volume_diver provided for backend section %s " %
+                        section_name)
+        return result

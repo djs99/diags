@@ -12,11 +12,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from __future__ import absolute_import
 import argparse
 import logging
 
-from . import conf_reader
+from cinderdiags import conf_reader
 from cliff.lister import Lister
 
 
@@ -60,7 +59,6 @@ class CheckArray(Lister):
     def take_action(self, parsed_args):
         reader = conf_reader.Reader(parsed_args.test)
         result = reader.options_check(parsed_args.name)
-        reader.cleanup()
         if len(result) < 1:
             raise ValueError("%s not found" % parsed_args.name)
         columns = (
