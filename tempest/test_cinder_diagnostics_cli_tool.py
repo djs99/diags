@@ -35,7 +35,7 @@ import cinderdiags.constant as constant
 
 class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
-    ''' Test case class for all 3PAR cinder Diagnostics CLI Tool '''
+    """ Test case class for all 3PAR cinder Diagnostics CLI Tool '"""
 
     cinder_config_file = "cinder.conf"
 
@@ -73,7 +73,10 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command(self):
-        ''' Test cinder diagnostic cli tool check array command when all the configuration values of 3par array are correct in cinde.conf '''
+        """
+            Test cinder diagnostic cli tool check array command when all
+            the configuration values of 3par array are correct in cinde.conf
+        """
 
         # Mock paramiko ssh client to return cinder file we want
         self._mock_get_file(self.cinder_config_file)
@@ -1127,56 +1130,6 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         finally:
             if client is not None:
                 client.disconnect()
-
-    '''
-    @test.attr(type="gate")
-    def test_installed_nova_pkgs(self) :
-        """ Test SSH Connection with mock """
-        self._mock_exec_command({"dpkg-query -W -f='${Status} ${Version}' sysfsutils" :'install ok installed 2.1.0+repack-3' ,
-                                 "dpkg-query -W -f='${Status} ${Version}' sg3-utils" :'install ok installed 2.1.0+repack-3'
-                                 })
-
-        responses = pkg_checks.nova_check('127.0.0.1' , 'mock', 'mock')
-        for response_item in responses :
-            self.assertEqual("pass",response_item.get("installed"))
-            self.assertEqual("pass",response_item.get("version"))
-
-
-    @test.attr(type="gate")
-    def test_uninstalled_nova_pkgs(self) :
-        """ Test SSH Connection with mock """
-        self._mock_exec_command({"dpkg-query -W -f='${Status} ${Version}' sysfsutils" :'dpkg-query: no packages found matching sysutils' ,
-                                 "dpkg-query -W -f='${Status} ${Version}' sg3-utils" :'dpkg-query: no packages found matching sg3-utils'
-                                 })
-        responses = pkg_checks.nova_check('127.0.0.1' , 'fake', 'fake')
-        for response_item in responses :
-            self.assertEqual("fail",response_item.get("installed"))
-
-    @test.attr(type="gate")
-    def test_less_min_version_for_installed_nova_pkg(self) :
-        """ Test SSH Connection with mock """
-
-        self._mock_exec_command({"dpkg-query -W -f='${Status} ${Version}' sysfsutils" :'install ok installed 2.0+repack-3' ,
-                                 "dpkg-query -W -f='${Status} ${Version}' sg3-utils" :'install ok installed 1.0+repack-3'
-                                 })
-
-        responses = pkg_checks.nova_check('127.0.0.1' , 'mock', 'mock')
-        for response_item in responses :
-                 self.assertEqual("fail",response_item.get("version"))
-
-    @test.attr(type="gate")
-    def test_empty_response_for_installed_nova_pkg(self) :
-        """ Test SSH Connection with mock """
-        self._mock_exec_command({"dpkg-query -W -f='${Status} ${Version}' sysfsutils" :'' ,
-                                 "dpkg-query -W -f='${Status} ${Version}' sg3-utils" :''
-                                 })
-
-        responses = pkg_checks.nova_check('127.0.0.1' , 'mock', 'mock')
-        for response_item in responses :
-                 self.assertEqual("fail",response_item.get("installed"))
-                 self.assertEqual(None,response_item.get("version"))
-
-    '''
 
     def _check_software_package(
             self,
