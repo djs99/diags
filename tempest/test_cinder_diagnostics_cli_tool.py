@@ -69,7 +69,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command(self):
-        """Test cinder diagnostic cli tool check array command when all the
+        """Test cinder diagnostic cli tool options-check command when all the
         configuration values of 3par array are correct in cinde.conf."""
 
         # Mock paramiko ssh client to return cinder file we want
@@ -116,7 +116,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_check_array_command_for_specific_array_name(self):
-        """Test cinder diagnostic cli tool check array command for specific
+        """Test cinder diagnostic cli tool options-check command for specific
         array name."""
 
         self._mock_get_file(self.cinder_config_file)
@@ -144,7 +144,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         self.assertEqual('3PAR-SLEEPYKITTY-FC', output[0]['Backend Section'])
 
     def test_check_array_command_with_wrong_arrayname(self):
-        """Test cinder diagnostic cli tool check array command when wrong array
+        """Test cinder diagnostic cli tool options-check command when wrong array
         name is given in the command."""
 
         self._mock_get_file(self.cinder_config_file)
@@ -175,7 +175,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_for_bad_ws_api(self):
-        """Test cinder diagnostic cli tool check array command when the ws api
+        """Test cinder diagnostic cli tool options-check command when the ws api
         value of 3par array in cinder.conf is wrong."""
 
         # Mock paramiko ssh client to return cinder file we want
@@ -225,7 +225,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_for_wrong_credential(self):
-        """Test cinder diagnostic cli tool check array command when the
+        """Test cinder diagnostic cli tool options-check command when the
         credentials of 3par array in cinder.conf is wrong."""
 
         # Mock paramiko ssh client to return cinder file we want
@@ -271,7 +271,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_for_bad_CPG(self):
-        """Test cinder diagnostic cli tool check array command when the cpg
+        """Test cinder diagnostic cli tool options-check command when the cpg
         value of 3par array in cinder.conf is wrong."""
 
         # Mock paramiko ssh client to return cinder file we want
@@ -318,7 +318,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_for_one_bad_CPG(self):
-        """Test cinder diagnostic cli tool check array command when the cpg
+        """Test cinder diagnostic cli tool options-check command when the cpg
         value of 3par array in cinder.conf is wrong."""
 
         # Mock paramiko ssh client to return cinder file we want
@@ -365,7 +365,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_for_wrong_iscsi_IP(self):
-        """Test cinder diagnostic cli tool check array command when the ISCSI
+        """Test cinder diagnostic cli tool options-check command when the ISCSI
         IP of 3par array in cinder.conf is wrong."""
 
         # Mock paramiko ssh client to return cinder file we want
@@ -412,7 +412,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_for_wrong_hp3pardriver(self):
-        """Test cinder diagnostic cli tool check array command when the volume
+        """Test cinder diagnostic cli tool options-check command when the volume
         driver value of 3par array in cinder.conf is wrong."""
 
         self._mock_exec_command({'locate': None})
@@ -464,7 +464,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_for_wrong_hp3pardriver(self):
-        """Test cinder diagnostic cli tool check array command when the volume
+        """Test cinder diagnostic cli tool options-check command when the volume
         driver value of 3par array in cinder.conf is correct."""
 
         self._mock_exec_command(
@@ -516,7 +516,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     @test.attr(type="gate")
     def test_diags_all_packages_installed_with_supported_version_on_ubuntu(
             self):
-        """Test cinder diagnostic cli tool check software command for all the
+        """Test cinder diagnostic cli tool software-check command for all the
         packages with supported version on ubuntu operating system."""
 
         command_arvgs = ['software-check', '-test']
@@ -541,7 +541,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     @test.attr(type="gate")
     def test_diags_all_packages_installed_with_supported_version_on_suse(
             self):
-        """Test cinder diagnostic cli tool check software command for all the
+        """Test cinder diagnostic cli tool software-check command for all the
         packages with supported version SUSE operating system."""
 
         command_arvgs = ['software-check', '-test']
@@ -566,7 +566,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     @test.attr(type="gate")
     def test_diags_all_packages_not_installed_with_supported_version_on_suse(
             self):
-        """Test cinder diagnostic cli tool check software command for all the
+        """Test cinder diagnostic cli tool software-check command for all the
         packages with supported version SUSE operating system."""
 
         command_arvgs = ['software-check', '-test']
@@ -591,7 +591,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     @test.attr(type="gate")
     def test_diags_all_packages_installed_with_not_supported_version_on_suse(
             self):
-        """Test cinder diagnostic cli tool check software command for all the
+        """Test cinder diagnostic cli tool software-check command for all the
         packages with supported version SUSE operating system."""
 
         command_arvgs = ['software-check', '-test']
@@ -616,7 +616,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     @test.attr(type="gate")
     def test_diags_all_packages_installed_with_supported_version_on_centos(
             self):
-        """Test cinder diagnostic cli tool check software command for all the
+        """Test cinder diagnostic cli tool software-check command for all the
         packages with supported version centos operating system."""
 
         command_arvgs = ['software-check', '-test']
@@ -641,7 +641,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     @test.attr(type="gate")
     def test_check_all_packages_not_installed_with_supported_version_on_centos(
             self):
-        """Test cinder diagnostic cli tool check software command for all the
+        """Test cinder diagnostic cli tool software-check command for all the
         packages with supported version centos operating system."""
 
         command_arvgs = ['software-check', '-test']
@@ -667,7 +667,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     @test.attr(type="gate")
     def test_diags_all_packages_installed_with_unsupported_version_on_centos(
             self):
-        """Test cinder diagnostic cli tool check software command for all the
+        """Test cinder diagnostic cli tool software-check command for all the
         packages with supported version centos operating system."""
 
         command_arvgs = ['software-check', '-test']
@@ -691,7 +691,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_sysfsutils_package_installed_with_supported_version(self):
-        """Test cinder diagnostic cli tool check software command for
+        """Test cinder diagnostic cli tool software-check command for
         sysfsutils package with supported version."""
 
         command_arvgs = [
@@ -706,14 +706,14 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         ssh_mocked_response = {
             'cat /etc/*release': 'ID_LIKE=debian',
             'sysfsutils': "install ok installed 2.2.0"}
-        # Excecutes the check software command that needs to be tested and
+        # Excecutes the software-check command that needs to be tested and
         # evaluates the output
         self._check_software_package(
             'sysfsutils', command_arvgs, ssh_mocked_response)
 
     @test.attr(type="gate")
     def test_diags_sysfsutils_package_installed_with_unsupported_version(self):
-        """Test cinder diagnostic cli tool check software command for
+        """Test cinder diagnostic cli tool software-check command for
         sysfsutils package with unsupported version."""
 
         command_arvgs = [
@@ -728,7 +728,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         ssh_mocked_response = {
             'cat /etc/*release': 'ID_LIKE=debian',
             'sysfsutils': "install ok installed 1.0 "}
-        # Excecutes the check software command that needs to be tested and
+        # Excecutes the software-check command that needs to be tested and
         # evaluates the output
         self._check_software_package(
             'sysfsutils',
@@ -739,7 +739,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_sysfsutils_package_not_installed(self):
-        """Test cinder diagnostic cli tool check software command for
+        """Test cinder diagnostic cli tool software-check command for
         non-existent sysfsutils package."""
 
         command_arvgs = [
@@ -755,7 +755,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
             'cat /etc/*release': 'ID_LIKE=debian',
             'dpkg-query': 'no packages found matching  sysfsutils',
             'grep sysfsutils': ""}
-        # Excecutes the check software command that needs to be tested and
+        # Excecutes the software-check command that needs to be tested and
         # evaluates the output
         self._check_software_package(
             'sysfsutils',
@@ -767,7 +767,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     @test.attr(type="gate")
     def test_diags_sysfsutils_package_installed_with_no_min_version_check(
             self):
-        """Test cinder diagnostic cli tool check software command for
+        """Test cinder diagnostic cli tool software-check command for
         sysfsutils package with no defined value for its version."""
 
         command_arvgs = [
@@ -780,7 +780,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         ssh_mocked_response = {
             'cat /etc/*release': 'ID_LIKE=debian',
             'sysfsutils': "install ok installed 1.0 "}
-        # Excecutes the check software command that needs to be tested and
+        # Excecutes the software-check command that needs to be tested and
         # evaluates the output
         self._check_software_package(
             'sysfsutils',
@@ -791,7 +791,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_sg3_utils_package_installed_with_supported_version(self):
-        """Test cinder diagnostic cli tool check software command for sg3utils
+        """Test cinder diagnostic cli tool software-check command for sg3utils
         package with supported version."""
 
         command_arvgs = [
@@ -806,14 +806,14 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         ssh_mocked_response = {
             'cat /etc/*release': 'ID_LIKE=debian',
             'sg3-utils': "install ok installed 2.2.0"}
-        # Excecutes the check software command that needs to be tested and
+        # Excecutes the software-check command that needs to be tested and
         # evaluates the output
         self._check_software_package(
             'sg3-utils', command_arvgs, ssh_mocked_response)
 
     @test.attr(type="gate")
     def test_diags_sg3_utils_package_installed_with_unsupported_version(self):
-        """Test cinder diagnostic cli tool check software command for sg3sutils
+        """Test cinder diagnostic cli tool software-check command for sg3sutils
         package with unsupported version."""
 
         command_arvgs = [
@@ -828,7 +828,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         ssh_mocked_response = {
             'cat /etc/*release': 'ID_LIKE=debian',
             'sg3-utils': "install ok installed 1.0 "}
-        # Excecutes the check software command that needs to be tested and
+        # Excecutes the software-check command that needs to be tested and
         # evaluates the output
         self._check_software_package(
             'sg3-utils',
@@ -839,7 +839,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_sg3_utils_package_not_installed(self):
-        """Test cinder diagnostic cli tool check software command for
+        """Test cinder diagnostic cli tool software-check command for
         non-existent sg3utils package."""
 
         command_arvgs = [
@@ -855,7 +855,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
             'cat /etc/*release': 'ID_LIKE=debian',
             'dpkg-query': 'no packages found matching  sg3-utils',
             'grep sg3-utils': ""}
-        # Excecutes the check software command that needs to be tested and
+        # Excecutes the software-check command that needs to be tested and
         # evaluates the output
         self._check_software_package(
             'sg3-utils',
@@ -866,7 +866,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_sg3_utils_package_installed_with_no_min_version_check(self):
-        """Test cinder diagnostic cli tool check software command for sg3utils
+        """Test cinder diagnostic cli tool software-check command for sg3utils
         with no defined value for its version."""
 
         command_arvgs = [
@@ -879,7 +879,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         ssh_mocked_response = {
             'cat /etc/*release': 'ID_LIKE=debian',
             'sysfsutils': "install ok installed 1.0 "}
-        # Excecutes the check software command that needs to be tested and
+        # Excecutes the software-check command that needs to be tested and
         # evaluates the output
         self._check_software_package(
             'sysfsutils',
@@ -891,7 +891,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     @test.attr(type="gate")
     def test_diags_hp3parclient_package_installed_with_unsupported_version(
             self):
-        """Test cinder diagnostic cli tool check software command for
+        """Test cinder diagnostic cli tool software-check command for
         hp3parclient package with unsupported version."""
 
         command_arvgs = [
@@ -907,7 +907,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
             'cat /etc/*release': 'ID_LIKE=debian',
             'dpkg-query': 'no packages found matching  hp3parclient',
             'grep hp3parclient': "hp3parclient (1.2.2) "}
-        # Excecutes the check software command that needs to be tested and
+        # Excecutes the software-check command that needs to be tested and
         # evaluates the output
         self._check_software_package(
             'hp3parclient',
@@ -918,7 +918,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_hp3parclients_package_not_installed(self):
-        """Test cinder diagnostic cli tool check software command for
+        """Test cinder diagnostic cli tool software-check command for
         non-existent hp3parclient package."""
 
         command_arvgs = [
@@ -934,7 +934,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
             'cat /etc/*release': 'ID_LIKE=debian',
             'dpkg-query': 'no packages found matching  hp3parclient',
             'grep hp3parclient': ""}
-        # Excecutes the check software command that needs to be tested and
+        # Excecutes the software-check command that needs to be tested and
         # evaluates the output
         self._check_software_package(
             'hp3parclient',
@@ -946,7 +946,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     @test.attr(type="gate")
     def test_diags_hp3parclients_package_installed_with_no_min_version_check(
             self):
-        """Test cinder diagnostic cli tool check software command for
+        """Test cinder diagnostic cli tool software-check command for
         hp3parclient package with no defined value for its version."""
 
         command_arvgs = [
@@ -960,7 +960,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
             'cat /etc/*release': 'ID_LIKE=debian',
             'dpkg-query': 'no packages found matching  hp3parclient',
             'grep hp3parclient': "hp3parclient (3.2.2) "}
-        # Excecutes the check software command that needs to be tested and
+        # Excecutes the software-check command that needs to be tested and
         # evaluates the output
         self._check_software_package(
             'hp3parclient',
@@ -971,7 +971,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_check_error_with_specific_package_and_missing_service(self):
-        """Test cinder diagnostic cli tool check software command for specific
+        """Test cinder diagnostic cli tool software-check command for specific
         package and missing service."""
 
         command = 'cinderdiags software-check -name vim'
@@ -984,7 +984,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     @test.attr(type="gate")
     def test_diags_check_error_with_specific_service_and_missing_pacakage(
             self):
-        """Test cinder diagnostic cli tool check software command for specific
+        """Test cinder diagnostic cli tool software-check command for specific
         service and missing pacakage."""
 
         command = 'cinderdiags software-check --service nova'
@@ -996,7 +996,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
     @test.attr(type="gate")
     def test_diags_check_error_with_missing_pacakage_and_service(self):
-        """Test cinder diagnostic cli tool check software command for specific
+        """Test cinder diagnostic cli tool software-check command for specific
         minimum version and missing pacakage and service."""
 
         command = 'cinderdiags software-check -package-min-version 0'
@@ -1012,58 +1012,58 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
 
         command = 'cinderdiags -h'
         output, return_code = self._exec_shell_command(command)
-        optional_arguments = output.index('optional arguments:\n')
-        commands = output.index('Commands:\n')
-        self.assertEqual('optional arguments:',
+        optional_arguments = output.index(b'optional arguments:\n')
+        commands = output.index(b'Commands:\n')
+        self.assertEqual(b'optional arguments:',
                          output[optional_arguments].strip())
-        self.assertEqual('Commands:', output[commands].strip())
+        self.assertEqual(b'Commands:', output[commands].strip())
         self.assertEqual(0, return_code)
 
     @test.attr(type="gate")
     def test_diags_check_array_command_help_call(self):
-        """Test cinder diagnostic cli tool help call for check array
+        """Test cinder diagnostic cli tool help call for options-check
         command."""
 
         command = 'cinderdiags --help options-check'
         output, return_code = self._exec_shell_command(command)
-        output_data = output.index('output data:\n')
-        optional_arguments = output.index('optional arguments:\n')
-        output_formatters = output.index('output formatters:\n')
-        table_formatter = output.index('table formatter:\n')
-        CSV_Formatter = output.index('CSV Formatter:\n')
-        self.assertEqual('output data:', output[output_data].strip())
-        self.assertEqual('optional arguments:',
+        output_data = output.index(b'output data:\n')
+        optional_arguments = output.index(b'optional arguments:\n')
+        output_formatters = output.index(b'output formatters:\n')
+        table_formatter = output.index(b'table formatter:\n')
+        CSV_Formatter = output.index(b'CSV Formatter:\n')
+        self.assertEqual(b'output data:', output[output_data].strip())
+        self.assertEqual(b'optional arguments:',
                          output[optional_arguments].strip())
-        self.assertEqual('output formatters:',
+        self.assertEqual(b'output formatters:',
                          output[output_formatters].strip())
-        self.assertEqual('table formatter:', output[table_formatter].strip())
-        self.assertEqual('CSV Formatter:', output[CSV_Formatter].strip())
+        self.assertEqual(b'table formatter:', output[table_formatter].strip())
+        self.assertEqual(b'CSV Formatter:', output[CSV_Formatter].strip())
         self.assertEqual(0, return_code)
 
     @test.attr(type="gate")
     def test_diags_check_software_command_help_call(self):
-        """Test cinder diagnostic cli tool help call for check software
+        """Test cinder diagnostic cli tool help call for software-check
         command."""
 
         command = 'cinderdiags -h software-check'
         output, return_code = self._exec_shell_command(command)
-        output_data = output.index('output data:\n')
-        optional_arguments = output.index('optional arguments:\n')
-        output_formatters = output.index('output formatters:\n')
-        table_formatter = output.index('table formatter:\n')
-        CSV_Formatter = output.index('CSV Formatter:\n')
-        self.assertEqual('output data:', output[output_data].strip())
-        self.assertEqual('optional arguments:',
+        output_data = output.index(b'output data:\n')
+        optional_arguments = output.index(b'optional arguments:\n')
+        output_formatters = output.index(b'output formatters:\n')
+        table_formatter = output.index(b'table formatter:\n')
+        CSV_Formatter = output.index(b'CSV Formatter:\n')
+        self.assertEqual(b'output data:', output[output_data].strip())
+        self.assertEqual(b'optional arguments:',
                          output[optional_arguments].strip())
-        self.assertEqual('output formatters:',
+        self.assertEqual(b'output formatters:',
                          output[output_formatters].strip())
-        self.assertEqual('table formatter:', output[table_formatter].strip())
-        self.assertEqual('CSV Formatter:', output[CSV_Formatter].strip())
+        self.assertEqual(b'table formatter:', output[table_formatter].strip())
+        self.assertEqual(b'CSV Formatter:', output[CSV_Formatter].strip())
         self.assertEqual(0, return_code)
 
     @test.attr(type="gate")
     def test_diags_cli_check_array_command_with_cinder_file_not_found(self):
-        """Test cinder diagnostic cli tool check array command for
+        """Test cinder diagnostic cli tool options-check command for
         non-existent cinder.conf file."""
 
         # Mock permiko ssh client to return cinder file we want
@@ -1093,7 +1093,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
     @test.attr(type="gate")
     def test_diags_check_array_command_with_wrong_cinder_node_ssh_credentials(
             self):
-        """Test cinder diagnostic cli tool check array command when wrong SSH
+        """Test cinder diagnostic cli tool options-check command when wrong SSH
         credentials are given for cinder node."""
 
         c_mock, aa_mock, client_mock = self._set_ssh_connection_mocks()
