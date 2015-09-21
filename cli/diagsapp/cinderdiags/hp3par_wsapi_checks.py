@@ -208,18 +208,26 @@ class WSChecker(object):
 
         :return: string
         """
-        result = "fail"
         try:
-            path = self.parser.get(section_name, 'volume_driver').split(
-                '.')[-2]
+            path = self.parser.get(section_name, 'volume_driver').split('.')
+            path.pop()
+            path = '/'.join(path)
+            logger.debug("Checking for driver at '%s' for backend section '%s'"
+                         % (path, section_name))
             response = self.ssh_client.execute('locate ' + path)
+
             if path in response:
                 result = "pass"
-            elif 'command not found' or 'command-not-found' in response:
+            elif ('command not found' or 'command-not-found') in response:
                 logger.warning("Could not check '%s' driver on node'%s'. "
                                "Make sure that 'mlocate' is installed on the "
                                "node." % (section_name, self.node))
                 result = "unknown"
+            else:
+                logger.info("Backend section '%s' volume_driver contains an "
+                            "invalid driver location: '%s'" % (section_name,
+                                                               path))
+                result = "fail"
 
         except configparser.NoOptionError:
             logger.info("No volume_diver provided for backend section %s " %
