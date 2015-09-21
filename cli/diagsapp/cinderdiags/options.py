@@ -19,7 +19,7 @@ from cinderdiags import conf_reader
 from cliff.lister import Lister
 
 
-class CheckArray(Lister):
+class CheckOptions(Lister):
     """check 3PAR options in cinder.conf against 3PAR array(s)
 
     output data:
@@ -43,7 +43,7 @@ class CheckArray(Lister):
     log = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        parser = super(CheckArray, self).get_parser(prog_name)
+        parser = super(CheckOptions, self).get_parser(prog_name)
         parser.formatter_class = argparse.RawTextHelpFormatter
         parser.add_argument('-test',
                             dest='test',

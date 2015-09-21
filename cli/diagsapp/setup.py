@@ -69,7 +69,7 @@ setup(
             'cinderdiags = cinderdiags.main:main'
         ],
         'cliff.cinderdiags': [
-            'options-check = cinderdiags.array:CheckArray',
+            'options-check = cinderdiags.options:CheckOptions',
             'software-check = cinderdiags.software:CheckSoftware'
         ],
     },
