@@ -148,7 +148,8 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         cli_exit_value , json_cli_output = self._execute_cli_command(command_arvgs, True)
         self.assertEqual(0 , cli_exit_value)
         self.assertEqual(output , json_cli_output)
-
+        
+    @test.attr(type="gate")
     def test_check_array_command_with_wrong_arrayname(self):
         """Test cinder diagnostic cli tool options-check command when wrong array
         name is given in the command."""
