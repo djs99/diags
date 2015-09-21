@@ -494,16 +494,16 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         self.assertEqual(output , json_cli_output)
 
     @test.attr(type="gate")
-    def test_diags_cli_check_array_command_for_wrong_hp3pardriver(self):
+    def test_diags_cli_check_array_command_for_correct_hp3pardriver(self):
         """Test cinder diagnostic cli tool options-check command when the volume
         driver value of 3par array in cinder.conf is correct."""
 
         self._mock_exec_command(
             {
-                'locate hp_3par_iscsi': '/opt/stack/cinder/cinder/volume\
-                /drivers/san/hp/hp_3par_iscsi.py',
-                'locate hp_3par_fc': '/opt/stack/cinder/cinder/volume\
-                /drivers/san/hp/hp_3par_fc.py'},
+                'hp_3par_iscsi':
+                'cinder/volume/drivers/san/hp/hp_3par_iscsi.py',
+                'hp_3par_fc':
+                'cinder/volume/drivers/san/hp/hp_3par_fc.py'},
             self.cinder_config_file)
 
         # Create cinder config file and add 3par ISCSI section
@@ -1524,7 +1524,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         section_name = '3PAR-SLEEPYKITTY'
         dict = {
             'volume_driver': 'cinder.volume.drivers.san.hp.\
-            hp_3par_iscsi.HP3PARISCSIDriver',
+hp_3par_iscsi.HP3PARISCSIDriver',
             'volume_backend_name': '3PAR-SLEEPYKITTY',
             'num_volume_device_scan_tries': 10,
             'hp3par_api_url': 'http://test.ws.url:8080/api/v1',
@@ -1549,7 +1549,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         section_name = '3PAR-SLEEPYKITTY-FC'
         dict = {
             'volume_driver': 'cinder.volume.drivers.san.hp.\
-            hp_3par_fc.HP3PARFCDriver',
+hp_3par_fc.HP3PARFCDriver',
             'volume_backend_name': '3PAR-SLEEPYKITTY-FC',
             'hp3par_api_url': 'http://test.ws.url:8080/api/v1',
             'hp3par_username': 'testuser',
