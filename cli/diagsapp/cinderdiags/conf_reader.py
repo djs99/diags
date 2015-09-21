@@ -32,8 +32,6 @@ class Reader(object):
         self.is_test = is_test
         self.cinder_nodes = []
         self.nova_nodes = []
-        self.cinder_files = {}
-        self.clients = {}
 
         if self.is_test:
             path = constant.TEST_CLI_CONFIG
@@ -62,28 +60,32 @@ class Reader(object):
     def get_clients(self, nodes):
         """Create SSH client connections for nodes.
         """
+        clients = {}
         for node in nodes:
             try:
                 client = ssh_client.Client(parser.get(node, 'host_ip'),
                                            parser.get(node, 'ssh_user'),
                                            parser.get(node, 'ssh_password'))
-                self.clients[node] = client
+                clients[node] = client
             except Exception as e:
                 logger.warning("%s: %s" % (e, node))
                 pass
+        return clients
 
-    def copy_files(self):
+    def copy_files(self, clients):
         """Copy the cinder.conf file of each cinder node to a local directory.
 
         Location of cinder.conf file is set per node in cli.conf
         """
+        files = {}
         for node in self.cinder_nodes:
             try:
-                conf_file = self.clients[node].get_file(parser.get(
+                conf_file = clients[node].get_file(parser.get(
                     node, 'conf_source'), constant.DIRECTORY + node)
-                self.cinder_files[node] = conf_file
+                files[node] = conf_file
             except Exception as e:
                 logger.warning("%s: %s" % (e, node))
+        return files
 
     def software_check(self, name='default', service='default', version=None):
         """Check nodes for installed software packages
@@ -99,22 +101,22 @@ class Reader(object):
             checklist = self.cinder_nodes
         else:
             checklist = set(self.nova_nodes + self.cinder_nodes)
-        self.get_clients(checklist)
+        clients = self.get_clients(checklist)
 
         checks = []
         for node in checklist:
             try:
                 if name == 'default':
-                    checks += pkg_checks.check_all(self.clients[node],
+                    checks += pkg_checks.check_all(clients[node],
                                                    node,
                                                    parser.get(node, 'service'))
                 else:
-                    checks.append(pkg_checks.check_one(self.clients[node],
+                    checks.append(pkg_checks.check_one(clients[node],
                                                        node,
                                                        (name, version)))
             except Exception as e:
                 logger.warning("%s: %s" % (e, node))
-        self.cleanup()
+        self.cleanup(clients)
         return checks
 
     def options_check(self, section_name='arrays'):
@@ -125,12 +127,12 @@ class Reader(object):
         :return: list of dictionaries
         """
 
-        self.get_clients(self.cinder_nodes)
-        self.copy_files()
+        clients = self.get_clients(self.cinder_nodes)
+        files = self.copy_files(clients)
         checks = []
-        for node in self.cinder_files:
-            checker = wsapi_checks.WSChecker(self.clients[node],
-                                             self.cinder_files[node],
+        for node in files:
+            checker = wsapi_checks.WSChecker(clients[node],
+                                             files[node],
                                              node,
                                              self.is_test)
             if section_name == 'arrays':
@@ -139,15 +141,13 @@ class Reader(object):
                 found = checker.check_section(section_name)
                 if found:
                     checks.append(found)
-        self.cleanup()
+        self.cleanup(clients, files)
         return checks
 
-    def cleanup(self):
+    def cleanup(self, clients, files={}):
         """Delete all copied cinder.conf files and close all SSH connections.
         """
-        for node in self.cinder_files:
-            os.remove(self.cinder_files[node])
-            self.cinder_files = {}
-        for node in self.clients:
-            self.clients[node].disconnect()
-            self.clients = {}
+        for node in clients:
+            clients[node].disconnect()
+        for node in files:
+            os.remove(files[node])
