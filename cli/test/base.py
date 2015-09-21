@@ -37,14 +37,18 @@ class BaseCinderDiagnosticsCliToolTest(unittest.TestCase):
             ssh_mocked_response,
             installed="pass",
             min_version="pass"):
-        '''
-        :param package: Name of the package that needs to be checked in the command
+        """
+        :param package: Name of the package that needs to be checked in the
+        command
         :param command_arvgs: This includes command arguments
-        :param ssh_mocked_response: This is a dictionary which includes its value as mocked response of the cli command to be executed
-        :param installed: This includes the expected output value of the cli command for the row "Installed"
-        :param  min_version: This includes the expected output value of the cli command for the row "Version"
+        :param ssh_mocked_response: This is a dictionary which includes its
+        value as mocked response of the cli command to be executed
+        :param installed: This includes the expected output value of the cli
+        command for the row "Installed"
+        :param  min_version: This includes the expected output value of the cli
+        command for the row "Version"
         :return:
-        '''
+        """
 
         # Mock paramiko ssh client to return cinder file we want
         self._mock_exec_command(ssh_mocked_response)
@@ -60,24 +64,25 @@ class BaseCinderDiagnosticsCliToolTest(unittest.TestCase):
             self.assertEqual(min_version, row['Version'])
 
     def _execute_cli_command(self, command_arvgs, isJson=False):
-        '''
+        """
         :param command_arvgs:  This includes command arguments
-        :param isJson:  If true then execute command to get JSON output from CLI and if false then default table output
+        :param isJson:  If true then execute command to get JSON output from
+        CLI and if false then default table output
         :return: cli command exit value and command output
-        '''
+        """
         # To verify the CLI Table output we convert it into JSON using external
         # API and return it
 
-        # open a file to capture the CLI output
+        # Open a file to capture the CLI output
         output_file = self._get_file_name()
 
         if isJson:
-            # add command line arugment to get the Json output
+            # Add command line arugment to get the Json output
             command_arvgs.append('-f')
             command_arvgs.append('json')
 
         try:
-          # execute the command
+            # Execute the command
             cli_exit_value = -1
             temp_store = sys.stdout
             sys.stdout = open(output_file, 'w')
@@ -124,26 +129,28 @@ class BaseCinderDiagnosticsCliToolTest(unittest.TestCase):
         return line, return_code
 
     def _get_file_name(self):
-        '''
-        This generates the name starting with output
+        """This generates the name starting with output.
+
         :return: Generated name starting with output
-        '''
+        """
         return "output.%.7f.txt" % time.time()
 
     def _remove_file(self, file):
-        '''
+        """
         :param file: Name of the file that needs to be removed
         :return:
-        '''
-        # remove the file
+        """
+        # Remove the file
         if os.path.isfile(file) is True:
             os.remove(file)
 
     def _set_ssh_connection_mocks(self):
-        '''
-        This creates magic mock object and mock the paramiko sshclient and autoaddpolicy
-        :return: Mocked instance of paramiko sshclient, Mocked instance of paramiko autoaddpolicy and magic mock object
-        '''
+        """This creates magic mock object and mock the paramiko sshclient and
+        autoaddpolicy.
+
+        :return: Mocked instance of paramiko sshclient, Mocked instance of
+        paramiko autoaddpolicy and magic mock object
+        """
 
         client_mock = mock.MagicMock()
         client_mock.connect.return_value = True
@@ -161,11 +168,13 @@ class BaseCinderDiagnosticsCliToolTest(unittest.TestCase):
             c_mock.return_value = raiseException
 
     def _mock_get_file(self, config_file, raiseException=False):
-        '''
-        :param config_file: Name of the cinder configuration file that needs to be copied
-        :param raiseException: If true raises exception for not finding the cinder configuration file
+        """
+        :param config_file: Name of the cinder configuration file that needs to
+        be copied
+        :param raiseException: If true raises exception for not finding the
+        cinder configuration file
         :return:
-        '''
+        """
 
         c_mock, aa_mock, client_mock = self._set_ssh_connection_mocks()
         s_mock = self._patch('time.sleep')
@@ -177,17 +186,19 @@ class BaseCinderDiagnosticsCliToolTest(unittest.TestCase):
             config_file,
             client_mock,
             raiseException=False):
-        '''
-        :param config_file: onfig_file: Name of the cinder configuration file that needs to be copied
-        :param client_mock: This client mocked object
-        :param raiseException: If true raises exception for not finding the cinder configuration file
+        """
+        :param config_file: onfig_file: Name of the cinder configuration file
+        that needs to be copied
+        :param client_mock: This is client mocked object
+        :param raiseException: If true raises exception for not finding the
+        cinder configuration file
         :return:
-        '''
+        """
 
         client_mock.open_sftp.return_value = client_mock
 
         def my_side_effect(*args, **kwargs):
-            #fromLocation =  args[0]
+            # fromLocation =  args[0]
             if raiseException:
                 raise Exception()
             toLocation = args[1]
@@ -196,11 +207,12 @@ class BaseCinderDiagnosticsCliToolTest(unittest.TestCase):
         client_mock.get.side_effect = my_side_effect
 
     def _mock_exec_command(self, dict, config_file=None):
-        '''
-        :param dict: This include key value pair for the command and respons
-        :param config_file : If config_file is not None then mock get file functions too
+        """
+        :param dict: This include key value pair for the command and response
+        :param config_file : If config_file is not None then mock get file
+        functions too
         :return:
-        '''
+        """
 
         c_mock, aa_mock, client_mock = self._set_ssh_connection_mocks()
         s_mock = self._patch('time.sleep')
@@ -229,26 +241,27 @@ class BaseCinderDiagnosticsCliToolTest(unittest.TestCase):
         client_mock.exec_command.side_effect = my_side_effect
 
     def _patch(self, target, **kwargs):
-        '''
+        """
         :param target: instance that needs to be mocked
         :param kwargs:
         :return: Mocked instance
-        '''
+        """
         p = mock.patch(target, **kwargs)
         m = p.start()
         self.mock_instances.append(p)
         return m
 
     def _get_default_3par_iscsi_cinder_conf_section(self):
-        '''
-         this is default 3par ISCSI configuration section of cinder config  file .
-         This require to create the test version of cinder config
+        """This is default 3par ISCSI configuration section of cinder config
+        file . This require to create the test version of cinder config.
+
         :return:
-        '''
+        """
 
         section_name = '3PAR-SLEEPYKITTY'
         dict = {
-            'volume_driver': 'cinder.volume.drivers.san.hp.hp_3par_iscsi.HP3PARISCSIDriver',
+            'volume_driver': 'cinder.volume.drivers.san.hp.\
+            hp_3par_iscsi.HP3PARISCSIDriver',
             'volume_backend_name': '3PAR-SLEEPYKITTY',
             'num_volume_device_scan_tries': 10,
             'hp3par_api_url': 'http://test.ws.url:8080/api/v1',
@@ -264,15 +277,16 @@ class BaseCinderDiagnosticsCliToolTest(unittest.TestCase):
         return section_name, dict
 
     def _get_default_3par_fc_cinder_conf_section(self):
-        '''
-         this is default 3par FC configuration section of cinder config  file .
-         This require to create the test version of cinder config
+        """This is default 3par FC configuration section of cinder config  file
+        . This require to create the test version of cinder config.
+
         :return:
-        '''
+        """
 
         section_name = '3PAR-SLEEPYKITTY-FC'
         dict = {
-            'volume_driver': 'cinder.volume.drivers.san.hp.hp_3par_fc.HP3PARFCDriver',
+            'volume_driver': 'cinder.volume.drivers.san.hp.\
+            hp_3par_fc.HP3PARFCDriver',
             'volume_backend_name': '3PAR-SLEEPYKITTY-FC',
             'hp3par_api_url': 'http://test.ws.url:8080/api/v1',
             'hp3par_username': 'testuser',
@@ -286,10 +300,10 @@ class BaseCinderDiagnosticsCliToolTest(unittest.TestCase):
         return section_name, dict
 
     def _get_default_cli_conf_section(self, node_name):
-        '''
-         This is the default configuration for test version of cli.conf
+        """This is the default configuration for test version of cli.conf.
+
         :return:
-        '''
+        """
 
         dict = {'service': node_name,
                 'host_ip': '192.168.10.5',
@@ -301,11 +315,12 @@ class BaseCinderDiagnosticsCliToolTest(unittest.TestCase):
         return dict
 
     def _create_config(self, config_filename, dict):
-        '''
+        """
         :param config_filename: Name of file to create
-        :param dict: This incldue configuration section that will be written in the given file
+        :param dict: This incldue configuration section that will be written
+        in the given file
         :return:
-        '''
+        """
 
         try:
             config = parser = configparser.ConfigParser()
@@ -324,8 +339,8 @@ class BaseCinderDiagnosticsCliToolTest(unittest.TestCase):
     def table(self, output_lines):
         """Parse single table from cli output.
 
-        Return dict with list of column names in 'headers' key and
-        rows in 'values' key.
+        Return dict with list of column names in 'headers' key and rows
+        in 'values' key.
         """
         table_ = {'headers': [], 'values': []}
         columns = None
@@ -334,7 +349,7 @@ class BaseCinderDiagnosticsCliToolTest(unittest.TestCase):
             output_lines = output_lines.split('\n')
 
         if not output_lines[-1]:
-            # skip last line if empty (just newline at the end)
+            # Skip last line if empty (just newline at the end)
             output_lines = output_lines[:-1]
 
         for line in output_lines:
@@ -356,8 +371,8 @@ class BaseCinderDiagnosticsCliToolTest(unittest.TestCase):
     def table_columns(self, first_table_row):
         """Find column ranges in output line.
 
-        Return list of tuples (start,end) for each column
-        detected by plus (+) characters in delimiter line.
+        Return list of tuples (start,end) for each column detected by
+        plus (+) characters in delimiter line.
         """
         positions = []
         start = 1  # there is '+' at 0
