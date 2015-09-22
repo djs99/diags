@@ -23,6 +23,7 @@ Assumes the volume_driver is correctly set
 
 import logging
 from six.moves import configparser
+from cinderdiags import constant
 from cinderdiags import hp3par_testclient as testclient
 
 logger = logging.getLogger(__name__)
@@ -81,8 +82,8 @@ class WSChecker(object):
             "driver": "unknown"
         }
         if section_name in self.hp3pars:
-            logger.debug("Checking 3PAR options for backend section %s" %
-                         section_name)
+            logger.debug("Checking 3PAR options for node '%s' backend section "
+                         "%s" % (self.node, section_name))
             tests["driver"] = self.has_driver(section_name)
             client = self.get_client(section_name, self.is_test)
             if client:
@@ -121,12 +122,13 @@ class WSChecker(object):
             return cl
         except (hpexceptions.UnsupportedVersion, hpexceptions.HTTPBadRequest,
                 TypeError) as e:
-            logger.info("Failed to connect to hp3par_api_url for backend "
-                        "section '%s' --- %s" % (section_name, e))
+            logger.info("Failed to connect to hp3par_api_url for node '%s' "
+                        "backend section '%s' --- %s" % (self.node,
+                                                         section_name, e))
             return None
         except configparser.NoOptionError:
-            logger.info("No hp3par_api_url provided for backend section "
-                        "'%s'" % section_name)
+            logger.info("No hp3par_api_url provided for node '%s' backend "
+                        "section '%s'" % (self.node, section_name))
             return None
 
     def cred_is_valid(self, section_name, client):
@@ -141,11 +143,13 @@ class WSChecker(object):
         except (hpexceptions.HTTPForbidden,
                 hpexceptions.HTTPUnauthorized):
             logger.info("Incorrect hp3par_username or hp3par_password "
-                        "provided for backend section '%s'" % section_name)
+                        "provided for node '%s' backend section '%s'" %
+                        (self.node, section_name))
             return False
         except configparser.NoOptionError:
             logger.info("No hp3par_username or hp3par_password provided for "
-                        "backend section '%s'" % section_name)
+                        "node '%s' backend section '%s'" % (self.node,
+                                                            section_name))
             return False
 
     def cpg_is_valid(self, section_name, client):
@@ -157,18 +161,20 @@ class WSChecker(object):
         try:
             cpg_list = [x.strip() for x in
                         self.parser.get(section_name, 'hp3par_cpg').split(',')]
-            logger.debug("Checking hp3par_cpg option for backend section "
-                         "'%s'" % section_name)
+            logger.debug("Checking hp3par_cpg option for node '%s' backend "
+                         "section '%s'" % (self.node, section_name))
             for cpg in cpg_list:
                 try:
                     client.getCPG(cpg)
                 except hpexceptions.HTTPNotFound:
-                    logger.info("Backend section '%s' hp3par_cpg contains an "
-                                "invalid CPG name: '%s'" % (section_name, cpg))
+                    logger.info("Node '%s' backend section '%s' hp3par_cpg "
+                                "contains an invalid CPG name: '%s'" %
+                                (self.node, section_name, cpg))
                     result = "fail"
         except configparser.NoOptionError:
-            logger.info("No hp3par_cpg provided for backend section '%s'" %
-                        section_name)
+            logger.info("No hp3par_cpg provided for node '%s' backend section "
+                        "'%s'" %
+                        (self.node, section_name))
             result = "fail"
         return result
 
@@ -183,8 +189,8 @@ class WSChecker(object):
             ip_list = [x.strip() for x in
                        self.parser.get(section_name,
                                        'hp3par_iscsi_ips').split(',')]
-            logger.debug("Checking iSCSI IP addresses for backend section "
-                         "'%s'" % section_name)
+            logger.debug("Checking iSCSI IP addresses for node '%s' backend "
+                         "section '%s'" % (self.node, section_name))
             for port in client.getPorts()['members']:
                 if (port['mode'] == client.PORT_MODE_TARGET and
                         port['linkState'] == client.PORT_STATE_READY and
@@ -193,13 +199,13 @@ class WSChecker(object):
             for ip_addr in ip_list:
                 ip = ip_addr.split(':')
                 if ip[0] not in valid_ips:
-                    logger.info("Backend section '%s' hp3par_iscsi_ips "
-                                "contains an invalid iSCSI IP '%s'" %
-                                (section_name, ip))
+                    logger.info("Node '%s' backend section '%s' "
+                                "hp3par_iscsi_ips contains an invalid iSCSI "
+                                "IP '%s'" % (self.node, section_name, ip))
                     result = "fail"
         except configparser.NoOptionError:
-            logger.info("No hp3par_iscsi_ips provided for backend section "
-                        "'%s" % section_name)
+            logger.info("No hp3par_iscsi_ips provided for node '%s' backend "
+                        "section '%s" % (self.node, section_name))
             result = "fail"
         return result
 
@@ -209,27 +215,34 @@ class WSChecker(object):
         :return: string
         """
         try:
-            path = self.parser.get(section_name, 'volume_driver').split('.')
-            path.pop()
-            path = '/'.join(path)
-            logger.debug("Checking for driver at '%s' for backend section '%s'"
-                         % (path, section_name))
-            response = self.ssh_client.execute('locate ' + path)
+            volume_driver = self.parser.get(section_name, 'volume_driver')
+            path = volume_driver.split('.')
+            if ("%s.%s" % (path[-2], path.pop())) in constant.HP3PAR_DRIVERS:
+                path = '/'.join(path)
+                logger.debug("Checking for driver at '%s' for node '%s' "
+                             "backend section '%s'" % (self.node, path,
+                                                       section_name))
+                response = self.ssh_client.execute('locate ' + path)
 
-            if path in response:
-                result = "pass"
-            elif ('command not found' or 'command-not-found') in response:
-                logger.warning("Could not check '%s' driver on node'%s'. "
-                               "Make sure that 'mlocate' is installed on the "
-                               "node." % (section_name, self.node))
-                result = "unknown"
+                if path in response:
+                    result = "pass"
+                elif ('command not found' or 'command-not-found') in response:
+                    logger.warning("Could not check '%s' driver on node'%s'. "
+                                   "Make sure that 'mlocate' is installed on "
+                                   "the node." % (section_name, self.node))
+                    result = "unknown"
+                else:
+                    logger.info("Node '%s' backend section '%s' volume_driver "
+                                "contains an "
+                                "invalid driver location: '%s'" % (
+                        self.node, section_name,  path))
+                    result = "fail"
             else:
-                logger.info("Backend section '%s' volume_driver contains an "
-                            "invalid driver location: '%s'" % (section_name,
-                                                               path))
+                logger.info("Node '%s' backend section '%s' volume_driver is "
+                            "invalid " % (self.node, section_name))
                 result = "fail"
 
         except configparser.NoOptionError:
-            logger.info("No volume_diver provided for backend section %s " %
-                        section_name)
+            logger.info("No volume_diver provided for node '%s' backend "
+                        "section '%s'" % (self.node, section_name))
         return result
