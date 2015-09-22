@@ -323,7 +323,7 @@ class BaseCinderDiagnosticsCliToolTest(unittest.TestCase):
         """
 
         try:
-            config = parser = configparser.ConfigParser()
+            config = parser = configparser.RawConfigParser()
 
             for section in dict.keys():
                 config.add_section(section)

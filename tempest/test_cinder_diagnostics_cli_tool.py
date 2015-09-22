@@ -1265,7 +1265,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
             output = client.execute(command)
             self.assertEqual(response, output)
         except Exception as e:
-            self.fail(e.message)
+            self.fail(e)
 
         finally:
             if client is not None:
@@ -1285,7 +1285,7 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
             output = client.execute('echo Successful')
             self.fail("Connection unSuccessful")
         except Exception as e:
-            self.assertEqual("Connection unSuccessful", e.message)
+            self.assertEqual("Connection unSuccessful", e)
 
         finally:
             if client is not None:
@@ -1587,7 +1587,7 @@ hp_3par_fc.HP3PARFCDriver',
         """
 
         try:
-            config = parser = configparser.ConfigParser()
+            config = parser = configparser.RawConfigParser()
 
             for section in dict.keys():
                 config.add_section(section)
