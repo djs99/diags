@@ -12,17 +12,17 @@ Clone the cliff repository:
 Install the cliff framework:
 
   $ cd cliff
-  $ python setup.py install
+  $ sudo python setup.py install
 
 Install the additional formatter package:
 
-  $ pip install cliff-tablib
+  $ sudo pip install cliff-tablib
 
 Install the Cinder Diagnostics CLI package.
 Copy the diagsapp directory (and contents) into the "cliff" directory.
 
   $ cd diagsapp
-  $ python setup.py install
+  $ sudo python setup.py install
 
 Usage
 -----
