@@ -261,7 +261,7 @@ class BaseCinderDiagnosticsCliToolTest(unittest.TestCase):
         section_name = '3PAR-SLEEPYKITTY'
         dict = {
             'volume_driver': 'cinder.volume.drivers.san.hp.\
-            hp_3par_iscsi.HP3PARISCSIDriver',
+hp_3par_iscsi.HP3PARISCSIDriver',
             'volume_backend_name': '3PAR-SLEEPYKITTY',
             'num_volume_device_scan_tries': 10,
             'hp3par_api_url': 'http://test.ws.url:8080/api/v1',
@@ -286,7 +286,7 @@ class BaseCinderDiagnosticsCliToolTest(unittest.TestCase):
         section_name = '3PAR-SLEEPYKITTY-FC'
         dict = {
             'volume_driver': 'cinder.volume.drivers.san.hp.\
-            hp_3par_fc.HP3PARFCDriver',
+hp_3par_fc.HP3PARFCDriver',
             'volume_backend_name': '3PAR-SLEEPYKITTY-FC',
             'hp3par_api_url': 'http://test.ws.url:8080/api/v1',
             'hp3par_username': 'testuser',
