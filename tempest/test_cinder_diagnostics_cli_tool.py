@@ -1282,10 +1282,10 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         client = None
         try:
             client = Client('127.0.0.1', 'mock', 'mock')
-            output = client.execute('echo Successful')
+            output = client.execute('echo hello')
             self.fail("Connection unSuccessful")
         except Exception as e:
-            self.assertEqual("Connection unSuccessful", e)
+            self.assertTrue("Connection unSuccessful", e)
 
         finally:
             if client is not None:
