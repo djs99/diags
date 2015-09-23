@@ -81,7 +81,7 @@ class WSChecker(object):
             "driver": "unknown"
         }
         if section_name in self.hp3pars:
-            logger.debug("Checking 3PAR options for node '%s' backend section "
+            logger.info("Checking 3PAR options for node '%s' backend section "
                          "%s" % (self.node, section_name))
             tests["driver"] = self.has_driver(section_name)
             client = self.get_client(section_name, self.is_test)
@@ -113,7 +113,7 @@ class WSChecker(object):
         """
         try:
             url = self.parser.get(section_name, 'hp3par_api_url')
-            logger.debug("Attempting to connect to %s..." % url)
+            logger.info("Attempting to connect to %s..." % url)
             if test:
                 cl = testclient.HP3ParClient(url)
             else:
@@ -160,7 +160,7 @@ class WSChecker(object):
         try:
             cpg_list = [x.strip() for x in
                         self.parser.get(section_name, 'hp3par_cpg').split(',')]
-            logger.debug("Checking hp3par_cpg option for node '%s' backend "
+            logger.info("Checking hp3par_cpg option for node '%s' backend "
                          "section '%s'" % (self.node, section_name))
             for cpg in cpg_list:
                 try:
@@ -188,7 +188,7 @@ class WSChecker(object):
             ip_list = [x.strip() for x in
                        self.parser.get(section_name,
                                        'hp3par_iscsi_ips').split(',')]
-            logger.debug("Checking iSCSI IP addresses for node '%s' backend "
+            logger.info("Checking iSCSI IP addresses for node '%s' backend "
                          "section '%s'" % (self.node, section_name))
             for port in client.getPorts()['members']:
                 if (port['mode'] == client.PORT_MODE_TARGET and
@@ -218,7 +218,7 @@ class WSChecker(object):
             path = volume_driver.split('.')
             if ("%s.%s" % (path[-2], path.pop())) in constant.HP3PAR_DRIVERS:
                 path = '/'.join(path)
-                logger.debug("Checking for driver at '%s' for node '%s' "
+                logger.info("Checking for driver at '%s' for node '%s' "
                              "backend section '%s'" % (self.node, path,
                                                        section_name))
                 response = self.ssh_client.execute('locate ' + path)
