@@ -32,7 +32,7 @@ setup(
     description='Cinder Diagnostics CLI',
     long_description=long_description,
 
-    author='TBD',
+    author='HP Storage Cloud Team',
     author_email='TBD',
 
     url='TBD',
@@ -45,8 +45,8 @@ setup(
                  'Programming Language :: Python :: 2.7',
                  'Programming Language :: Python :: 3',
                  'Programming Language :: Python :: 3.2',
-                 'Intended Audience :: Cinder admins',
-                 'Environment :: Console',
+                 'Intended Audience :: System Administrators',
+                 'Environment :: OpenStack',
                  ],
 
     platforms=['Any'],

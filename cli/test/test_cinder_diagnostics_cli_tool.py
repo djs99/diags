@@ -83,6 +83,7 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         self.assertEqual(0, cli_exit_value)
         self.assertEqual(len(output), 2)
 
+        # Execute the CLI command in json output
         cli_exit_value, json_cli_output = self._execute_cli_command(
             command_arvgs, True)
         self.assertEqual(0, cli_exit_value)
@@ -127,6 +128,11 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         cli_exit_value, output = self._execute_cli_command(command_arvgs)
         self.assertEqual(0, cli_exit_value)
         self.assertEqual('3PAR-SLEEPYKITTY-FC', output[0]['Backend Section'])
+
+        # Execute the CLI command in json output
+        cli_exit_value , json_cli_output = self._execute_cli_command(command_arvgs, True)
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(output , json_cli_output)
 
     def test_check_array_command_with_wrong_arrayname(self):
         """Test cinder diagnostic cli tool options-check command when wrong array
@@ -252,6 +258,11 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
                 self.assertEqual('pass', row['WS API'])
                 self.assertEqual('N/A', row['iSCSI IP(s)'])
 
+        # Execute the CLI command in json output
+        cli_exit_value , json_cli_output = self._execute_cli_command(command_arvgs, True)
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(output , json_cli_output)
+
     def test_diags_cli_check_array_command_for_bad_CPG(self):
         """Test cinder diagnostic cli tool options-check command when the cpg
         value of 3par array in cinder.conf is wrong."""
@@ -297,6 +308,11 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
                 self.assertEqual('fail', row['Credentials'])
                 self.assertEqual('pass', row['WS API'])
                 self.assertEqual('N/A', row['iSCSI IP(s)'])
+
+        # Execute the CLI command in json output
+        cli_exit_value , json_cli_output = self._execute_cli_command(command_arvgs, True)
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(output , json_cli_output)
 
     def test_diags_cli_check_array_command_for_one_bad_CPG(self):
         """Test cinder diagnostic cli tool options-check command when the cpg
@@ -344,6 +360,11 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
                 self.assertEqual('pass', row['WS API'])
                 self.assertEqual('N/A', row['iSCSI IP(s)'])
 
+        # Execute the CLI command in json output
+        cli_exit_value , json_cli_output = self._execute_cli_command(command_arvgs, True)
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(output , json_cli_output)
+
     def test_diags_cli_check_array_command_for_wrong_iscsi_IP(self):
         """Test cinder diagnostic cli tool options-check command when the ISCSI
         IP of 3par array in cinder.conf is wrong."""
@@ -389,6 +410,11 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
                 self.assertEqual('pass', row['Credentials'])
                 self.assertEqual('pass', row['WS API'])
                 self.assertEqual('N/A', row['iSCSI IP(s)'])
+
+        # Execute the CLI command in json output
+        cli_exit_value , json_cli_output = self._execute_cli_command(command_arvgs, True)
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(output , json_cli_output)
 
     def test_diags_cli_check_array_command_for_wrong_hp3pardriver(self):
         """Test cinder diagnostic cli tool options-check command when the volume
@@ -441,16 +467,21 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
                 self.assertEqual('N/A', row['iSCSI IP(s)'])
                 self.assertEqual('fail', row['Driver'])
 
-    def test_diags_cli_check_array_command_for_wrong_hp3pardriver(self):
+        # Execute the CLI command in json output
+        cli_exit_value , json_cli_output = self._execute_cli_command(command_arvgs, True)
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(output , json_cli_output)
+
+    def test_diags_cli_check_array_command_for_correct_hp3pardriver(self):
         """Test cinder diagnostic cli tool options-check command when the volume
         driver value of 3par array in cinder.conf is correct."""
 
         self._mock_exec_command(
             {
-                'locate hp_3par_iscsi': '/opt/stack/cinder/cinder/volume\
-                /drivers/san/hp/hp_3par_iscsi.py',
-                'locate hp_3par_fc': '/opt/stack/cinder/cinder/volume\
-                /drivers/san/hp/hp_3par_fc.py'},
+                'hp_3par_iscsi':
+                'cinder/volume/drivers/san/hp/hp_3par_iscsi.py',
+                'hp_3par_fc':
+                'cinder/volume/drivers/san/hp/hp_3par_fc.py'},
             self.cinder_config_file)
 
         # Create cinder config file and add 3par ISCSI section
@@ -491,6 +522,11 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
                 self.assertEqual('N/A', row['iSCSI IP(s)'])
                 self.assertEqual('pass', row['Driver'])
 
+        # Execute the CLI command in json output
+        cli_exit_value , json_cli_output = self._execute_cli_command(command_arvgs, True)
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(output , json_cli_output)
+
     def test_diags_all_packages_installed_with_supported_version_on_ubuntu(
             self):
         """Test cinder diagnostic cli tool software-check command for all the
@@ -514,6 +550,11 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         for row in output:
             self.assertEqual("pass", row['Installed'])
             self.assertEqual("pass", row['Version'])
+
+        # Execute the CLI command in json output
+        cli_exit_value , json_cli_output = self._execute_cli_command(command_arvgs, True)
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(output , json_cli_output)
 
     def test_diags_all_packages_installed_with_supported_version_on_suse(
             self):
@@ -539,6 +580,11 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             self.assertEqual("pass", row['Installed'])
             self.assertEqual("pass", row['Version'])
 
+        # Execute the CLI command in json output
+        cli_exit_value , json_cli_output = self._execute_cli_command(command_arvgs, True)
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(output , json_cli_output)
+
     def test_diags_all_packages_not_installed_with_supported_version_on_suse(
             self):
         """Test cinder diagnostic cli tool software-check command for all the
@@ -562,6 +608,11 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         for row in output:
             self.assertEqual("fail", row['Installed'])
             self.assertEqual("N/A", row['Version'])
+
+        # Execute the CLI command in json output
+        cli_exit_value , json_cli_output = self._execute_cli_command(command_arvgs, True)
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(output , json_cli_output)
 
     def test_diags_all_packages_installed_with_not_supported_version_on_suse(
             self):
@@ -587,6 +638,11 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             self.assertEqual("pass", row['Installed'])
             self.assertEqual("fail", row['Version'])
 
+        # Execute the CLI command in json output
+        cli_exit_value , json_cli_output = self._execute_cli_command(command_arvgs, True)
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(output , json_cli_output)
+
     def test_diags_all_packages_installed_with_supported_version_on_centos(
             self):
         """Test cinder diagnostic cli tool software-check command for all the
@@ -611,7 +667,12 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             self.assertEqual("pass", row['Installed'])
             self.assertEqual("pass", row['Version'])
 
-    def test_diags_all_packages_not_installed_with_supported_version_on_centos(
+        # Execute the CLI command in json output
+        cli_exit_value , json_cli_output = self._execute_cli_command(command_arvgs, True)
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(output , json_cli_output)
+
+    def test_check_all_packages_not_installed_with_supported_version_on_centos(
             self):
         """Test cinder diagnostic cli tool software-check command for all the
         packages with supported version centos operating system."""
@@ -636,6 +697,11 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             self.assertEqual("fail", row['Installed'])
             self.assertEqual("N/A", row['Version'])
 
+        # Execute the CLI command in json output
+        cli_exit_value , json_cli_output = self._execute_cli_command(command_arvgs, True)
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(output , json_cli_output)
+
     def test_diags_all_packages_installed_with_unsupported_version_on_centos(
             self):
         """Test cinder diagnostic cli tool software-check command for all the
@@ -659,6 +725,11 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         for row in output:
             self.assertEqual("pass", row['Installed'])
             self.assertEqual("fail", row['Version'])
+
+        # Execute the CLI command in json output
+        cli_exit_value , json_cli_output = self._execute_cli_command(command_arvgs, True)
+        self.assertEqual(0 , cli_exit_value)
+        self.assertEqual(output , json_cli_output)
 
     def test_diags_sysfsutils_package_installed_with_supported_version(self):
         """Test cinder diagnostic cli tool software-check command for
@@ -1030,8 +1101,8 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         self.assertEqual(len(output), 0)
 
     def test_diags_cli_tool_with_no_cli_config(self):
-        """Test cinder diagnostic cli tool command execution with non-existent
-        cli.conf file."""
+        """Test cinder diagnostic cli tool command execution with
+        non-existent cli.conf file."""
 
         # Remove cli config
         self._remove_file(constant.CLI_CONFIG)
@@ -1137,7 +1208,7 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
             output = client.execute(command)
             self.assertEqual(response, output)
         except Exception as e:
-            self.fail(e.message)
+            self.fail(e)
 
         finally:
             if client is not None:
@@ -1153,14 +1224,15 @@ class CinderDiagnostics3PARCliToolTest(BaseCinderDiagnosticsCliToolTest):
         client = None
         try:
             client = Client('127.0.0.1', 'mock', 'mock')
-            output = client.execute('echo Successful')
+            output = client.execute('echo hello')
             self.fail("Connection unSuccessful")
         except Exception as e:
-            self.assertEqual("Connection unSuccessful", e.message)
+            self.assertTrue("Connection unSuccessful", e)
 
         finally:
             if client is not None:
                 client.disconnect()
+
 
 suite = unittest.TestLoader().loadTestsFromTestCase(
     CinderDiagnostics3PARCliToolTest)
