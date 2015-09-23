@@ -19,7 +19,6 @@ arrays.
 Requires the python hp3parclient: sudo pip install hp3parclient
 Assumes the volume_driver is correctly set
 """
-# from __future__ import absolute_import
 
 import logging
 from six.moves import configparser
