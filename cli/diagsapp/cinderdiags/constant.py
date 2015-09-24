@@ -14,7 +14,7 @@
 
 DIRECTORY = '/tmp/'
 TEST_CLI_CONFIG = '/tmp/cli.conf'
-CLI_CONFIG = 'config/cli.conf'
+CLI_CONFIG = '/etc/cinderdiags/cli.conf'
 NOVA_PACKAGES = [
     ('sysfsutils',  '2.1'),
     ('sg3-utils || sg3_utils', '1.3'),

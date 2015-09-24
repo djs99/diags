@@ -60,7 +60,9 @@ setup(
 
     namespace_packages=[],
     packages=find_packages(),
-    data_files=[('config', ['config/cli.conf'])],
+    data_files=[
+        ('/etc/cinderdiags', ['config/cli.conf.example']),
+    ],
     include_package_data=True,
 
 
