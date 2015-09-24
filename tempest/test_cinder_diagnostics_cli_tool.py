@@ -44,6 +44,9 @@ class CinderDiagnostics3PARCliToolTest(base.TestCase):
         super(CinderDiagnostics3PARCliToolTest, self).setUp()
         self._remove_file(self.cinder_config_file)
 
+        constant.TEST_CLI_CONFIG = 'cli.conf'
+        constant.DIRECTORY = "./"
+
         # 3par FC section
         cli_dict = {}
         cli_dict["CINDER_TEST_NODE"] = self._get_default_cli_conf_section(
