@@ -54,10 +54,14 @@ class CheckOptions(Lister):
                             nargs='?',
                             default='arrays',
                             help='defaults to checking all backend sections')
+        parser.add_argument('-conf-file',
+                            dest='conf',
+                            help='location of cli.conf (defaults to '
+                                 '/etc/cinderdiags/cli.conf)')
         return parser
 
     def take_action(self, parsed_args):
-        reader = conf_reader.Reader(parsed_args.test)
+        reader = conf_reader.Reader(parsed_args.test, parsed_args.conf)
         result = reader.options_check(parsed_args.name)
         if len(result) < 1:
             raise ValueError("%s not found" % parsed_args.name)

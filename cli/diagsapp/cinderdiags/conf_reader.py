@@ -28,14 +28,14 @@ parser = configparser.ConfigParser()
 
 class Reader(object):
 
-    def __init__(self, is_test=False):
+    def __init__(self, is_test=False, path=None):
         self.is_test = is_test
         self.cinder_nodes = []
         self.nova_nodes = []
 
         if self.is_test:
             path = constant.TEST_CLI_CONFIG
-        else:
+        elif path is None:
             path = constant.CLI_CONFIG
         if os.path.isfile(path):
             parser.read(path)
@@ -45,8 +45,7 @@ class Reader(object):
             if len(self.nova_nodes) < 1:
                 logger.warning("No Nova nodes are configured in cli.conf")
         else:
-            raise IOError("cli.conf not found. (Run 'setup.py install' after "
-                          "editing cli.conf)")
+            raise IOError("%s not found" % constant.CLI_CONFIG)
 
     def get_nodes(self):
         """Create lists of cinder and nova nodes

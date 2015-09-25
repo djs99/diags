@@ -56,6 +56,11 @@ class CheckSoftware(Lister):
                             action='store_true',
                             help=argparse.SUPPRESS)
 
+        parser.add_argument('-conf-file',
+                            dest='conf',
+                            help='location of cli.conf (defaults to '
+                                 '/etc/cinderdiags/cli.conf)')
+
         args, unknown = parser.parse_known_args()
         if args.name:
             parser.add_argument('--package-min-version',
@@ -64,7 +69,7 @@ class CheckSoftware(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        reader = conf_reader.Reader(parsed_args.test)
+        reader = conf_reader.Reader(parsed_args.test, parsed_args.conf)
         result = reader.software_check(parsed_args.name,
                                        parsed_args.serv,
                                        parsed_args.version)
