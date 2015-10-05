@@ -1,36 +1,49 @@
-=======================================
- Developing the Cinder diagnostics CLI:
-=======================================
+===============================
+cinderdiags
+===============================
 
-Setup
------
+HP Storage OpenStack Cinder Diagnostic CLI
 
-Clone the cliff repository:
+* Free software: Apache license
 
-  $ git clone https://github.com/openstack/cliff.git
+Overview
+---------
 
-Install the cliff framework:
+This CLI tool can be used to validate a user cinder.conf file and also
+to verify software installed on Cinder and Nova nodes.
 
-  $ cd cliff
-  $ sudo python setup.py install
+Requirements
+------------
 
-Install the additional formatter package:
+cliff
+cliff-tab
+hp3parclient
 
-  $ sudo pip install cliff-tablib
+Installation instructions
+-------------------------
 
-Install the Cinder Diagnostics CLI package.
-Copy the diagsapp directory (and contents) into the "cliff" directory.
+pip install configdiags
 
-  $ cd diagsapp
-  $ sudo python setup.py install
+A cli.conf must exist and should contain the following format::
 
-Usage
------
+    [EXAMPLE-CINDER-NODE]
+    service=cinder
+    host_ip=15.125.224.1
+    ssh_user=admin
+    ssh_password=admin
+    conf_source=/etc/cinder/cinder.conf
 
-  $ cinderdiags --help
+    [EXAMPLE-NOVA-NODE]
+    service=nova
+    host_ip=15.125.224.1
+    ssh_user=admin
 
-Development
------------
+By default, this file needs to exist in /etc/cinderdiags/cli.conf. Alternatively, this file location
+can be passed into the CLI using the -configfile option.
 
-Use the code in the "demoapp" directory as a starting place for implementing new code.
-After making a code change, be sure to run setup.py from the diagsapp directory.
+Starting the CLI
+----------------
+
+To view command options::
+
+    cinderdiags --help

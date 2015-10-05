@@ -12,69 +12,17 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-#!/usr/bin/env python
-from setuptools import setup, find_packages
+import setuptools
 
-PROJECT = 'cinderdiags'
-
-# Change docs/sphinx/conf.py too!
-VERSION = '0.1'
-
+# In python < 2.7.4, a lazy loading of package `pbr` will break
+# setuptools if some other modules registered functions in `atexit`.
+# solution from: http://bugs.python.org/issue15881#msg170215
 try:
-    long_description = open('README.rst', 'rt').read()
-except IOError:
-    long_description = ''
+    import multiprocessing  # noqa
+except ImportError:
+    pass
 
-setup(
-    name=PROJECT,
-    version=VERSION,
-
-    description='Cinder Diagnostics CLI',
-    long_description=long_description,
-
-    author='HP Storage Cloud Team',
-    author_email='TBD',
-
-    url='TBD',
-    download_url='TBD',
-
-    classifiers=['Development Status :: 3 - Alpha',
-                 'License :: OSI Approved :: Apache Software License',
-                 'Programming Language :: Python',
-                 'Programming Language :: Python :: 2',
-                 'Programming Language :: Python :: 2.7',
-                 'Programming Language :: Python :: 3',
-                 'Programming Language :: Python :: 3.2',
-                 'Intended Audience :: System Administrators',
-                 'Environment :: OpenStack',
-                 ],
-
-    platforms=['Any'],
-
-    scripts=[],
-
-    provides=[],
-    install_requires=[
-        'cliff', 'cliff-tablib', 'hp3parclient', 'paramiko'
-    ],
-
-    namespace_packages=[],
-    packages=find_packages(),
-    data_files=[
-        ('/etc/cinderdiags', ['config/cli.conf.example']),
-    ],
-    include_package_data=True,
-
-
-    entry_points={
-        'console_scripts': [
-            'cinderdiags = cinderdiags.main:main'
-        ],
-        'cliff.cinderdiags': [
-            'options-check = cinderdiags.options:CheckOptions',
-            'software-check = cinderdiags.software:CheckSoftware'
-        ],
-    },
-
-    zip_safe=False,
+setuptools.setup(
+    setup_requires=['pbr'],
+    pbr=True
 )
