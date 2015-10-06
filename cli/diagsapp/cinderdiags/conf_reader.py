@@ -45,7 +45,7 @@ class Reader(object):
             if len(self.nova_nodes) < 1:
                 logger.warning("No Nova nodes are configured in cli.conf")
         else:
-            raise IOError("%s not found" % constant.CLI_CONFIG)
+            raise IOError("%s not found" % path)
 
     def get_nodes(self):
         """Create lists of cinder and nova nodes

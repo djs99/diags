@@ -1,5 +1,7 @@
 *.pyc
-/.idea/workspace.xml
-/.idea/misc.xml
+/.idea/
 cli/diagsapp/build/
 cli/diagsapp/cinderdiags.egg-info/
+cli/diagsapp/AUTHORS
+cli/diagsapp/ChangeLog
+cli/diagsapp/dist/
