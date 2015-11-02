@@ -61,6 +61,10 @@ class CheckSoftware(Lister):
                             help='location of cli.conf (defaults to '
                                  '/etc/cinderdiags/cli.conf)')
 
+        parser.add_argument('-conf-data',
+                            dest='data',
+                            help='json structure contain cli.conf data')
+
         args, unknown = parser.parse_known_args()
         if args.name:
             parser.add_argument('--package-min-version',
@@ -69,7 +73,9 @@ class CheckSoftware(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        reader = conf_reader.Reader(parsed_args.test, parsed_args.conf)
+        reader = conf_reader.Reader(parsed_args.test,
+                                    parsed_args.conf,
+                                    parsed_args.data)
         result = reader.software_check(parsed_args.name,
                                        parsed_args.serv,
                                        parsed_args.version)

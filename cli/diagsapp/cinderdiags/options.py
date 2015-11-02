@@ -58,10 +58,15 @@ class CheckOptions(Lister):
                             dest='conf',
                             help='location of cli.conf (defaults to '
                                  '/etc/cinderdiags/cli.conf)')
+        parser.add_argument('-conf-data',
+                            dest='data',
+                            help='json structure contain cli.conf data')
         return parser
 
     def take_action(self, parsed_args):
-        reader = conf_reader.Reader(parsed_args.test, parsed_args.conf)
+        reader = conf_reader.Reader(parsed_args.test,
+                                    parsed_args.conf,
+                                    parsed_args.data)
         result = reader.options_check(parsed_args.name)
         if len(result) < 1:
             raise ValueError("%s not found" % parsed_args.name)

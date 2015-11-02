@@ -66,6 +66,7 @@ class WSChecker(object):
         return all_tests
 
     def check_section(self, section_name):
+        logger.info("hp3par_wsapi_checks - check_section()")
         """Runs all WS configuration tests for a section
 
         :param section_name: from cinder.conf as [SECTION_NAME]
@@ -86,6 +87,7 @@ class WSChecker(object):
             tests["driver"] = self.has_driver(section_name)
             client = self.get_client(section_name, self.is_test)
             if client:
+                logger.info("client: '%s'" % (client))
                 tests["url"] = "pass"
                 if self.cred_is_valid(section_name, client):
                     tests["credentials"] = "pass"
@@ -107,6 +109,7 @@ class WSChecker(object):
 
 # Config testing methods check if option values are valid
     def get_client(self, section_name, test):
+        logger.info("hp3par_wsapi_checks - get_client()")
         """Tries to create a client and verifies the api url
 
         :return: The client if url is valid, None if invalid/missing
@@ -131,10 +134,14 @@ class WSChecker(object):
             return None
 
     def cred_is_valid(self, section_name, client):
+        logger.info("hp3par_wsapi_checks - cred_is_valid()")
         """Tries to login to the client to verify credentials
 
         :return: True if credentials are valid, False if invalid/missing
         """
+        logger.info("Use credentials %s -- %s: " %
+                    (self.parser.get(section_name, 'hp3par_username'),
+                     self.parser.get(section_name, 'hp3par_password')))
         try:
             client.login(self.parser.get(section_name, 'hp3par_username'),
                          self.parser.get(section_name, 'hp3par_password'))
@@ -152,6 +159,7 @@ class WSChecker(object):
             return False
 
     def cpg_is_valid(self, section_name, client):
+        logger.info("hp3par_wsapi_checks - cpg_is_valid()")
         """Tests to see if a cpg exists on the 3PAR array to verify cpg name
 
         :return: string
@@ -164,6 +172,8 @@ class WSChecker(object):
                          "section '%s'" % (self.node, section_name))
             for cpg in cpg_list:
                 try:
+                    logger.info("request client.getCPG(): '%s' " %
+                                (cpg))
                     client.getCPG(cpg)
                 except hpexceptions.HTTPNotFound:
                     logger.info("Node '%s' backend section '%s' hp3par_cpg "
@@ -178,6 +188,7 @@ class WSChecker(object):
         return result
 
     def iscsi_is_valid(self, section_name, client):
+        logger.info("hp3par_wsapi_checks - iscsi_is_valid()")
         """Gets the iSCSI target ports from the client, checks the iSCSI IPs.
 
         :return: string
@@ -195,8 +206,10 @@ class WSChecker(object):
                         port['linkState'] == client.PORT_STATE_READY and
                         port['protocol'] == client.PORT_PROTO_ISCSI):
                     valid_ips.append(port['IPAddr'])
+                    logger.info("Checking iscsi IP port: '%s'" % (port['IPAddr']))
             for ip_addr in ip_list:
                 ip = ip_addr.split(':')
+                logger.info("ip: '%s'" % (ip))
                 if ip[0] not in valid_ips:
                     logger.info("Node '%s' backend section '%s' "
                                 "hp3par_iscsi_ips contains an invalid iSCSI "
@@ -209,6 +222,7 @@ class WSChecker(object):
         return result
 
     def has_driver(self, section_name):
+        logger.info("hp3par_wsapi_checks - has_driver()")
         """Checks that the volume_driver is installed
 
         :return: string
@@ -216,6 +230,7 @@ class WSChecker(object):
         try:
             volume_driver = self.parser.get(section_name, 'volume_driver')
             path = volume_driver.split('.')
+            logger.info("volume_driver: '%s'  path: '%s'" % (volume_driver, path))
             if ("%s.%s" % (path[-2], path.pop())) in constant.HP3PAR_DRIVERS:
                 path = '/'.join(path)
                 logger.info("Checking for driver at '%s' for node '%s' "

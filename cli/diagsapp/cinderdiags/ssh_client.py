@@ -31,7 +31,8 @@ class Client(object):
                                 timeout=20)
 
         except socket.error:
-            raise Exception("SSH Error: Unable to connect")
+            raise Exception("SSH Error - Unable to connect to host [%s]" %
+                            hostName)
         except paramiko.ssh_exception.AuthenticationException:
             raise Exception("SSH Error: Invalid SSH credentials")
 
