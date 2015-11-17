@@ -2,7 +2,7 @@
 cinderdiags
 ===============================
 
-HP Storage OpenStack Cinder Diagnostic CLI
+HPE Storage OpenStack Cinder Diagnostic CLI
 
 * Free software: Apache license
 
@@ -15,9 +15,9 @@ to verify software installed on Cinder and Nova nodes.
 Requirements
 ------------
 
-cliff
-cliff-tab
-hp3parclient
+| cliff
+| cliff-tab
+| hp3parclient
 
 Installation instructions
 -------------------------
@@ -37,7 +37,7 @@ Example commands::
     cinderdiags options-check -v
     cinderdiags help software-check
     cinderdiags software-check --log-file tmp.txt
-    cinderdiags software-check -software hplefthandclient --package-min-version 1.0.2
+    cinderdiags software-check -software hplefthandclient --package-min-version 1.1.0
 
 Configuration File
 ------------------
