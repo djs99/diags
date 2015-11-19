@@ -18,6 +18,8 @@ import logging
 from cinderdiags import conf_reader
 from cliff.lister import Lister
 
+log = logging.getLogger(__name__)
+
 
 class CheckOptions(Lister):
     """check 3PAR options in cinder.conf against 3PAR array(s)
@@ -29,18 +31,16 @@ class CheckOptions(Lister):
                             must be unique per node
                                 example: [BACKEND-SECTION-NAME]
         WS API              web service API url for array
-                                option: hp3par_api_url
+                                option: hpe3par_api_url
         Credentials         username and password for array
-                                option: hp3par_username, hp3par_password
+                                option: hpe3par_username, hpe3par_password
         CPG(s)              CPGs to use for volume creation
-                                option: hp3par_cpg
+                                option: hpe3par_cpg
         iSCSI IP(s)         array's iSCSI IP addresses to use
-                                option: hp3par_iscsi_ips
+                                option: hpe3par_iscsi_ips
         Driver              array's volume driver
                                 option: volume_driver
     """
-
-    log = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super(CheckOptions, self).get_parser(prog_name)

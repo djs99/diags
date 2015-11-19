@@ -19,8 +19,8 @@ NOVA_PACKAGES = [
     ('sysfsutils',  '2.1'),
     ('sg3-utils || sg3_utils', '1.3'),
 ]
-CINDER_PACKAGES = [('hp3parclient', '3.1.1')]
-HP3PAR_DRIVERS = [
-    'hp_3par_iscsi.HP3PARISCSIDriver',
-    'hp_3par_fc.HP3PARFCDriver'
+CINDER_PACKAGES = [('python-3parclient', '4.0.0')]
+HPE3PAR_DRIVERS = [
+    'hpe_3par_iscsi.HPE3PARISCSIDriver',
+    'hpe_3par_fc.HPE3PARFCDriver'
 ]

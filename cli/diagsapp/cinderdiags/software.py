@@ -27,7 +27,7 @@ class CheckSoftware(Lister):
                             unique
                                 example: [NODE-NAME]
         Software            software package name
-                                defaults: hp3parclient, sysfsutils, sg3-utils
+                                defaults: hpe3parclient, sysfsutils, sg3-utils
         Installed           installation status of the software package
         Version             software package version meets the minimum
                             requirement

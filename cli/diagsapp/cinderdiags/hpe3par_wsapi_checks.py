@@ -16,22 +16,22 @@
 This checks the cinder.conf file to find errors in the configuration of 3PAR
 arrays.
 
-Requires the python hp3parclient: sudo pip install hp3parclient
+Requires python-3parclient: sudo pip install python-3parclient
 Assumes the volume_driver is correctly set
 """
 
 import logging
 from six.moves import configparser
 from cinderdiags import constant
-from cinderdiags import hp3par_testclient as testclient
+from cinderdiags import hpe3par_testclient as testclient
 
 logger = logging.getLogger(__name__)
 
 try:
-    from hp3parclient import client as hpclient
-    from hp3parclient import exceptions as hpexceptions
+    from hpe3parclient import client as hpeclient
+    from hpe3parclient import exceptions as hpe_exceptions
 except ImportError:
-    logger.error('hp3parclient package not found (pip install hp3parclient)')
+    logger.error('python-3parclient package not found (pip install python-3parclient)')
 
 
 class WSChecker(object):
@@ -49,11 +49,11 @@ class WSChecker(object):
         self.is_test = test
         self.parser = configparser.ConfigParser()
         self.parser.read(self.conf)
-        self.hp3pars = []
+        self.hpe3pars = []
         for section in self.parser.sections():
             if self.parser.has_option(section, 'volume_driver') \
-                    and 'hp_3par' in self.parser.get(section, 'volume_driver'):
-                self.hp3pars.append(section)
+                    and 'hpe_3par' in self.parser.get(section, 'volume_driver'):
+                self.hpe3pars.append(section)
 
     def check_all(self):
         """Tests configuration settings for all 3par arrays
@@ -61,12 +61,12 @@ class WSChecker(object):
         :return: a list of dictionaries
         """
         all_tests = []
-        for section_name in self.hp3pars:
+        for section_name in self.hpe3pars:
             all_tests.append(self.check_section(section_name))
         return all_tests
 
     def check_section(self, section_name):
-        logger.info("hp3par_wsapi_checks - check_section()")
+        logger.info("hpe3par_wsapi_checks - check_section()")
         """Runs all WS configuration tests for a section
 
         :param section_name: from cinder.conf as [SECTION_NAME]
@@ -81,7 +81,7 @@ class WSChecker(object):
             "node": self.node,
             "driver": "unknown"
         }
-        if section_name in self.hp3pars:
+        if section_name in self.hpe3pars:
             logger.info("Checking 3PAR options for node '%s' backend section "
                          "%s" % (self.node, section_name))
             tests["driver"] = self.has_driver(section_name)
@@ -101,7 +101,7 @@ class WSChecker(object):
                     tests["credentials"] = "fail"
             else:
                 tests["url"] = "fail"
-            if 'hp_3par_fc' in self.parser.get(section_name, 'volume_driver'):
+            if 'hpe_3par_fc' in self.parser.get(section_name, 'volume_driver'):
                 tests["iscsi"] = "N/A"
             return tests
         else:
@@ -109,57 +109,57 @@ class WSChecker(object):
 
 # Config testing methods check if option values are valid
     def get_client(self, section_name, test):
-        logger.info("hp3par_wsapi_checks - get_client()")
+        logger.info("hpe3par_wsapi_checks - get_client()")
         """Tries to create a client and verifies the api url
 
         :return: The client if url is valid, None if invalid/missing
         """
         try:
-            url = self.parser.get(section_name, 'hp3par_api_url')
+            url = self.parser.get(section_name, 'hpe3par_api_url')
             logger.info("Attempting to connect to %s..." % url)
             if test:
-                cl = testclient.HP3ParClient(url)
+                cl = testclient.HPE3ParClient(url)
             else:
-                cl = hpclient.HP3ParClient(url)
+                cl = hpeclient.HPE3ParClient(url)
             return cl
-        except (hpexceptions.UnsupportedVersion, hpexceptions.HTTPBadRequest,
+        except (hpe_exceptions.UnsupportedVersion, hpe_exceptions.HTTPBadRequest,
                 TypeError) as e:
-            logger.info("Failed to connect to hp3par_api_url for node '%s' "
+            logger.info("Failed to connect to hpe3par_api_url for node '%s' "
                         "backend section '%s' --- %s" % (self.node,
                                                          section_name, e))
             return None
         except configparser.NoOptionError:
-            logger.info("No hp3par_api_url provided for node '%s' backend "
+            logger.info("No hpe3par_api_url provided for node '%s' backend "
                         "section '%s'" % (self.node, section_name))
             return None
 
     def cred_is_valid(self, section_name, client):
-        logger.info("hp3par_wsapi_checks - cred_is_valid()")
+        logger.info("hpe3par_wsapi_checks - cred_is_valid()")
         """Tries to login to the client to verify credentials
 
         :return: True if credentials are valid, False if invalid/missing
         """
         logger.info("Use credentials %s -- %s: " %
-                    (self.parser.get(section_name, 'hp3par_username'),
-                     self.parser.get(section_name, 'hp3par_password')))
+                    (self.parser.get(section_name, 'hpe3par_username'),
+                     self.parser.get(section_name, 'hpe3par_password')))
         try:
-            client.login(self.parser.get(section_name, 'hp3par_username'),
-                         self.parser.get(section_name, 'hp3par_password'))
+            client.login(self.parser.get(section_name, 'hpe3par_username'),
+                         self.parser.get(section_name, 'hpe3par_password'))
             return True
-        except (hpexceptions.HTTPForbidden,
-                hpexceptions.HTTPUnauthorized):
-            logger.info("Incorrect hp3par_username or hp3par_password "
+        except (hpe_exceptions.HTTPForbidden,
+                hpe_exceptions.HTTPUnauthorized):
+            logger.info("Incorrect hpe3par_username or hpe3par_password "
                         "provided for node '%s' backend section '%s'" %
                         (self.node, section_name))
             return False
         except configparser.NoOptionError:
-            logger.info("No hp3par_username or hp3par_password provided for "
+            logger.info("No hpe3par_username or hpe3par_password provided for "
                         "node '%s' backend section '%s'" % (self.node,
                                                             section_name))
             return False
 
     def cpg_is_valid(self, section_name, client):
-        logger.info("hp3par_wsapi_checks - cpg_is_valid()")
+        logger.info("hpe3par_wsapi_checks - cpg_is_valid()")
         """Tests to see if a cpg exists on the 3PAR array to verify cpg name
 
         :return: string
@@ -167,28 +167,28 @@ class WSChecker(object):
         result = "pass"
         try:
             cpg_list = [x.strip() for x in
-                        self.parser.get(section_name, 'hp3par_cpg').split(',')]
-            logger.info("Checking hp3par_cpg option for node '%s' backend "
+                        self.parser.get(section_name, 'hpe3par_cpg').split(',')]
+            logger.info("Checking hpe3par_cpg option for node '%s' backend "
                          "section '%s'" % (self.node, section_name))
             for cpg in cpg_list:
                 try:
                     logger.info("request client.getCPG(): '%s' " %
                                 (cpg))
                     client.getCPG(cpg)
-                except hpexceptions.HTTPNotFound:
-                    logger.info("Node '%s' backend section '%s' hp3par_cpg "
+                except hpe_exceptions.HTTPNotFound:
+                    logger.info("Node '%s' backend section '%s' hpe3par_cpg "
                                 "contains an invalid CPG name: '%s'" %
                                 (self.node, section_name, cpg))
                     result = "fail"
         except configparser.NoOptionError:
-            logger.info("No hp3par_cpg provided for node '%s' backend section "
+            logger.info("No hpe3par_cpg provided for node '%s' backend section "
                         "'%s'" %
                         (self.node, section_name))
             result = "fail"
         return result
 
     def iscsi_is_valid(self, section_name, client):
-        logger.info("hp3par_wsapi_checks - iscsi_is_valid()")
+        logger.info("hpe3par_wsapi_checks - iscsi_is_valid()")
         """Gets the iSCSI target ports from the client, checks the iSCSI IPs.
 
         :return: string
@@ -198,7 +198,7 @@ class WSChecker(object):
         try:
             ip_list = [x.strip() for x in
                        self.parser.get(section_name,
-                                       'hp3par_iscsi_ips').split(',')]
+                                       'hpe3par_iscsi_ips').split(',')]
             logger.info("Checking iSCSI IP addresses for node '%s' backend "
                          "section '%s'" % (self.node, section_name))
             for port in client.getPorts()['members']:
@@ -212,17 +212,17 @@ class WSChecker(object):
                 logger.info("ip: '%s'" % (ip))
                 if ip[0] not in valid_ips:
                     logger.info("Node '%s' backend section '%s' "
-                                "hp3par_iscsi_ips contains an invalid iSCSI "
+                                "hpe3par_iscsi_ips contains an invalid iSCSI "
                                 "IP '%s'" % (self.node, section_name, ip))
                     result = "fail"
         except configparser.NoOptionError:
-            logger.info("No hp3par_iscsi_ips provided for node '%s' backend "
+            logger.info("No hpe3par_iscsi_ips provided for node '%s' backend "
                         "section '%s" % (self.node, section_name))
             result = "fail"
         return result
 
     def has_driver(self, section_name):
-        logger.info("hp3par_wsapi_checks - has_driver()")
+        logger.info("hpe3par_wsapi_checks - has_driver()")
         """Checks that the volume_driver is installed
 
         :return: string
@@ -231,7 +231,7 @@ class WSChecker(object):
             volume_driver = self.parser.get(section_name, 'volume_driver')
             path = volume_driver.split('.')
             logger.info("volume_driver: '%s'  path: '%s'" % (volume_driver, path))
-            if ("%s.%s" % (path[-2], path.pop())) in constant.HP3PAR_DRIVERS:
+            if ("%s.%s" % (path[-2], path.pop())) in constant.HPE3PAR_DRIVERS:
                 path = '/'.join(path)
                 logger.info("Checking for driver at '%s' for node '%s' "
                              "backend section '%s'" % (self.node, path,

@@ -18,7 +18,7 @@ import os
 from cinderdiags import constant
 from cinderdiags import pkg_checks
 from cinderdiags import ssh_client
-from cinderdiags import hp3par_wsapi_checks as wsapi_checks
+from cinderdiags import hpe3par_wsapi_checks as wsapi_checks
 
 from six.moves import configparser
 
@@ -58,7 +58,7 @@ class Reader(object):
                 if len(self.nova_nodes) < 1:
                     logger.warning("No Nova nodes are configured in cli.conf")
             else:
-                raise IOError("%s not found" % path)
+                raise IOError("%s path not found" % path)
 
     def get_nodes(self):
         """Create lists of cinder and nova nodes

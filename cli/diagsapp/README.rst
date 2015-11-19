@@ -12,12 +12,15 @@ Overview
 This CLI tool can be used to validate a user cinder.conf file and also
 to verify software installed on Cinder and Nova nodes.
 
+** Note that versions >= 2.0.0 of this package only work with the re-branded versions of the "HPE" cinder drivers.
+To run against the older "HP" cinder drivers, please install the latest 1.0.x version of this package.
+
 Requirements
 ------------
 
 | cliff
 | cliff-tab
-| hp3parclient
+| python-3parclient
 
 Installation instructions
 -------------------------
@@ -37,7 +40,7 @@ Example commands::
     cinderdiags options-check -v
     cinderdiags help software-check
     cinderdiags software-check --log-file tmp.txt
-    cinderdiags software-check -software hplefthandclient --package-min-version 1.1.0
+    cinderdiags software-check -software python-lefthandclient --package-min-version 2.0.0
 
 Configuration File
 ------------------
