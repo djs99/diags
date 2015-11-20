@@ -27,6 +27,7 @@ class Client(object):
             self.client.connect(hostName,
                                 username=sshUserName,
                                 password=sshPassword,
+                                look_for_keys=False,
                                 timeout=20)
 
         except socket.error:
