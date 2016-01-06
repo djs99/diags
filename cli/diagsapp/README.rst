@@ -25,7 +25,7 @@ Requirements
 Installation instructions
 -------------------------
 
-pip install configdiags
+pip install cinderdiags
 
 Running the CLI
 ---------------
