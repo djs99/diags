@@ -31,8 +31,9 @@ class Reader(object):
 
     arg_data = None
 
-    def __init__(self, is_test=False, path=None, json_data=None):
+    def __init__(self, is_test=False, path=None, json_data=None, get_info=False):
         self.is_test = is_test
+        self.include_system_info = get_info
         self.cinder_nodes = []
         self.nova_nodes = []
 
@@ -81,9 +82,12 @@ class Reader(object):
                     for section in self.arg_data:
                         if section['section'].lower() == node:
                             logger.warning("Found section: %s" % (node))
+                            logger.warning("Attempt to open SSH connection to: %s"
+                                           % (section['host_ip']))
                             client = ssh_client.Client(section['host_ip'],
                                                        section['ssh_user'],
                                                        section['ssh_password'])
+                            logger.warning("Opened SSH connection")
                 else:
                     client = ssh_client.Client(parser.get(node, 'host_ip'),
                                                parser.get(node, 'ssh_user'),
@@ -165,15 +169,16 @@ class Reader(object):
         all by default
         :return: list of dictionaries
         """
-
         clients = self.get_clients(self.cinder_nodes)
+        logger.warning("got clients")
         files = self.copy_files(clients)
         checks = []
         for node in files:
             checker = wsapi_checks.WSChecker(clients[node],
                                              files[node],
                                              node,
-                                             self.is_test)
+                                             self.is_test,
+                                             self.include_system_info)
             if section_name == 'arrays':
                 checks += checker.check_all()
             else:

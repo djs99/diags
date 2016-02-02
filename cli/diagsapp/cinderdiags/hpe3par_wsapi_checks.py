@@ -36,7 +36,8 @@ except ImportError:
 
 class WSChecker(object):
 
-    def __init__(self, client, conf, node, test=False):
+    def __init__(self, client, conf, node, test=False,
+                 include_system_info=False):
         """Tests web service api configurations in the cinder.conf file
 
         :param conf: location of cinder.conf
@@ -47,6 +48,7 @@ class WSChecker(object):
         self.ssh_client = client
         self.node = node
         self.is_test = test
+        self.include_system_info = include_system_info
         self.parser = configparser.ConfigParser()
         self.parser.read(self.conf)
         self.hpe3pars = []
@@ -79,8 +81,11 @@ class WSChecker(object):
             "cpg": "unknown",
             "iscsi": "unknown",
             "node": self.node,
-            "driver": "unknown"
+            "driver": "unknown",
         }
+        if self.include_system_info:
+            tests["system_info"] = "unknown"
+
         if section_name in self.hpe3pars:
             logger.info("Checking 3PAR options for node '%s' backend section "
                          "%s" % (self.node, section_name))
@@ -90,6 +95,9 @@ class WSChecker(object):
                 logger.info("client: '%s'" % (client))
                 tests["url"] = "pass"
                 if self.cred_is_valid(section_name, client):
+                    if self.include_system_info:
+                        tests["system_info"] = self.get_system_info(section_name,
+                                                                    client)
                     tests["credentials"] = "pass"
                     tests["cpg"] = self.cpg_is_valid(section_name, client)
                     if 'iscsi' in self.parser.get(section_name,
@@ -259,4 +267,51 @@ class WSChecker(object):
         except configparser.NoOptionError:
             logger.info("No volume_diver provided for node '%s' backend "
                         "section '%s'" % (self.node, section_name))
+        return result
+
+    def get_system_info(self, section_name, client):
+        logger.info("hpe3par_wsapi_checks - get_system_info()")
+        """Get all system info, including licenses
+
+        :return: string
+        """
+        result = "unknown"
+
+        try:
+            info = client.getStorageSystemInfo()
+            result = "name:" + info['name'] + ";;"
+            result += "os_version:" + info['systemVersion'] + ";;"
+            result += "model:" + info['model'] + ";;"
+            result += "serial_number:" + info['serialNumber'] + ";;"
+            result += "ip_address:" + info['IPv4Addr'] + ";;"
+            result += "licenses:"
+            if 'licenseInfo' in info:
+                if 'licenses' in info['licenseInfo']:
+                    valid_licenses = info['licenseInfo']['licenses']
+                    one_added = False
+                    for license in valid_licenses:
+                        if one_added:
+                            result += ";"
+                        one_added = True
+                        entry = license.get('name')
+                        if 'expiryTimeSec' in license:
+                            entry += "//" + str(license.get('expiryTimeSec'))
+                        logger.info("License: '%s' - " % (entry))
+                        result += entry
+            info = client.getWsApiVersion()
+            result += ";;wsapi_version:" + str(info['major']) + "." + \
+                str(info['minor']) + "." + str(info['revision']) + \
+                "." + str(info['build']) + ";;"
+
+            # the following is needed to get pool information
+            # get list of cpgs
+            result += "host_name:" + self.ssh_client.get_host_name() + ";;"
+            result += "backend:" + section_name + ";;"
+            result += "cpgs:" + self.parser.get(section_name, 'hpe3par_cpg')
+
+            logger.info("Result: '%s' - " % (result))
+        except configparser.NoOptionError:
+            logger.info("No license info for backend section "
+                        "'%s'" %
+                        (section_name))
         return result

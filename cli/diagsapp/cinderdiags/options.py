@@ -61,28 +61,42 @@ class CheckOptions(Lister):
         parser.add_argument('-conf-data',
                             dest='data',
                             help='json structure contain cli.conf data')
+        parser.add_argument('-incl-system-info',
+                            dest='info',
+                            action='store_true',
+                            help=argparse.SUPPRESS)
         return parser
 
     def take_action(self, parsed_args):
         reader = conf_reader.Reader(parsed_args.test,
                                     parsed_args.conf,
-                                    parsed_args.data)
+                                    parsed_args.data,
+                                    parsed_args.info)
         result = reader.options_check(parsed_args.name)
         if len(result) < 1:
             raise ValueError("%s not found" % parsed_args.name)
-        columns = (
-            'Node',
-            'Backend Section',
-            'WS API',
-            'Credentials',
-            'CPG',
-            'iSCSI IP(s)',
-            'Driver',
-        )
+
+        columns = ()
+        columns_base = (
+                'Node',
+                'Backend Section',
+                'WS API',
+                'Credentials',
+                'CPG',
+                'iSCSI IP(s)',
+                'Driver',
+            )
+        if parsed_args.info:
+            columns = columns_base + ('System Info',)
+        else:
+            columns = columns_base
+
 
         data = []
+
         for arr in result:
-            data.append((
+            entry = ()
+            entry_base = (
                 arr['node'],
                 arr['name'],
                 arr['url'],
@@ -90,5 +104,12 @@ class CheckOptions(Lister):
                 arr['cpg'],
                 arr['iscsi'],
                 arr['driver'],
-            ))
+            )
+            if parsed_args.info:
+                entry = entry_base + (arr['system_info'],)
+            else:
+                entry = entry_base
+
+            data.append(entry)
+
         return (columns, data)

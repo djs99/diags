@@ -12,8 +12,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import logging
 import paramiko
 import socket
+
+logger = logging.getLogger(__name__)
+
 
 class Client(object):
 
@@ -24,6 +28,7 @@ class Client(object):
             # Connect to remote host
             self.client = paramiko.SSHClient()
             self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
             self.client.connect(hostName,
                                 username=sshUserName,
                                 password=sshPassword,
@@ -34,6 +39,11 @@ class Client(object):
             raise Exception("SSH Error - Unable to connect to host [%s]" %
                             hostName)
         except paramiko.ssh_exception.AuthenticationException:
+            raise Exception("SSH Error: Invalid SSH credentials")
+
+        except Exception as ex:
+            # Paramiko throws weird error if password is an int
+            logger.warning("SSH Error: %s" % (ex.message))
             raise Exception("SSH Error: Invalid SSH credentials")
 
     def get_file(self, fromLocation, toLocation):
@@ -70,3 +80,9 @@ class Client(object):
             except (paramiko.ssh_exception.SSHException, socket.timeout):
                 raise Exception("SSH Error: Unable to execute remote command "
                                 "(%s)" % command)
+
+    def get_host_name(self):
+        # not sure why, but sometimes this comes back with a "\n", so strip
+        host_name = self.execute('hostname').rstrip()
+        return host_name
+
