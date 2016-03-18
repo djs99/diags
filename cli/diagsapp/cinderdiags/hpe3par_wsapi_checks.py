@@ -85,10 +85,15 @@ class WSChecker(object):
         }
         if self.include_system_info:
             tests["system_info"] = "unknown"
+            tests['conf_items'] = "unknown"
 
         if section_name in self.hpe3pars:
             logger.info("Checking 3PAR options for node '%s' backend section "
                          "%s" % (self.node, section_name))
+
+            if self.include_system_info:
+                tests['conf_items'] = self.get_conf_items(section_name)
+
             tests["driver"] = self.has_driver(section_name)
             client = self.get_client(section_name, self.is_test)
             if client:
@@ -267,6 +272,31 @@ class WSChecker(object):
         except configparser.NoOptionError:
             logger.info("No volume_diver provided for node '%s' backend "
                         "section '%s'" % (self.node, section_name))
+        return result
+
+    def get_conf_items(self, section_name):
+        logger.info("get cinder.conf items")
+        """Get all items listed in config.conf for this section
+
+        :return: string
+        """
+        options = ['hpe3par_api_url',
+                   'hpe3par_username',
+                   'hpe3par_password',
+                   'hpe3par_cpg',
+                   'hpe3par_iscsi_ips',
+                   'volume_driver']
+
+        result = ""
+        for option in options:
+            try:
+                value = self.parser.get(section_name, option)
+                logger.info("value = '%s'" % (value))
+                result += option + "==" + value + ";;"
+            except:
+                result += option + "==<blank>" + ";;"
+
+        logger.info("Items: '%s'" % (result))
         return result
 
     def get_system_info(self, section_name, client):

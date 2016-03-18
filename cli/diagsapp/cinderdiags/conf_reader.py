@@ -188,6 +188,28 @@ class Reader(object):
         self.cleanup(clients, files)
         return checks
 
+    def credentials_check(self):
+        """Validate SSH credentials
+        """
+        logger.warning("Check SSH credentials")
+        checklist = set(self.nova_nodes + self.cinder_nodes)
+        clients = self.get_clients(checklist)
+
+        checks = []
+        for node in checklist:
+            # clients only exist for nodes that SSH connect was successful
+            logger.warning("Check credentials for node: %s" % (node))
+            if node in clients:
+                result = 'pass'
+            else:
+                result = 'fail'
+            logger.warning("Credentials result: %s" % (result))
+            checks.append({'node': node,
+                           'connect': result })
+
+        self.cleanup(clients)
+        return checks
+
     def cleanup(self, clients, files={}):
         """Delete all copied cinder.conf files and close all SSH connections.
         """

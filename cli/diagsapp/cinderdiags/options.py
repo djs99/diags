@@ -87,7 +87,7 @@ class CheckOptions(Lister):
                 'Driver',
             )
         if parsed_args.info:
-            columns = columns_base + ('System Info',)
+            columns = columns_base + ('System Info', 'Conf Items')
         else:
             columns = columns_base
 
@@ -106,7 +106,7 @@ class CheckOptions(Lister):
                 arr['driver'],
             )
             if parsed_args.info:
-                entry = entry_base + (arr['system_info'],)
+                entry = entry_base + (arr['system_info'], arr['conf_items'])
             else:
                 entry = entry_base
 
