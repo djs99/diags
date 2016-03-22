@@ -99,7 +99,7 @@ def dpkg_check(client, node, pkg_info):
                                       "${Version}' " + name)
             if 'install ok installed' in response:
                 pkg['installed'] = 'pass'
-                pkg['name'] = name
+                pkg['name'] = name + ' (>=' + pkg_info[1] + ')'
                 if pkg_info[1]:
                     pattern = re.compile('\D([\d\.]+\d)\D')
                     pkg['version'] = version_check(response,
@@ -141,10 +141,10 @@ def yum_check(client, node, pkg_info):
                                       name)
             if 'Available Packages' in response:
                 pkg['installed'] = 'fail'
-                pkg['name'] = name
+                pkg['name'] = name + ' (>=' + pkg_info[1] + ')'
             elif 'Installed Packages' in response:
                 pkg['installed'] = 'pass'
-                pkg['name'] = name
+                pkg['name'] = name + ' (>=' + pkg_info[1] + ')'
                 if pkg_info[1]:
                     pattern = re.compile(name + '\.[\w+]+\D*([\d\.]+\d)\D')
                     pkg['version'] = version_check(response,
@@ -190,7 +190,7 @@ def zypper_check(client, node, pkg_info):
                 pkg['name'] = name
             elif 'Installed: Yes' in response:
                 pkg['installed'] = 'pass'
-                pkg['name'] = name
+                pkg['name'] = name + ' (>=' + pkg_info[1] + ')'
                 if pkg_info[1]:
                     pattern = re.compile('Version: \D*([\d\.]+\d)\D')
                     pkg['version'] = version_check(response,
@@ -231,7 +231,7 @@ def pip_check(client, node, pkg_info):
             response = client.execute("pip list | grep " + name)
             if response and re.match(name + '\s', response):
                 pkg['installed'] = 'pass'
-                pkg['name'] = name
+                pkg['name'] = name + ' (>=' + pkg_info[1] + ')'
                 if pkg_info[1]:
                     pattern = re.compile('\(([\d\.]+)\)')
                     pkg['version'] = version_check(response,

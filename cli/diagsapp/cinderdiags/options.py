@@ -37,7 +37,8 @@ class CheckOptions(Lister):
         CPG(s)              CPGs to use for volume creation
                                 option: hpe3par_cpg
         iSCSI IP(s)         array's iSCSI IP addresses to use
-                                option: hpe3par_iscsi_ips
+                                option: hpe3par_iscsi_ips (multiple) or
+                                        iscsi_ip_address (single)
         Driver              array's volume driver
                                 option: volume_driver
     """

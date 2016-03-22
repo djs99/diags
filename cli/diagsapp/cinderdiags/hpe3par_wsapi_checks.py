@@ -208,10 +208,9 @@ class WSChecker(object):
         """
         valid_ips = []
         result = "pass"
-        try:
-            ip_list = [x.strip() for x in
-                       self.parser.get(section_name,
-                                       'hpe3par_iscsi_ips').split(',')]
+
+        ip_list = self.get_iscsi_ips(section_name)
+        if ip_list:
             logger.info("Checking iSCSI IP addresses for node '%s' backend "
                          "section '%s'" % (self.node, section_name))
             for port in client.getPorts()['members']:
@@ -225,14 +224,51 @@ class WSChecker(object):
                 logger.info("ip: '%s'" % (ip))
                 if ip[0] not in valid_ips:
                     logger.info("Node '%s' backend section '%s' "
-                                "hpe3par_iscsi_ips contains an invalid iSCSI "
+                                "hpe3par_iscsi_ips or iscsi_ip_address "
+                                "contains an invalid iSCSI "
                                 "IP '%s'" % (self.node, section_name, ip))
                     result = "fail"
-        except configparser.NoOptionError:
-            logger.info("No hpe3par_iscsi_ips provided for node '%s' backend "
+
+        else:
+            logger.info("No hpe3par_iscsi_ips or iscsi_ip_address "
+                        "provided for node '%s' backend "
                         "section '%s" % (self.node, section_name))
-            result = "fail"
+            result = 'fail'
+
         return result
+
+    def get_iscsi_ips(self, section_name):
+        ip_list = []
+        try:
+            # first check special HPE tag for multiple IPs
+            ip_list = [x.strip() for x in
+                       self.parser.get(section_name,
+                                       'hpe3par_iscsi_ips').split(',')]
+        except configparser.NoOptionError:
+            try:
+                # next check standard cinder.conf entry for single IP
+                ip_addr = self.parser.get(section_name,
+                                          'iscsi_ip_address')
+                if ip_addr:
+                    ip_list = []
+                    ip_list.append(ip_addr)
+                    return ip_list
+            except configparser.NoOptionError:
+                return None
+
+        try:
+            # next check standard cinder.conf entry for single IP
+            ip_addr = self.parser.get(section_name,
+                                      'iscsi_ip_address')
+            if ip_addr:
+                if not ip_list:
+                    ip_list = []
+                ip_list.append(ip_addr)
+                return ip_list
+        except configparser.NoOptionError:
+            return ip_list
+
+        return ip_list
 
     def has_driver(self, section_name):
         logger.info("hpe3par_wsapi_checks - has_driver()")
@@ -285,6 +321,7 @@ class WSChecker(object):
                    'hpe3par_password',
                    'hpe3par_cpg',
                    'hpe3par_iscsi_ips',
+                   'iscsi_ip_address',
                    'volume_driver']
 
         result = ""
