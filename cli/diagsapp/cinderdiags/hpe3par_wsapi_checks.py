@@ -322,6 +322,7 @@ class WSChecker(object):
                    'hpe3par_cpg',
                    'hpe3par_iscsi_ips',
                    'iscsi_ip_address',
+                   'volume_backend_name',
                    'volume_driver']
 
         result = ""
