@@ -122,12 +122,14 @@ class Reader(object):
                 logger.warning("%s: %s" % (e, node))
         return files
 
-    def software_check(self, name='default', service='default', version=None):
+    def software_check(self, name='default', service='default',
+                       version=None, packages=None):
         """Check nodes for installed software packages
 
         :param name: Name of a software package to check for
         :param service: cinder or nova
         :param version: minimum version of software package
+        :param packages: alternate JSON structure to pass in multiple packages
         :return: list of dictionaries
         """
         if service == 'nova':
@@ -141,7 +143,16 @@ class Reader(object):
         checks = []
         for node in checklist:
             try:
-                if name == 'default':
+                if packages:
+                    pkg_data_list = json.loads(packages)
+                    logger.warning("Software Packages: %s" % (pkg_data_list))
+                    for pkg_data in pkg_data_list:
+                        for pkg_name, pkg_version in pkg_data.iteritems():
+                            checks.append(pkg_checks.check_one(clients[node],
+                                                               node,
+                                                               (pkg_name,
+                                                                pkg_version)))
+                elif name == 'default':
                     service = None
                     if self.arg_data:
                         for section in self.arg_data:

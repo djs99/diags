@@ -254,9 +254,9 @@ def version_check(response, pattern, min_v):
     if version is None:
         return 'unknown'
     elif version.group(1) >= min_v:
-        return 'pass'
+        return 'pass (' + version.group(1) + ')'
     else:
-        return 'fail'
+        return 'fail (' + version.group(1) + ')'
 
 
 def get_check_type(client, node):

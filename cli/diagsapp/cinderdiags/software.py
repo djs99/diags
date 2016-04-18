@@ -45,6 +45,10 @@ class CheckSoftware(Lister):
                             default='default',
                             help='may also provide "--package-min-version '
                                  'MINIMUM-VERSION"')
+        parser.add_argument('-software-pkgs',
+                            dest='packages',
+                            help='json structure contain software packages '
+                                 'and versions to check for')
         parser.add_argument('-service',
                             dest='serv',
                             default='default',
@@ -78,7 +82,8 @@ class CheckSoftware(Lister):
                                     parsed_args.data)
         result = reader.software_check(parsed_args.name,
                                        parsed_args.serv,
-                                       parsed_args.version)
+                                       parsed_args.version,
+                                       parsed_args.packages)
 
         columns = ('Node', 'Software', 'Installed', 'Version')
         data = []
