@@ -229,11 +229,11 @@ def pip_check(client, node, pkg_info):
             logger.info("Checking for software package '%s' on node %s using "
                         "pip" % (name, node))
             response = client.execute("pip list | grep " + name)
-            if response and re.match(name + '\s', response):
+            if response and re.match(name, response):
                 pkg['installed'] = 'pass'
                 pkg['name'] = name + ' (>=' + pkg_info[1] + ')'
                 if pkg_info[1]:
-                    pattern = re.compile('\(([\d\.]+)\)')
+                    pattern = re.compile('\D([\d\.]+\d)\D')
                     pkg['version'] = version_check(response,
                                                    pattern,
                                                    pkg_info[1])

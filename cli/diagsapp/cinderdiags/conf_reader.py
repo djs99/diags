@@ -17,6 +17,7 @@ import os
 
 from cinderdiags import constant
 from cinderdiags import pkg_checks
+from cinderdiags import lun_stats
 from cinderdiags import ssh_client
 from cinderdiags import hpe3par_wsapi_checks as wsapi_checks
 
@@ -181,7 +182,6 @@ class Reader(object):
         :return: list of dictionaries
         """
         clients = self.get_clients(self.cinder_nodes)
-        logger.warning("got clients")
         files = self.copy_files(clients)
         checks = []
         for node in files:
@@ -220,6 +220,38 @@ class Reader(object):
 
         self.cleanup(clients)
         return checks
+
+    def volume_paths_check(self, os_vars, attached_volumes=None):
+        """Check nodes for installed software packages
+
+        :param attached_volumes: a JSON structure
+        :return: list of dictionaries
+        """
+        checklist = self.nova_nodes
+        clients = self.get_clients(checklist)
+
+        paths = []
+        for node in checklist:
+            try:
+                paths = lun_stats.get_all_paths(clients[node], node, os_vars)
+                if attached_volumes:
+                    volume_list = json.loads(attached_volumes)
+                    logger.info("Volumes List: %s" % (volume_list))
+                    for volume in volume_list:
+                        vol_paths = lun_stats.get_paths_for_volume(
+                            clients[node],
+                            node,
+                            volume)
+                        for vol_path in vol_paths:
+                            for cur_path in paths:
+                                if cur_path['path'] == vol_path:
+                                    cur_path['vol_name'] = volume
+                                    break
+
+            except Exception as e:
+                logger.warning("%s: %s" % (e, node))
+        self.cleanup(clients)
+        return paths
 
     def cleanup(self, clients, files={}):
         """Delete all copied cinder.conf files and close all SSH connections.
