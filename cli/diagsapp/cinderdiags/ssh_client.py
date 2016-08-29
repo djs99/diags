@@ -85,4 +85,3 @@ class Client(object):
         # not sure why, but sometimes this comes back with a "\n", so strip
         host_name = self.execute('hostname').rstrip()
         return host_name
-

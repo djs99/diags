@@ -19,6 +19,7 @@ from cinderdiags import constant
 
 logger = logging.getLogger(__name__)
 
+
 def get_all_paths(client, node, json_os_vars):
     """Check for packages installed via apt-get (Debian Linux)
 
@@ -31,7 +32,8 @@ def get_all_paths(client, node, json_os_vars):
     paths = []
     try:
         os_vars = json.loads(json_os_vars)
-        logger.info("Requesting all volume paths using OpenStack vars %s" % (os_vars))
+        logger.info("Requesting all volume paths using "
+                    "OpenStack vars %s" % (os_vars))
 
         export_cmd = "export OS_USERNAME=%s; " \
                      "export OS_PASSWORD=%s; " \
@@ -42,11 +44,13 @@ def get_all_paths(client, node, json_os_vars):
                                                  os_vars['os_auth'])
 
         logger.info("export_cmd %s" % (export_cmd))
-        resp = client.execute(export_cmd +
-                              " sudo cinder get-all-volume-paths --protocol 'ISCSI'")
+        resp = client.execute(
+            export_cmd +
+            " sudo cinder get-all-volume-paths --protocol 'ISCSI'")
         iscsi_paths = resp.strip().split()
-        resp = client.execute(export_cmd +
-                              " sudo cinder get-all-volume-paths --protocol 'FIBRE_CHANNEL'")
+        resp = client.execute(
+            export_cmd +
+            " sudo cinder get-all-volume-paths --protocol 'FIBRE_CHANNEL'")
         fc_paths = resp.strip().split()
 
         for iscsi_path in iscsi_paths:
@@ -64,10 +68,11 @@ def get_all_paths(client, node, json_os_vars):
 
         logger.info("PATHS [%s]: %s" % (len(paths), paths))
     except Exception as e:
-        logger.warning("%s -- Unable to get volume paths on node %s" % (e,
-                                                                        node))
+        logger.warning("%s -- Unable to get volume paths on "
+                       "node %s" % (e, node))
         pass
     return paths
+
 
 def get_paths_for_volume(client, node, volume):
     """Check for packages installed via apt-get (Debian Linux)
@@ -80,16 +85,19 @@ def get_paths_for_volume(client, node, volume):
 
     paths = []
     try:
-        logger.info("Requesting volume paths on node %s for volume %s" % (node, volume))
-        export_cmd = "export OS_USERNAME=admin; export OS_PASSWORD=hpinvent; " \
-                     "export OS_TENANT_NAME=admin; export OS_AUTH_URL=http://localhost:35357;"
+        logger.info("Requesting volume paths on node %s for "
+                    "volume %s" % (node, volume))
+        export_cmd = "export OS_USERNAME=admin; " \
+                     "export OS_PASSWORD=hpinvent; " \
+                     "export OS_TENANT_NAME=admin; " \
+                     "export OS_AUTH_URL=http://localhost:35357;"
         resp = client.execute(export_cmd +
                               " sudo cinder get-volume-paths " + volume)
         paths = resp.strip().split()
 
         logger.info("PATHS [%s]: %s" % (len(paths), paths))
     except Exception as e:
-        logger.warning("%s -- Unable to get volume paths for volume %s on node %s" %
-                       (e, volume, node))
+        logger.warning("%s -- Unable to get volume paths for volume %s "
+                       "on node %s" % (e, volume, node))
         pass
     return paths

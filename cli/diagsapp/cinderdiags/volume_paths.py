@@ -23,7 +23,8 @@ class CheckPaths(Lister):
     """get volume paths for Nova node
 
     output data:
-        Paths               list of discovered volume paths, with attached volume name (if found)
+        Paths           list of discovered volume paths, with
+                        attached volume name (if found)
     """
 
     log = logging.getLogger(__name__)

@@ -66,32 +66,38 @@ class CheckOptions(Lister):
                             dest='info',
                             action='store_true',
                             help=argparse.SUPPRESS)
+        parser.add_argument('-incl-replication-checks',
+                            dest='replication',
+                            action='store_true',
+                            help=argparse.SUPPRESS)
         return parser
 
     def take_action(self, parsed_args):
         reader = conf_reader.Reader(parsed_args.test,
                                     parsed_args.conf,
                                     parsed_args.data,
-                                    parsed_args.info)
+                                    parsed_args.info,
+                                    parsed_args.replication)
         result = reader.options_check(parsed_args.name)
         if len(result) < 1:
             raise ValueError("%s not found" % parsed_args.name)
 
         columns = ()
         columns_base = (
-                'Node',
-                'Backend Section',
-                'WS API',
-                'Credentials',
-                'CPG',
-                'iSCSI IP(s)',
-                'Driver',
-            )
-        if parsed_args.info:
-            columns = columns_base + ('System Info', 'Conf Items')
-        else:
-            columns = columns_base
+            'Node',
+            'Backend Section',
+            'WS API',
+            'Credentials',
+            'CPG',
+            'iSCSI IP(s)',
+            'Driver',
+        )
+        columns = columns_base
+        if parsed_args.replication:
+            columns += ('Replication Device',)
 
+        if parsed_args.info:
+            columns += ('System Info', 'Conf Items')
 
         data = []
 
@@ -106,10 +112,17 @@ class CheckOptions(Lister):
                 arr['iscsi'],
                 arr['driver'],
             )
+            entry = entry_base
+
+            if parsed_args.replication:
+                if 'replication_results' in arr:
+                    rep_results = arr['replication_results']
+                    entry += (rep_results,)
+                else:
+                    entry += ("N/A",)
+
             if parsed_args.info:
-                entry = entry_base + (arr['system_info'], arr['conf_items'])
-            else:
-                entry = entry_base
+                entry += (arr['system_info'], arr['conf_items'])
 
             data.append(entry)
 

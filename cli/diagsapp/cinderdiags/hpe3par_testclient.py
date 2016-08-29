@@ -19,6 +19,7 @@ Diagnostics tool without access to a 3PAR array
 
 from hpe3parclient import exceptions
 
+
 class HPE3ParClient(object):
 
     PORT_MODE_TARGET = 2

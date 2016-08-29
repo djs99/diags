@@ -31,13 +31,15 @@ try:
     from hpe3parclient import client as hpeclient
     from hpe3parclient import exceptions as hpe_exceptions
 except ImportError:
-    logger.error('python-3parclient package not found (pip install python-3parclient)')
+    logger.error(
+        'python-3parclient package not found (pip install python-3parclient)')
 
 
 class WSChecker(object):
 
     def __init__(self, client, conf, node, test=False,
-                 include_system_info=False):
+                 include_system_info=False,
+                 include_replication_checks=False):
         """Tests web service api configurations in the cinder.conf file
 
         :param conf: location of cinder.conf
@@ -49,12 +51,14 @@ class WSChecker(object):
         self.node = node
         self.is_test = test
         self.include_system_info = include_system_info
+        self.include_replication_checks = include_replication_checks
         self.parser = configparser.ConfigParser()
         self.parser.read(self.conf)
         self.hpe3pars = []
         for section in self.parser.sections():
             if self.parser.has_option(section, 'volume_driver') \
-                    and 'hpe_3par' in self.parser.get(section, 'volume_driver'):
+                    and 'hpe_3par' in self.parser.get(section,
+                                                      'volume_driver'):
                 self.hpe3pars.append(section)
 
     def check_all(self):
@@ -85,14 +89,28 @@ class WSChecker(object):
         }
         if self.include_system_info:
             tests["system_info"] = "unknown"
-            tests['conf_items'] = "unknown"
+            tests["conf_items"] = "unknown"
+
+        if self.include_replication_checks:
+            tests["replication_info"] = "unknown"
+            tests["replication_config_items"] = "unknown"
 
         if section_name in self.hpe3pars:
-            logger.info("Checking 3PAR options for node '%s' backend section "
-                         "%s" % (self.node, section_name))
+            logger.info(
+                "Checking 3PAR options for node '%s' backend section "
+                "%s" % (self.node, section_name))
 
             if self.include_system_info:
                 tests['conf_items'] = self.get_conf_items(section_name)
+
+            if self.include_replication_checks:
+                replication_config_items = \
+                    self.get_replication_device_items(section_name)
+                if replication_config_items:
+                    tests["replication_results"] = \
+                        self.verify_replication_device_info(
+                            section_name,
+                            replication_config_items)
 
             tests["driver"] = self.has_driver(section_name)
             client = self.get_client(section_name, self.is_test)
@@ -101,8 +119,9 @@ class WSChecker(object):
                 tests["url"] = "pass"
                 if self.cred_is_valid(section_name, client):
                     if self.include_system_info:
-                        tests["system_info"] = self.get_system_info(section_name,
-                                                                    client)
+                        tests["system_info"] = self.get_system_info(
+                            section_name,
+                            client)
                     tests["credentials"] = "pass"
                     tests["cpg"] = self.cpg_is_valid(section_name, client)
                     if 'iscsi' in self.parser.get(section_name,
@@ -121,21 +140,23 @@ class WSChecker(object):
             return None
 
 # Config testing methods check if option values are valid
-    def get_client(self, section_name, test):
+    def get_client(self, section_name, test, url=None):
         logger.info("hpe3par_wsapi_checks - get_client()")
         """Tries to create a client and verifies the api url
 
         :return: The client if url is valid, None if invalid/missing
         """
         try:
-            url = self.parser.get(section_name, 'hpe3par_api_url')
+            if not url:
+                url = self.parser.get(section_name, 'hpe3par_api_url')
             logger.info("Attempting to connect to %s..." % url)
             if test:
                 cl = testclient.HPE3ParClient(url)
             else:
                 cl = hpeclient.HPE3ParClient(url)
             return cl
-        except (hpe_exceptions.UnsupportedVersion, hpe_exceptions.HTTPBadRequest,
+        except (hpe_exceptions.UnsupportedVersion,
+                hpe_exceptions.HTTPBadRequest,
                 TypeError) as e:
             logger.info("Failed to connect to hpe3par_api_url for node '%s' "
                         "backend section '%s' --- %s" % (self.node,
@@ -146,18 +167,22 @@ class WSChecker(object):
                         "section '%s'" % (self.node, section_name))
             return None
 
-    def cred_is_valid(self, section_name, client):
+    def cred_is_valid(self, section_name, client, credentials=None):
         logger.info("hpe3par_wsapi_checks - cred_is_valid()")
         """Tries to login to the client to verify credentials
 
         :return: True if credentials are valid, False if invalid/missing
         """
-        logger.info("Use credentials %s -- %s: " %
-                    (self.parser.get(section_name, 'hpe3par_username'),
-                     self.parser.get(section_name, 'hpe3par_password')))
+        if not credentials:
+            uname = self.parser.get(section_name, 'hpe3par_username')
+            pwd = self.parser.get(section_name, 'hpe3par_password')
+        else:
+            uname = credentials['uname']
+            pwd = credentials['pwd']
+
+        logger.info("Use credentials %s -- %s: " % (uname, pwd))
         try:
-            client.login(self.parser.get(section_name, 'hpe3par_username'),
-                         self.parser.get(section_name, 'hpe3par_password'))
+            client.login(uname, pwd)
             return True
         except (hpe_exceptions.HTTPForbidden,
                 hpe_exceptions.HTTPUnauthorized):
@@ -171,7 +196,7 @@ class WSChecker(object):
                                                             section_name))
             return False
 
-    def cpg_is_valid(self, section_name, client):
+    def cpg_is_valid(self, section_name, client, cpg_list=None):
         logger.info("hpe3par_wsapi_checks - cpg_is_valid()")
         """Tests to see if a cpg exists on the 3PAR array to verify cpg name
 
@@ -179,10 +204,14 @@ class WSChecker(object):
         """
         result = "pass"
         try:
-            cpg_list = [x.strip() for x in
-                        self.parser.get(section_name, 'hpe3par_cpg').split(',')]
+            if not cpg_list:
+                cpg_list = [x.strip() for x in
+                            self.parser.get(
+                                section_name,
+                                'hpe3par_cpg').split(',')]
+
             logger.info("Checking hpe3par_cpg option for node '%s' backend "
-                         "section '%s'" % (self.node, section_name))
+                        "section '%s'" % (self.node, section_name))
             for cpg in cpg_list:
                 try:
                     logger.info("request client.getCPG(): '%s' " %
@@ -194,8 +223,8 @@ class WSChecker(object):
                                 (self.node, section_name, cpg))
                     result = "fail"
         except configparser.NoOptionError:
-            logger.info("No hpe3par_cpg provided for node '%s' backend section "
-                        "'%s'" %
+            logger.info("No hpe3par_cpg provided for node '%s' backend "
+                        "section '%s'" %
                         (self.node, section_name))
             result = "fail"
         return result
@@ -212,13 +241,14 @@ class WSChecker(object):
         ip_list = self.get_iscsi_ips(section_name)
         if ip_list:
             logger.info("Checking iSCSI IP addresses for node '%s' backend "
-                         "section '%s'" % (self.node, section_name))
+                        "section '%s'" % (self.node, section_name))
             for port in client.getPorts()['members']:
                 if (port['mode'] == client.PORT_MODE_TARGET and
                         port['linkState'] == client.PORT_STATE_READY and
                         port['protocol'] == client.PORT_PROTO_ISCSI):
                     valid_ips.append(port['IPAddr'])
-                    logger.info("Checking iscsi IP port: '%s'" % (port['IPAddr']))
+                    logger.info(
+                        "Checking iscsi IP port: '%s'" % (port['IPAddr']))
             for ip_addr in ip_list:
                 ip = ip_addr.split(':')
                 logger.info("ip: '%s'" % (ip))
@@ -279,12 +309,13 @@ class WSChecker(object):
         try:
             volume_driver = self.parser.get(section_name, 'volume_driver')
             path = volume_driver.split('.')
-            logger.info("volume_driver: '%s'  path: '%s'" % (volume_driver, path))
+            logger.info("volume_driver: '%s'  path: '%s'" % (volume_driver,
+                                                             path))
             if ("%s.%s" % (path[-2], path.pop())) in constant.HPE3PAR_DRIVERS:
                 path = '/'.join(path)
                 logger.info("Checking for driver at '%s' for node '%s' "
-                             "backend section '%s'" % (self.node, path,
-                                                       section_name))
+                            "backend section '%s'" % (self.node, path,
+                                                      section_name))
                 response = self.ssh_client.execute('locate ' + path)
 
                 if path in response:
@@ -296,9 +327,8 @@ class WSChecker(object):
                     result = "unknown"
                 else:
                     logger.info("Node '%s' backend section '%s' volume_driver "
-                                "contains an "
-                                "invalid driver location: '%s'" % (
-                        self.node, section_name,  path))
+                                "contains an invalid driver location: '%s'" %
+                                (self.node, section_name,  path))
                     result = "fail"
             else:
                 logger.info("Node '%s' backend section '%s' volume_driver is "
@@ -334,8 +364,123 @@ class WSChecker(object):
             except:
                 result += option + "==<blank>" + ";;"
 
+        result += self.format_replication_config_item_list(section_name)
+
         logger.info("Items: '%s'" % (result))
         return result
+
+    def format_replication_config_item_list(self, section_name):
+        # options we care about
+        options = ['backend_id',
+                   'replication_mode',
+                   'cpg_map',
+                   'hpe3par_api_url',
+                   'hpe3par_username',
+                   'hpe3par_password']
+
+        format_str = ""
+
+        entries = self.get_replication_device_items(section_name)
+        for entry in entries:
+            logger.info("!!!!!!!!!!CONFIG ENTRY: '%s'" % (entry))
+            if format_str:
+                format_str += ";"
+            format_str += ("replication_device==")
+            items = entry.split("::")
+            for item in items:
+                format_str += (item.replace("==", "=") + ";")
+
+        if format_str:
+            format_str += ";"
+
+        return format_str
+
+    def get_replication_device_items(self, section_name):
+        logger.info("get cinder.conf replication_device items")
+        """Get all replication device items listed in config.conf for this section
+
+        :return: string
+        """
+
+        rep_entries = []
+
+        try:
+            # can have multiple "replication_device" entries, so we need
+            # to do our own parsing
+            f = open(self.conf)
+            in_correct_section = False
+            in_replication_entry = False
+            replication_lines = []
+            replication_line = ''
+            for line in f:
+                line = line.strip()
+                if "[" + section_name + "]" in line:
+                    in_correct_section = True
+                elif "[" in line and "]" in line:
+                    in_correct_section = False
+
+                if in_correct_section:
+                    str_line = line.strip()
+                    if str_line.startswith('replication_device'):
+                        replication_line = line
+                        if line.endswith(","):
+                            in_replication_entry = True
+                        else:
+                            replication_lines.append(replication_line)
+                    elif in_replication_entry:
+                        replication_line += line
+                        if not line.endswith(","):
+                            in_replication_entry = False
+                            replication_lines.append(replication_line)
+                            logger.info("line3 = '%s'" % (replication_line))
+            f.close()
+
+            # pull out options from each "replication_device" entries
+            for replicaton_line in replication_lines:
+                option, value = replicaton_line.split("=", 1)
+                logger.info("rep item[%s] = '%s'" % (option, value))
+                value = value.strip()
+                entries = value.split(",")
+                rep_entry = {}
+                for entry in entries:
+                    suboption, subvalue = entry.split(":", 1)
+                    rep_entry[suboption] = subvalue
+                    logger.info("rep item[%s] = '%s'" % (suboption, subvalue))
+                rep_entries.append(rep_entry)
+
+        except Exception as ex:
+            logger.info("!!! replication_device error = '%s'" % (ex))
+            return None
+
+        results = []
+        for rep_entry in rep_entries:
+            result = ""
+            if 'backend_id' in rep_entry:
+                result += "backend_id==" + rep_entry['backend_id']
+            if 'replication_mode' in rep_entry:
+                if result:
+                    result += "::"
+                result += "replication_mode==" + rep_entry['replication_mode']
+            if 'cpg_map' in rep_entry:
+                if result:
+                    result += "::"
+                result += "cpg_map==" + rep_entry['cpg_map']
+            if 'hpe3par_api_url' in rep_entry:
+                if result:
+                    result += "::"
+                result += "hpe3par_api_url==" + rep_entry['hpe3par_api_url']
+            if 'hpe3par_username' in rep_entry:
+                if result:
+                    result += "::"
+                result += "hpe3par_username==" + rep_entry['hpe3par_username']
+            if 'hpe3par_password' in rep_entry:
+                if result:
+                    result += "::"
+                result += "hpe3par_password==" + rep_entry['hpe3par_password']
+            logger.info("replication entry: %s" % (result))
+            results.append(result)
+
+        return results
 
     def get_system_info(self, section_name, client):
         logger.info("hpe3par_wsapi_checks - get_system_info()")
@@ -382,4 +527,120 @@ class WSChecker(object):
             logger.info("No license info for backend section "
                         "'%s'" %
                         (section_name))
+        return result
+
+    def verify_replication_device_info(self,
+                                       section_name,
+                                       replication_config_items):
+        logger.info("hpe3par_wsapi_checks - verify_replication_device_info()")
+        """Verify replcation device entries in cinder.conf
+
+        :return: string
+        """
+        result_str = ""
+
+        for config_items in replication_config_items:
+            result = {
+                # "overall": "pass",
+                "backend_id": "Unknown",
+                "wsapi": "fail",
+                "credentials": "fail",
+                "source_cpgs": "fail",
+                "destination_cpgs": "fail",
+                "replication_mode": "fail",
+            }
+            items = config_items.split("::")
+
+            id = self.find_replication_option(items, "backend_id")
+            if id:
+                result['backend_id'] = id
+
+            replication_mode = self.find_replication_option(items,
+                                                            "replication_mode")
+            if replication_mode == 'periodic' or replication_mode == "sync":
+                result['replication_mode'] = "pass"
+
+            api_url = self.find_replication_option(items, "hpe3par_api_url")
+            if api_url:
+                client = self.get_client(section_name, False, api_url)
+                if client:
+                    result['wsapi'] = "pass"
+                    credentials = {
+                        'uname': self.find_replication_option(
+                            items,
+                            "hpe3par_username"),
+                        'pwd': self.find_replication_option(
+                            items,
+                            "hpe3par_password"),
+                    }
+                    if self.cred_is_valid(section_name, client, credentials):
+                        result["credentials"] = "pass"
+
+                        # for cpgs, they are provide in a format that is:
+                        # fromCPG1:toCPG1 fromCPG2:fromCPG2
+                        # verify fromCPGs by simply checking if they are
+                        # listed hpe3par_cpg
+                        # verify toCPGs by checking if they exist on
+                        # replication device
+                        from_cpg_list = self.get_replication_cpgs(items)
+                        result['source_cpgs'] = \
+                            self.verify_replication_source_cpgs(section_name,
+                                                                from_cpg_list)
+
+                        to_cpg_list = self.get_replication_cpgs(
+                            items,
+                            on_replication_device=True)
+                        result['desctination_cpgs'] = \
+                            self.cpg_is_valid(section_name,
+                                              client,
+                                              to_cpg_list)
+
+            result_str += \
+                "Backend ID:" + result['backend_id'] + ";;" + \
+                " WS API:" + result['wsapi'] + ";;" + \
+                " Credentials:" + result['credentials'] + ";;" + \
+                " Source CPGs:" + result['source_cpgs'] + ";;" + \
+                " Destination CPGs:" + result['destination_cpgs'] + ";;" + \
+                " Replication Mode:" + result['replication_mode'] + ";;"
+
+        logger.info("Replication Verification Result: '%s'" % (result_str))
+        return result_str
+
+    def find_replication_option(self, items, option):
+        for item in items:
+            entry = item.split("==")
+            if entry[0] == option:
+                return entry[1]
+
+        return None
+
+    def get_replication_cpgs(self, items, on_replication_device=False):
+        cpg_list = []
+        cpg_map = self.find_replication_option(items, "cpg_map")
+        cpg_pairs = cpg_map.split(" ")
+        for cpg_pair in cpg_pairs:
+            cpgs = cpg_pair.split(":")
+            if on_replication_device:
+                # cpgs on replication device are listed second
+                cpg_list.append(cpgs[1])
+            else:
+                cpg_list.append(cpgs[0])
+
+        return cpg_list
+
+    def verify_replication_source_cpgs(self, section_name, from_cpg_list):
+        # get source cpg list from cinder.conf
+        cpg_list = \
+            [x.strip() for x in self.parser.get(section_name,
+                                                'hpe3par_cpg').split(',')]
+
+        # verify each of the from_cpg_list cpgs is listed in main
+        # cinder.conf cpg list
+        result = "pass"
+
+        for cpg in from_cpg_list:
+            if cpg not in cpg_list:
+                logger.info("!!!!no match for cpg: '%s'" % (cpg))
+                return "fail"
+
         return result

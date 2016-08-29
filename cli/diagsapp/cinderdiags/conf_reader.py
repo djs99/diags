@@ -32,9 +32,11 @@ class Reader(object):
 
     arg_data = None
 
-    def __init__(self, is_test=False, path=None, json_data=None, get_info=False):
+    def __init__(self, is_test=False, path=None, json_data=None,
+                 get_info=False, check_replication=False):
         self.is_test = is_test
         self.include_system_info = get_info
+        self.include_replication_checks = check_replication
         self.cinder_nodes = []
         self.nova_nodes = []
 
@@ -56,9 +58,11 @@ class Reader(object):
                 parser.read(path)
                 self.get_nodes()
                 if len(self.cinder_nodes) < 1:
-                    logger.warning("No Cinder nodes are configured in cli.conf")
+                    logger.warning(
+                        "No Cinder nodes are configured in cli.conf")
                 if len(self.nova_nodes) < 1:
-                    logger.warning("No Nova nodes are configured in cli.conf")
+                    logger.warning(
+                        "No Nova nodes are configured in cli.conf")
             else:
                 raise IOError("%s path not found" % path)
 
@@ -83,16 +87,19 @@ class Reader(object):
                     for section in self.arg_data:
                         if section['section'].lower() == node:
                             logger.warning("Found section: %s" % (node))
-                            logger.warning("Attempt to open SSH connection to: %s"
-                                           % (section['host_ip']))
-                            client = ssh_client.Client(section['host_ip'],
-                                                       section['ssh_user'],
-                                                       section['ssh_password'])
+                            logger.warning(
+                                "Attempt to open SSH connection to: %s"
+                                % (section['host_ip']))
+                            client = ssh_client.Client(
+                                section['host_ip'],
+                                section['ssh_user'],
+                                section['ssh_password'])
                             logger.warning("Opened SSH connection")
                 else:
-                    client = ssh_client.Client(parser.get(node, 'host_ip'),
-                                               parser.get(node, 'ssh_user'),
-                                               parser.get(node, 'ssh_password'))
+                    client = ssh_client.Client(
+                        parser.get(node, 'host_ip'),
+                        parser.get(node, 'ssh_user'),
+                        parser.get(node, 'ssh_password'))
                 clients[node] = client
             except Exception as e:
                 logger.warning("%s: %s" % (e, node))
@@ -189,7 +196,8 @@ class Reader(object):
                                              files[node],
                                              node,
                                              self.is_test,
-                                             self.include_system_info)
+                                             self.include_system_info,
+                                             self.include_replication_checks)
             if section_name == 'arrays':
                 checks += checker.check_all()
             else:
@@ -216,7 +224,7 @@ class Reader(object):
                 result = 'fail'
             logger.warning("Credentials result: %s" % (result))
             checks.append({'node': node,
-                           'connect': result })
+                           'connect': result})
 
         self.cleanup(clients)
         return checks
