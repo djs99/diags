@@ -382,7 +382,7 @@ class WSChecker(object):
 
         entries = self.get_replication_device_items(section_name)
         for entry in entries:
-            logger.info("!!!!!!!!!!CONFIG ENTRY: '%s'" % (entry))
+            logger.info("REPLICATION config entry: '%s'" % (entry))
             if format_str:
                 format_str += ";"
             format_str += ("replication_device==")
@@ -443,13 +443,14 @@ class WSChecker(object):
                 entries = value.split(",")
                 rep_entry = {}
                 for entry in entries:
-                    suboption, subvalue = entry.split(":", 1)
-                    rep_entry[suboption] = subvalue
-                    logger.info("rep item[%s] = '%s'" % (suboption, subvalue))
+                    if ":" in entry:
+                        suboption, subvalue = entry.split(":", 1)
+                        rep_entry[suboption] = subvalue
+                        logger.info("rep item[%s] = '%s'" % (suboption, subvalue))
                 rep_entries.append(rep_entry)
 
         except Exception as ex:
-            logger.info("!!! replication_device error = '%s'" % (ex))
+            logger.info("ERROR replication_device error = '%s'" % (ex))
             return None
 
         results = []
@@ -640,7 +641,7 @@ class WSChecker(object):
 
         for cpg in from_cpg_list:
             if cpg not in cpg_list:
-                logger.info("!!!!no match for cpg: '%s'" % (cpg))
+                logger.info("No match for replication cpg: '%s'" % (cpg))
                 return "fail"
 
         return result
